@@ -655,15 +655,16 @@ console.log(20>>1) //10 normally right shift divides by 2
 **Use-case:** Used in low-level operations, bit flags, permissions and some performance-sensitive operations.
 
 * User permission on READ, Write, Delete like that 
+```text
     Read = 1<<0   //0001
     Write = 1<<1  //0010
     Delete = 1<<2 //0100
     user = Read | Write //0011
 
-    if (user & read){ // 0011 & 0001 = 0001 true 
+    if (user & read){    // 0011 & 0001 = 0001 true 
         code to execute
     }
-
+```
 ## Ternary Operator
 
 The ternary operator is a short way to write a simple `if...else` condition.
@@ -886,48 +887,43 @@ Example: Asking a user for input at least once.
 
 ## `break`
 
-`break` immediately exits the loop or `switch`.
+`break` immediately stop the loop and exists.
 
-Ex:
+Ex: Searching a customer
 ```js
-for (let i = 0; i < 10; i++) {
-    if (i === 5) {
+const students = ["Arun", "Priya", "Kumar", "Ravi"];
+
+for (let i = 0; i < students.length; i++) {
+    if (students[i] === "Kumar") {
+        console.log("Student found");
         break;
     }
-
-    console.log(i);
 }
 ```
-
-Output stops at `4`.
-
 * Used when the required result has already been found and continuing the loop is unnecessary.
 
 ## `continue`
 
 `continue` skips the current iteration and moves to the next iteration.
 
-Ex:
+Ex: In expenses we want to remove invalid amount '0'
 ```js
-for (let i = 0; i < 5; i++) {
-    if (i === 2) {
+const expenses = [500, 1200, 0, 800, 1500];
+for (const amount of expenses) {
+    if (amount === 0) {
         continue;
     }
 
-    console.log(i);
+    console.log("Processing:", amount);
 }
 ```
-
-The value `2` is skipped.
-
 * Used when certain items should be ignored while the loop continues processing the remaining items.
 
 ## `for...in`
 
-`for...in` iterates over the enumerable property keys of an object.
+* It is mainly used to loop through the **property keys of an object**.
 
 Example:
-
 ```js
 const user = {
     name: "Gowtham",
@@ -943,16 +939,18 @@ for (const key in user) {
 
 * Do not normally use `for...in` to iterate through arrays because it iterates over keys/properties rather than array values.
 
-## `for...of`
+## `for...of` (ES6 2015)
 
-`for...of` iterates over the values of an iterable such as an array or string.
+* It iterates over the **values of an iterable** such as an array or string.
 
 Eg:
 ```js
-const numbers = [10, 20, 30];
+const expenses = [500, 1200, 800, 1500];
 
-for (const number of numbers) {
-    console.log(number);
+for (const amount of expenses) {
+    if (amount > 1000) {
+        console.log("High-value expense:", amount);
+    }
 }
 ```
 
@@ -1258,3 +1256,815 @@ console.log(session.isActive()); // false
 * Here `sessionActive` cannot be directly accessed from outside, but the returned methods can access and modify it through the closure.
 
 * Closures are powerful, but don't create unnecessary long-lived closures that keep large objects in memory. This can contribute to memory leaks when references are unintentionally retained.
+
+# Arrays
+
+* Arrays are used to store multiple values in a single variable.
+
+* They are commonly used when we have a collection of related data such as users, products, orders, expenses, students etc.
+
+## Creating an Array
+
+* An array can contain multiple values and the values can be accessed using their index.
+
+```js
+const products = ["Laptop", "Mouse", "Keyboard"];
+
+console.log(products);
+```
+
+* Arrays are zero-indexed, so the first value starts from index `0`.
+* An array can contain different data types, but in real applications it is usually better to keep related data in a consistent structure.
+
+## Indexing
+
+* It is used to access or change a particular value in an array.
+
+```js
+const products = ["Laptop", "Mouse", "Keyboard"];
+
+console.log(products[0]); // Laptop
+console.log(products[2]); // Keyboard
+```
+Ex: Updating a product name
+
+```js
+const products = ["Laptop", "Mouse", "Keyboard"];
+
+products[1] = "Wireless Mouse";
+
+console.log(products);
+```
+
+* Useful when we know the position of the value we want to access.
+* `array.length` gives the number of elements in the array.
+
+## `push()`
+
+* Adds one or more elements to the end of an array.
+
+Ex: Adding a new order to an order list
+
+```js
+const orders = ["ORD101", "ORD102"];
+orders.push("ORD103");
+console.log(orders);
+```
+
+* `push()` changes the original array.
+* Useful when new data needs to be added to the end of a collection.
+
+## `pop()`
+
+* Removes the last element from an array.
+
+Eg: Processing a stack of pending tasks
+
+```js
+const tasks = ["Task A", "Task B", "Task C"];
+
+const task = tasks.pop();
+console.log(task);  // Task C
+console.log(tasks); // ["Task A", "Task B"]
+```
+
+* `pop()` changes the original array.
+* It returns the removed element.
+
+## `shift()`
+
+* It removes the first element from an array.
+
+Example: Processing the first customer in a queue
+
+```js
+const customerQueue = ["Customer A", "Customer B", "Customer C"];
+
+const customer = customerQueue.shift();
+console.log(customer);       // Customer A
+console.log(customerQueue);  // ["Customer B", "Customer C"]
+```
+
+* Useful when implementing a simple queue.
+* It changes the original array.
+
+## `unshift()`
+
+* It adds one or more elements to the beginning of an array.
+
+Eg: Adding an urgent support ticket to the front of a queue
+
+```js
+const tickets = ["Ticket 102", "Ticket 103"];
+
+tickets.unshift("Urgent Ticket 101");
+
+console.log(tickets);
+```
+
+* Useful when a new item needs to be placed at the beginning.
+* It changes the original array.
+
+## `splice()`
+
+* It is used to add, remove, or replace elements at a specific position.
+
+The basic structure is:
+`array.splice(start, deleteCount, items);`
+
+Eg: Removing a cancelled order from an order list
+
+```js
+const orders = ["ORD101", "ORD102", "ORD103"];
+orders.splice(1, 1);
+console.log(orders);
+```
+Here:
+- `1` → start from index 1
+- `1` → remove one element
+
+Ex: Replace a product
+
+```js
+const products = ["Laptop", "Mouse", "Keyboard"];
+
+products.splice(1, 1, "Wireless Mouse");
+console.log(products);
+```
+
+* `splice()` modifies the original array.
+* Useful when we need to change the array at a specific position.
+
+## `slice()`
+* It creates a new array containing a portion of the original array.
+
+```js
+const orders = ["ORD101", "ORD102", "ORD103", "ORD104"];
+
+const recentOrders = orders.slice(2);
+console.log(recentOrders);
+```
+
+`slice()` does not change the original array.
+
+Eg:
+
+```js
+const orders = ["ORD101", "ORD102", "ORD103", "ORD104"];
+
+const selectedOrders = orders.slice(1, 3);
+console.log(selectedOrders);
+```
+
+This gets the elements from index `1` up to, but not including, index `3`.
+
+* `slice()` → creates a new portion of an array.
+* `splice()` → changes the original array.
+
+## `map()`
+
+* It creates a new array by transforming every element of the original array.
+
+Eg: Getting product names from product objects
+
+```js
+const products = [
+    { id: 1, name: "Laptop", price: 50000 },
+    { id: 2, name: "Mouse", price: 1000 },
+    { id: 3, name: "Keyboard", price: 2000 }
+];
+
+const productNames = products.map(product => product.name);
+console.log(productNames);
+```
+
+O/P:
+`["Laptop", "Mouse", "Keyboard"]`
+
+* Use `map()` when we want to transform every item.
+* It returns a new array.
+* The original array is not changed.
+
+Ex: Adding tax to product prices
+
+```js
+const prices = [1000, 2000, 3000];
+
+const pricesWithTax = prices.map(price => price * 1.18);
+console.log(pricesWithTax);
+```
+
+## `filter()`
+
+* creates a new array containing only the elements that satisfy a condition.
+
+Ex: Getting high-value orders
+
+```js
+const orders = [
+    { id: 101, amount: 500 },
+    { id: 102, amount: 1500 },
+    { id: 103, amount: 800 },
+    { id: 104, amount: 2000 }
+];
+
+const highValueOrders = orders.filter(order => order.amount > 1000);
+console.log(highValueOrders);
+```
+
+* Use `filter()` when we want to select some items from an array.
+* It does not modify the original array.
+* The callback must produce a truthy/falsy result.
+
+## `reduce()`
+
+* It is used when we want to combine all array elements into a single result.
+
+Ex: Calculating total order amount
+```js
+const orders = [
+    { id: 101, amount: 500 },
+    { id: 102, amount: 1500 },
+    { id: 103, amount: 800 }
+];
+
+const total = orders.reduce((sum, order) => {
+    return sum + order.amount;
+}, 0);
+console.log(total);
+```
+
+Here:
+`sum` → accumulated result
+`order` → current item
+`0` → initial value
+
+* Useful for calculating totals, counts, averages, grouping values etc.
+* Unlike `map()` and `filter()`, the final result does not have to be an array.
+
+- `map()` → transform every item
+- `filter()` → select some items
+- `reduce()` → combine items into one result
+
+# Objects
+
+* Objects are used to represent a real-world entity using properties and values.
+
+Ex:A user has a name, email and role.
+
+```js
+const user = {
+    name: "Gowtham",
+    email: "gowtham@example.com",
+    role: "Developer"
+};
+```
+
+## Properties
+
+*  Properties represent the data belonging to an object.
+
+```js
+console.log(user.name);
+console.log(user.email);
+```
+
+* Properties can also be accessed using bracket notation.
+
+```js
+console.log(user["name"]);
+```
+
+* Bracket notation is useful when the property name is stored dynamically.
+
+```js
+const property = "email";
+console.log(user[property]);
+```
+
+## Updating and Adding Properties
+
+```js
+const user = {
+    name: "Gowtham",
+    role: "Developer"
+};
+
+user.role = "Full Stack Developer";
+user.experience = 1;
+console.log(user);
+```
+
+* Objects are commonly used to represent API data, database records, users, products, orders etc.
+
+## Methods
+
+* A method is a function stored as a property of an object.
+
+Ex:
+
+```js
+const user = {
+    name: "Gowtham",
+
+    login() {
+        console.log(`${this.name} logged in`);
+    }
+};
+
+user.login();
+```
+
+Here `login()` is a method of the `user` object.
+
+* Methods are useful when an action is related to the object.
+
+## Nested Objects
+
+* An object can contain another object as a property.
+
+Ex: User profile information
+
+```js
+const user = {
+    name: "Gowtham",
+    email: "gowtham@example.com",
+
+    address: {
+        city: "Coimbatore",
+        country: "India"
+    }
+};
+
+console.log(user.address.city);
+```
+
+* Nested objects are commonly found in API responses and database data.
+* They allow related information to be grouped together.
+
+## Destructuring
+
+* Destructuring is used to extract values from objects or arrays into variables.
+
+Ex:
+
+```js
+const user = {
+    name: "Gowtham",
+    email: "gowtham@example.com",
+    role: "Developer"
+};
+
+const { name, email } = user;
+
+console.log(name);
+console.log(email);
+```
+
+Instead of:
+
+```js
+const name = user.name;
+const email = user.email;
+```
+
+
+* Destructuring is very common when working with API responses and function parameters.
+
+Ex:
+
+```js
+function displayUser({ name, email }) {
+    console.log(name);
+    console.log(email);
+}
+
+displayUser(user);
+```
+
+## `Object.keys()`
+
+* It returns an array containing the object's property names.
+
+```js
+const user = {
+    name: "Gowtham",
+    role: "Developer",
+    active: true
+};
+
+console.log(Object.keys(user));
+```
+
+O/P:
+`["name", "role", "active"]`
+
+* Useful when we need to dynamically inspect or iterate through an object's properties.
+
+## `Object.values()`
+
+* It returns an array containing the object's property values.
+
+```js
+const user = {
+    name: "Gowtham",
+    role: "Developer",
+    active: true
+};
+
+console.log(Object.values(user));
+```
+
+## `Object.entries()`
+
+* It returns an array containing `[key, value]` pairs.
+
+```js
+const user = {
+    name: "Gowtham",
+    role: "Developer"
+};
+
+console.log(Object.entries(user));
+```
+
+Ex: Displaying user information dynamically
+
+```js
+for (const [key, value] of Object.entries(user)) {
+    console.log(`${key}: ${value}`);
+}
+```
+
+* `Object.keys()` → keys
+* `Object.values()` → values
+* `Object.entries()` → key + value pairs
+
+# Strings
+
+* Strings are used to represent text.
+
+* Examples include names, emails, messages, product names, addresses etc.
+
+```js
+const userName = "Gowtham";
+const email = "gowtham@example.com";
+```
+
+## String Length
+
+* `length` returns the number of characters in a string.
+
+```js
+const password = "secret123";
+console.log(password.length);
+```
+
+Ex: Checking minimum password length
+
+```js
+if (password.length < 8) {
+    console.log("Password must contain at least 8 characters");
+}
+```
+
+## String Methods
+
+* String methods are used to process and manipulate text.
+
+Example:
+
+```js
+const email = "  GOWTHAM@EXAMPLE.COM  ";
+const cleanedEmail = email.trim().toLowerCase();
+console.log(cleanedEmail);
+```
+
+Common methods:
+
+`trim()` → removes whitespace from beginning and end
+
+`toUpperCase()` → converts to uppercase
+
+`toLowerCase()` → converts to lowercase
+
+`includes()` → checks whether text exists
+
+`startsWith()` → checks beginning
+
+`endsWith()` → checks ending
+
+`replace()` → replaces matching text
+
+`split()` → converts a string into an array
+
+ * Example: Checking an email domain
+
+```js
+const email = "user@gmail.com";
+
+if (email.endsWith("@gmail.com")) {
+    console.log("Gmail account");
+}
+```
+
+* Example: Searching a product
+
+```js
+const productName = "Wireless Keyboard";
+
+if (productName.toLowerCase().includes("keyboard")) {
+    console.log("Keyboard product found");
+}
+```
+
+## Template Literals
+
+* It use backticks and allow variables or expressions to be inserted using `${}`.
+
+```js
+const customer = "Gowtham";
+const amount = 1500;
+
+console.log(`Hello ${customer}, your order amount is ₹${amount}`);
+```
+
+* Useful for dynamically creating messages.
+* Commonly used when displaying API/database data in the UI.
+
+## Concatenation
+
+* Concatenation means joining strings together.
+
+```js
+const firstName = "Gowtham";
+const lastName = "G";
+
+const fullName = firstName + " " + lastName;
+```
+
+* Template literals are usually easier to read when the string contains multiple values.
+
+## Escaping
+
+* Some characters have special meaning inside strings. A backslash `\` is used to escape them.
+
+```js
+const message = "User said \"Hello\"";
+
+console.log(message);
+```
+
+Other common escape sequences:
+
+- `\n` → new line
+
+- `\t` → tab
+
+- `\\` → backslash
+
+Ex:
+
+```js
+console.log("Order Details:\nLaptop\nMouse\nKeyboard");
+```
+
+# Numbers & Math
+
+* JavaScript uses the `Number` type for normal numeric values such as prices, quantities, marks, percentages etc.
+
+```js
+const price = 1500;
+const quantity = 3;
+
+const total = price * quantity;
+```
+
+## `parseInt()`
+
+* converts a value into an integer.
+
+Example: Converting user input
+
+```js
+const quantity = "5";
+const parsedQuantity = parseInt(quantity, 10);
+console.log(parsedQuantity);
+```
+
+* The `10` specifies that the number should be interpreted as decimal.
+
+* Useful when receiving integer values as strings from forms, URLs or APIs.
+
+## `parseFloat()`
+
+* converts a value into a number that can contain decimal values.
+
+Ex:
+```js
+const price = "1499.50";
+const numericPrice = parseFloat(price);
+console.log(numericPrice);
+```
+
+* Useful for prices, measurements, percentages etc.
+
+## `toFixed()`
+
+* Formats a number to a specific number of decimal places.
+
+Ex: Displaying an invoice amount
+
+```js
+const amount = 1499.567;
+console.log(amount.toFixed(2));
+```
+
+Result:
+
+`1499.57`
+
+* Note: `toFixed()` returns a string.
+
+```js
+const amount = 1499.567;
+const formattedAmount = amount.toFixed(2);
+console.log(typeof formattedAmount); // string
+```
+
+## `isNaN()`
+
+* checks whether a value is `NaN` (Not a Number).
+
+Ex: Validating numeric input
+
+```js
+const amount = Number("abc");
+
+if (Number.isNaN(amount)) {
+    console.log("Invalid amount");
+}
+```
+
+* Useful when converting user input and checking whether the conversion produced a valid number.
+
+`Number.isNaN()` is generally preferred when we specifically want to check whether a value is the numeric `NaN`.
+
+## `Math` Methods
+
+* The `Math` object provides commonly used mathematical operations.
+
+Ex: Generating a random OTP digit
+
+```js
+const otpDigit = Math.floor(Math.random() * 10);
+console.log(otpDigit);
+```
+
+Common methods:
+
+`Math.round()` → rounds to nearest integer
+
+`Math.floor()` → rounds down
+
+`Math.ceil()` → rounds up
+
+`Math.max()` → returns largest value
+
+`Math.min()` → returns smallest value
+
+`Math.random()` → generates a random number between `0` and less than `1`
+
+Ex: Finding the highest mark
+
+```js
+const marks = [78, 92, 85, 67];
+const highestMark = Math.max(...marks);
+console.log(highestMark);
+```
+
+# Dates & Times
+
+* JavaScript uses the `Date` object to work with dates and times.
+
+* Dates are commonly used for order dates, payment dates, login times, deadlines, created dates etc.
+
+## Creating a Date
+
+```js
+const currentDate = new Date();
+console.log(currentDate);
+```
+
+* This creates a `Date` object containing the current date and time.
+
+Ex: Recording when an order was created
+
+```js
+const order = {
+    id: "ORD101",
+    amount: 1500,
+    createdAt: new Date()
+};
+
+console.log(order);
+```
+
+## Date Methods
+
+Common methods:
+
+`getFullYear()` → gets year
+
+`getMonth()` → gets month
+
+`getDate()` → gets day of the month
+
+`getDay()` → gets day of the week
+
+`getHours()` → gets hour
+
+`getMinutes()` → gets minutes
+
+Ex:
+
+```js
+const date = new Date();
+
+console.log(date.getFullYear());
+console.log(date.getMonth());
+console.log(date.getDate());
+```
+
+Note: `getMonth()` returns a zero-based month.
+
+`0` → January
+`1` → February
+...
+`11` → December
+
+## Formatting Dates
+
+* It can be used to display a date in a human-readable format.
+
+```js
+const orderDate = new Date();
+console.log(orderDate.toLocaleDateString());
+```
+
+Example:
+```js
+const orderDate = new Date();
+
+console.log(
+    orderDate.toLocaleDateString("en-IN")
+);
+```
+
+* Useful when displaying dates to users.
+* The exact output depends on the locale.
+
+## Timestamps
+
+* represents a date/time as the number of milliseconds since January 1, 1970 UTC.
+
+```js
+const timestamp = Date.now();
+
+console.log(timestamp);
+```
+
+Ex: Measuring how long an operation takes
+
+```js
+const startTime = Date.now();
+
+// some operation
+
+const endTime = Date.now();
+
+console.log(`Operation took ${endTime - startTime} ms`);
+```
+
+* Timestamps are useful for comparing dates and measuring elapsed time.
+* APIs and databases commonly store dates in standardized formats or timestamps.
+
+## Comparing Dates
+
+* Dates can be compared using their timestamp values.
+
+Ex: Checking whether a payment deadline has passed
+
+```js
+const deadline = new Date("2026-09-20");
+const currentDate = new Date();
+
+if (currentDate > deadline) {
+    console.log("Payment deadline has passed");
+} else {
+    console.log("Payment is still pending");
+}
+```
+
+* Useful for deadlines, expiry dates, due dates, appointments etc.
+* Be careful with time zones when working with real-world applications across different countries.
