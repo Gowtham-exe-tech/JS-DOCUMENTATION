@@ -496,11 +496,7 @@ let amount = 100;
 amount += 50;
 console.log(amount); // 150
 ```
-
-**Use-case:** Used when a variable's value needs to be updated based on its current value.
-
 Instead of: `amount = amount + 50;`
-
 we can write: `amount += 50;`
 
 **OR ASSIGNENT '||='** 
@@ -612,9 +608,6 @@ Ex:
 console.log(!true); // false
 console.log(!false); // true
 ```
-
-**Use-case:** Used when a decision depends on multiple conditions.
-
 
 **Why we use it:** To create more complex conditions without writing separate `if` statements.
 
@@ -968,16 +961,41 @@ A function is a reusable block of code that performs a specific task.
 
 Ex:
 ```js
-function greet() {
-    console.log("Hello");
-}
+const order = {
+    id: "ORD101",
+    customer: "Gowtham",
+    items: [
+        { name: "Laptop", price: 50000, quantity: 1 },
+        { name: "Mouse", price: 1000, quantity: 2 }
+    ]
+};
 
-greet();
+function calculateTotal(items) {
+    let total = 0;
+    for (const item of items) {
+        total += item.price * item.quantity;
+    }
+    return total;
+}
+const total = calculateTotal(order.items);
+console.log(`Order total: ${total}`);
 ```
+- calculateTotal : function name
+- items : parameters
+- order.items : arguments
+- return total : sends the result back
+
+* parameters : when defining (placeholder)
+
+* arguments : when calling(actual value)
 
 * Used to organize logic into reusable units such as validation, calculations, API processing etc.
 
-* Avoids repeating code and makes the application easier to maintain.
+* Reuse + separation of responsibility + maintainability
+
+* **return** sends a value out of function.
+
+* while writing function remember that one function should have single responsibilty.
 
 ## Function Declaration
 
@@ -1024,15 +1042,18 @@ const result = add(10, 20);
 
 ## Function Expression
 
-A function expression stores a function in a variable.
+* A function expression means creating a function and storing it inside a variable
 
 eg:
 ```js
-const greet = function () {
-    console.log("Hello");
+const calculateDiscount = function (total) {
+    if (total >= 50000) {
+        return total * 0.10;
+    }
+    return 0;
 };
-
-greet();
+const discount = calculateDiscount(total);
+console.log(`Discount: ${discount}`);
 ```
 * Useful when functions need to be stored in variables, passed as arguments or used as callbacks.
 
@@ -1057,16 +1078,58 @@ const add = (a, b) => a + b;
 
 Ex:
 ```js
-const numbers = [1, 2, 3];
-
-numbers.map(number => number * 2);
+const paymentAmount = (total, discount) => {
+    return total - discount;
+};
+console.log(`Amount to pay: ${paymentAmount(total,discount)}`);
 ```
 
-* Arrow functions have different `this` behavior from normal functions. This becomes important when we study the `this` keyword.
+* if the function contains only one expression, we can remove the `{}` and `return` called **implicit return**
+
+## Parameters and arguments
+
+* Parameters are the inputs a function accepts.
+
+* parameters values are assigned based on position.
+
+* If the argument is missing when needed parmeter is needed, the parameter will get `undefined`.
+
+###Default parameter
+
+```js
+function greet(name = "Guest") {
+    console.log(`Hello ${name}`);
+}
+
+greet();
+```
+* use when the argument is undefined or not supplied.
+
+## Rest parameters
+
+* Use rest paramter when we don't know how many arguments the function will receive
+
+* The rest parameter collects all the remaining arguments into an array.
+
+* It shoud be the last parameter of the function
+
+```js
+function calculateTotal(...amounts) {
+    let total = 0;
+
+    for (const amount of amounts) {
+        total += amount;
+    }
+    return total;
+}
+console.log(calculateTotal(100, 200, 300));
+```
 
 ## Hoisting
 
-Hoisting is JavaScript's behavior where declarations are processed before the code in their execution scope runs.
+* Hoisting is JavaScript's behavior where declarations are processed before the code actually executes.
+
+* Before executing your code, JavaScript creates/sets up bindings for declarations.
 
 Ex:
 ```js
@@ -1091,7 +1154,11 @@ const greet = () => {
 
 This does not work because the variable is not initialized before it is accessed.
 
-* Do not think of hoisting as JavaScript literally moving your code to the top. It is better to understand it as part of how declarations are created during execution setup.
+* Because `greet` is a const variable.
+
+* The binding exists during setup, but it cannot be accessed before its initialization.
+
+* This period is related to the Temporal Dead Zone (TDZ).
 
 # Scope & Closures
 
@@ -1118,17 +1185,21 @@ A variable declared inside a function is available only within that function.
 
 Ex:
 ```js
-function login() {
-    const username = "Gowtham";
+function calculateTotal() {
+    const price = 500;
+    const quantity = 2;
 
-    console.log(username);
+    return price * quantity;
 }
+console.log(calculateTotal());
 ```
 
-`username` cannot be directly accessed outside the function.
+`price` and `quantity` cannot be directly accessed outside the function.
 
 * Used to keep variables limited to the part of the application where they are required.
+
 * Reduces accidental changes and prevents unnecessary variables from being accessible everywhere.
+
 
 ## Block Scope
 
@@ -1148,29 +1219,39 @@ console.log(message); // ReferenceError
 
 * `let` and `const` are block scoped, while `var` is function scoped.
 
+## Shadowing
+    
+* It happens when an innner scope creates a variable with the **same name** as a vaiable in an outer scope.
+    
+* Inner variable hides outer variable with same name.
+
 ## Lexical Scope
 
-Lexical scope means a function can access variables based on **where the function is written in the source code**, not where it is called.
+* Lexical scope means a variable's accessibility is determined by its physical location within the source code at the time it is written.
 
+
+* It is determined during the compile time by its physical location rather than run time, it remains static. 
 Ex:
 ```js
-const message = "Hello";
+const company = "ABC";
 
-function outer() {
-    const name = "Gowtham";
-
-    function inner() {
-        console.log(message);
-        console.log(name);
-    }
-
-    inner();
+function employee() {
+    console.log(company); //ABC 
 }
+
+function manager() {
+    const company = "XYZ";
+    employee();
+}
+
+manager();
 ```
 
-* Here `inner()` can access variables from its own scope and the surrounding scope where it was defined.
+* manager is the one who called employee, but employee() is global scope, it looks for company value in global scope
 
-* Lexical scope allows functions to work with variables from their surrounding environment.
+* Javascript looks at where a function is written to determiine which outer variables it can access.
+
+**Note** outer scope cannot access variable inside the innner scope. 
 
 ## Variable Shadowing
 
@@ -1204,24 +1285,29 @@ Gowtham
 
 ## Closure
 
-A closure is created when a function remembers and can access variables from its surrounding lexical scope even after the outer function has finished executing.
+* A closure is created when a function remembers and can access variables from its surrounding lexical scope even after the outer function has finished executing.
+
+* maintains the state of the variable and keep it private.
+
+* Encapsulates variables and make them private.
 
 Ex:
 ```js
-function createCounter() {
+//let count = 0; state maintained but not private
+function  createCounter(){
     let count = 0;
 
-    return function () {
+    function increment(){
         count++;
-        return count;
-    };
+        console.log(count);
+    }
+    return {increment};
 }
 
-const counter = createCounter();
-
-console.log(counter()); // 1
-console.log(counter()); // 2
-console.log(counter()); // 3
+let counter = createCounter();
+counter.increment();
+counter.increment();
+counter.increment();
 ```
 
 * Here the returned function still has access to `count` even though `createCounter()` has already finished.

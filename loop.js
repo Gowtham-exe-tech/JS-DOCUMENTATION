@@ -88,13 +88,13 @@
 // for...of
 // Processing multiple expenses for approval
 
-const expenses = [
-    { employee: "Gowtham", amt: 500 },
-    { employee: "Priya", amt: 1200 },
-    { employee: "Giri", amt: 800 }
-];
-for (const expense of expenses) {
-    if (expense.amt > 1000) {
-        console.log(`${expense.employee} needs manager approval`);
-    }
-}
+// const expenses = [
+//     { employee: "Gowtham", amt: 500 },
+//     { employee: "Priya", amt: 1200 },
+//     { employee: "Giri", amt: 800 }
+// ];
+// for (const expense of expenses) {
+//     if (expense.amt > 1000) {
+//         console.log(`${expense.employee} needs manager approval`);
+//     }
+// }

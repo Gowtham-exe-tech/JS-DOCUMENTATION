@@ -38,15 +38,42 @@
 
 // console.log(isActive); // false
 
-function first() {
-    console.log("A");
-    second();
-    console.log("C");
-}
+// function first() {
+//     console.log("A");
+//     second();
+//     console.log("C");
+// }
 
-function second() {
-    console.log("B");
-}
+// function second() {
+//     console.log("B");
+// }
 
-first();
+// first();
+
+
+// const read = 1<<0;
+// const write = 1<<1;
+// const del = 1<<2;
+
+// user1per = read | write;
+
+// user2per = read | write | del;
+
+// user3per = read | del;
+
+// if(user1per & read) {
+//     console.log(`user read permission granted`);
+// }
+
+// console.log(user1per);
+// console.log(user2per);
+// console.log(user3per);
+
+// function greet(name) {
+//     console.log(`Hello ${name}`);
+// }
+
+// const result = greet("Gowtham");
+
+// console.log(result);
 
