@@ -2154,3 +2154,1171 @@ if (currentDate > deadline) {
 
 * Useful for deadlines, expiry dates, due dates, appointments etc.
 * Be careful with time zones when working with real-world applications across different countries.
+
+# 13. Error Handling
+
+Error handling is used to prevent the application from breaking when
+something unexpected happens.
+
+Main concepts:
+
+-   `try`
+-   `catch`
+-   `finally`
+-   `throw`
+-   Custom errors
+
+## try
+
+`try` contains code that may produce an error.
+
+In a real application, this is useful around operations such as API
+calls, JSON parsing, file operations, or database operations.
+
+## catch
+
+`catch` handles the error when something fails.
+
+The error object normally gives useful information such as:
+
+``` js
+error.message
+error.name
+error.stack
+```
+
+## finally
+
+`finally` runs whether the operation succeeds or fails.
+
+A common use is cleanup, such as hiding a loading indicator after an API
+request.
+
+## throw
+
+`throw` is used when our application detects an invalid condition and
+wants to stop the current operation with an error.
+
+For example, an API may return a response successfully, but the
+application may still consider it invalid because required data is
+missing.
+
+## Custom errors
+
+Custom errors are useful when a larger application needs to distinguish
+between different types of failures.
+
+For example:
+
+-   validation error
+-   authentication error
+-   authorization error
+-   network error
+
+## Real application example --- Student registration
+
+Imagine a student management application where the frontend sends
+student data to a backend API.
+
+The application needs to:
+
+1.  validate the data
+2.  send the request
+3.  check the response
+4.  show an appropriate message
+5.  hide the loading state even if something fails
+
+``` js
+class ValidationError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = "ValidationError";
+    }
+}
+
+async function registerStudent(student) {
+    try {
+        // Client-side validation
+        if (!student.name || student.name.trim() === "") {
+            throw new ValidationError("Student name is required");
+        }
+
+        if (!student.email || !student.email.includes("@")) {
+            throw new ValidationError("Valid email is required");
+        }
+
+        // Show loading state
+        document.querySelector("#registerBtn").disabled = true;
+        document.querySelector("#loading").textContent = "Registering...";
+
+        // Send data to backend
+        const response = await fetch("/api/students", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(student)
+        });
+
+        // fetch() does not automatically throw for HTTP 400/500.
+        // We explicitly check the response.
+        if (!response.ok) {
+            throw new Error(`Registration failed: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        console.log("Student registered:", result);
+
+        document.querySelector("#message").textContent =
+            "Student registered successfully";
+
+    } catch (error) {
+        if (error instanceof ValidationError) {
+            document.querySelector("#message").textContent =
+                `Validation error: ${error.message}`;
+        } else {
+            document.querySelector("#message").textContent =
+                "Unable to register student. Please try again.";
+
+            console.error(error);
+        }
+
+    } finally {
+        // Runs for both success and failure
+        document.querySelector("#registerBtn").disabled = false;
+        document.querySelector("#loading").textContent = "";
+    }
+}
+
+registerStudent({
+    name: "Arun",
+    email: "arun@example.com"
+});
+```
+
+### What is happening?
+
+``` text
+User submits form
+       ↓
+Validate input
+       ↓
+Invalid? ──→ throw ValidationError
+       ↓
+Valid
+       ↓
+Send API request
+       ↓
+API fails? ──→ catch
+       ↓
+API succeeds
+       ↓
+Show success
+       ↓
+finally
+       ↓
+Remove loading state
+```
+
+### Common mistakes
+
+#### 1. Catching errors without doing anything
+
+``` js
+try {
+    // code
+} catch (error) {
+}
+```
+
+This hides the problem and makes debugging difficult.
+
+#### 2. Assuming `fetch()` throws for HTTP errors
+
+This is a common mistake:
+
+``` js
+try {
+    const response = await fetch("/api/students");
+} catch (error) {
+    console.log("API failed");
+}
+```
+
+A `404` or `500` response does not automatically mean the `fetch()`
+promise rejects.
+
+Check:
+
+``` js
+if (!response.ok) {
+    throw new Error("Request failed");
+}
+```
+
+#### 3. Using `try...catch` everywhere
+
+Do not wrap every line of code in `try...catch`.
+
+Use it where an operation can fail and where the application has a
+meaningful way to handle that failure.
+
+
+# 14. Events
+
+Events are actions that happen in an application.
+
+Examples:
+
+-   user clicks a button
+-   user types into an input
+-   user submits a form
+-   user selects an option
+-   keyboard key is pressed
+
+Main concepts:
+
+-   Event listeners
+-   Event object
+-   Event bubbling
+-   Event delegation
+
+
+## Event listeners
+
+`addEventListener()` connects an event with application logic.
+
+## Real application example --- Expense approval form
+
+Imagine an expense management application.
+
+A user enters an expense amount and submits the form.
+
+The application should:
+
+1.  listen for form submission
+2.  prevent the browser's default page reload
+3.  read the form values
+4.  validate the amount
+5.  process the expense
+
+``` html
+<form id="expenseForm">
+    <input
+        id="description"
+        type="text"
+        placeholder="Expense description"
+    >
+
+    <input
+        id="amount"
+        type="number"
+        placeholder="Amount"
+    >
+
+    <button type="submit">Submit Expense</button>
+
+    <p id="message"></p>
+</form>
+```
+
+``` js
+const expenseForm = document.querySelector("#expenseForm");
+const message = document.querySelector("#message");
+
+expenseForm.addEventListener("submit", function (event) {
+    // Stop normal browser form submission
+    event.preventDefault();
+
+    const description =
+        document.querySelector("#description").value.trim();
+
+    const amount =
+        Number(document.querySelector("#amount").value);
+
+    if (!description) {
+        message.textContent = "Expense description is required";
+        return;
+    }
+
+    if (!amount || amount <= 0) {
+        message.textContent = "Enter a valid expense amount";
+        return;
+    }
+
+    const expense = {
+        description,
+        amount,
+        status: "Pending"
+    };
+
+    console.log("Expense submitted:", expense);
+
+    message.textContent = "Expense submitted successfully";
+});
+```
+
+The event listener is the connection between the user's action and
+application logic.
+
+
+## Event object
+
+The browser passes an event object to the event handler.
+
+``` js
+expenseForm.addEventListener("submit", function (event) {
+    console.log(event);
+});
+```
+
+Useful properties include:
+
+``` js
+event.target
+event.currentTarget
+event.type
+```
+
+### `event.target`
+
+The actual element where the event originated.
+
+### `event.currentTarget`
+
+The element whose event listener is currently running.
+
+This distinction becomes important when working with event bubbling and
+delegation.
+
+## Event bubbling
+
+When an event happens on a child element, the event can travel upward
+through its parent elements.
+
+For example, an expense row may contain buttons:
+
+``` html
+<div id="expenseList">
+    <div class="expense">
+        <span>Travel Expense</span>
+
+        <button class="approve-btn">
+            Approve
+        </button>
+
+        <button class="reject-btn">
+            Reject
+        </button>
+    </div>
+</div>
+```
+
+If the button is clicked, the event can move upward:
+
+``` text
+Approve button
+      ↓
+Expense row
+      ↓
+Expense list
+      ↓
+Document
+      ↓
+Window
+```
+
+This is event bubbling.
+
+## Event delegation
+
+Event delegation uses bubbling intentionally.
+
+Instead of adding a listener to every button, we add one listener to the
+parent.
+
+This is especially useful when elements are created dynamically.
+
+## Real application example --- Expense approval list
+
+``` js
+const expenseList = document.querySelector("#expenseList");
+
+expenseList.addEventListener("click", function (event) {
+    const clickedElement = event.target;
+
+    if (clickedElement.classList.contains("approve-btn")) {
+        const expenseRow = clickedElement.closest(".expense");
+
+        console.log("Approving expense:", expenseRow);
+        approveExpense(expenseRow);
+    }
+
+    if (clickedElement.classList.contains("reject-btn")) {
+        const expenseRow = clickedElement.closest(".expense");
+
+        console.log("Rejecting expense:", expenseRow);
+        rejectExpense(expenseRow);
+    }
+});
+
+function approveExpense(expenseRow) {
+    expenseRow.dataset.status = "Approved";
+    expenseRow.querySelector(".approve-btn").disabled = true;
+
+    console.log("Expense approved");
+}
+
+function rejectExpense(expenseRow) {
+    expenseRow.dataset.status = "Rejected";
+    expenseRow.querySelector(".reject-btn").disabled = true;
+
+    console.log("Expense rejected");
+}
+```
+
+### Why delegation is useful
+
+Suppose the application initially has 20 expenses.
+
+Later, JavaScript loads 100 more expenses from an API.
+
+With event delegation, we still need only:
+
+``` js
+expenseList.addEventListener("click", ...);
+```
+
+We don't need to create a separate listener for every new button.
+
+### Where to use
+
+Good use cases:
+
+-   tables
+-   lists
+-   shopping carts
+-   notification lists
+-   dynamically generated buttons
+-   dashboards
+
+### Common mistake
+
+Do not assume:
+
+``` js
+event.target
+```
+
+is always the button you expect.
+
+If the button contains an icon or span:
+
+``` html
+<button class="approve-btn">
+    <span>Approve</span>
+</button>
+```
+
+the target may be the `<span>`.
+
+Using:
+
+``` js
+event.target.closest(".approve-btn")
+```
+
+can be more robust when appropriate.
+
+# 15. DOM Manipulation
+
+DOM stands for **Document Object Model**.
+
+The browser represents HTML as objects that JavaScript can read and
+modify.
+
+Main concepts:
+
+-   `getElementById`
+-   `querySelector`
+-   `createElement`
+-   `innerHTML`
+-   `classList`
+-   attributes
+
+## Real application example --- Student management dashboard
+
+Imagine an application that receives students from an API and displays
+them in a table/list.
+
+The application needs to:
+
+1.  find the container
+2.  create elements
+3.  insert student data
+4.  add classes
+5.  set attributes
+6.  update the UI when data changes
+
+``` html
+<div id="studentDashboard">
+    <h2>Students</h2>
+
+    <div id="studentList"></div>
+</div>
+```
+
+``` js
+const studentList = document.getElementById("studentList");
+
+const students = [
+    {
+        id: 101,
+        name: "Arun",
+        department: "CSE"
+    },
+    {
+        id: 102,
+        name: "Priya",
+        department: "ECE"
+    },
+    {
+        id: 103,
+        name: "Kumar",
+        department: "IT"
+    }
+];
+
+function renderStudents(students) {
+    // Clear previous UI
+    studentList.innerHTML = "";
+
+    students.forEach((student) => {
+        const studentCard = document.createElement("div");
+
+        studentCard.classList.add("student-card");
+
+        studentCard.setAttribute(
+            "data-student-id",
+            student.id
+        );
+
+        studentCard.innerHTML = `
+            <h3>${student.name}</h3>
+            <p>Department: ${student.department}</p>
+            <button class="view-btn">View</button>
+        `;
+
+        studentList.appendChild(studentCard);
+    });
+}
+
+renderStudents(students);
+```
+
+## `getElementById`
+
+Useful when selecting an element by a unique ID.
+
+``` js
+const studentList = document.getElementById("studentList");
+```
+
+Since an ID should be unique, this is useful when the application has a
+known single element.
+
+## `querySelector`
+
+Uses CSS selector syntax.
+
+``` js
+const dashboard = document.querySelector("#studentDashboard");
+
+const firstStudent =
+    document.querySelector(".student-card");
+```
+
+It returns the first matching element.
+
+
+## `createElement`
+
+Creates an element through JavaScript.
+
+``` js
+const studentCard = document.createElement("div");
+```
+
+Creating elements programmatically is useful when rendering dynamic API
+data.
+
+## `innerHTML`
+
+Used to read or replace HTML inside an element.
+
+In the example:
+
+``` js
+studentCard.innerHTML = `
+    <h3>${student.name}</h3>
+    <p>Department: ${student.department}</p>
+    <button class="view-btn">View</button>
+`;
+```
+
+This is convenient when generating known HTML structures.
+
+### Security warning
+
+Be careful when putting untrusted user input directly into `innerHTML`.
+
+For example, do not blindly do:
+
+``` js
+element.innerHTML = userInput;
+```
+
+For plain user-controlled text, prefer:
+
+``` js
+element.textContent = userInput;
+```
+
+## `classList`
+
+Used to manage CSS classes.
+
+``` js
+studentCard.classList.add("student-card");
+```
+
+Other useful methods:
+
+``` js
+studentCard.classList.remove("student-card");
+
+studentCard.classList.toggle("selected");
+
+studentCard.classList.contains("selected");
+```
+
+A common application pattern:
+
+``` js
+button.addEventListener("click", () => {
+    studentCard.classList.toggle("selected");
+});
+```
+
+JavaScript controls the state, while CSS controls the visual appearance.
+
+
+## Attributes
+
+HTML attributes contain additional information about elements.
+
+For example:
+
+``` html
+<div data-student-id="101"></div>
+```
+
+JavaScript can manage attributes:
+
+``` js
+studentCard.setAttribute("data-student-id", student.id);
+
+const id = studentCard.getAttribute("data-student-id");
+
+studentCard.removeAttribute("data-student-id");
+```
+
+For custom application metadata, `data-*` attributes are commonly
+useful.
+
+
+# 16. BOM --- Browser Object Model
+
+BOM allows JavaScript to interact with the browser environment.
+
+The main object is:
+
+``` js
+window
+```
+
+DOM mainly deals with the document/page.
+
+BOM mainly deals with the browser environment.
+
+
+## Real application example --- Login and browser navigation
+
+Imagine a web application where:
+
+1.  a user logs in
+2.  the application stores information
+3.  the application redirects the user
+4.  the application checks browser information
+5.  the application may ask for confirmation before leaving
+
+
+
+## `window`
+
+`window` represents the browser window.
+
+Many browser APIs are available through it.
+
+``` js
+console.log(window.innerWidth);
+console.log(window.innerHeight);
+```
+
+For example, an application can react to browser resizing:
+
+``` js
+window.addEventListener("resize", () => {
+    console.log("Viewport width:", window.innerWidth);
+});
+```
+
+
+## `alert`
+
+Displays a browser dialog.
+
+``` js
+alert("Your session has expired.");
+```
+
+It can be useful for simple demonstrations or basic applications, but
+modern production applications often use custom notification components
+because browser dialogs interrupt the user's workflow.
+
+
+## `confirm`
+
+Useful when an action needs confirmation.
+
+Real application example:
+
+``` js
+function deleteStudent(studentId) {
+    const confirmed = confirm(
+        "Are you sure you want to delete this student?"
+    );
+
+    if (!confirmed) {
+        console.log("Delete cancelled");
+        return;
+    }
+
+    console.log("Deleting student:", studentId);
+
+    // API call would happen here
+}
+
+deleteStudent(101);
+```
+
+`confirm()` returns:
+
+``` text
+true  → user selected OK
+false → user selected Cancel
+```
+
+
+## `prompt`
+
+Gets input from the user.
+
+For example, an admin application could ask for a department code:
+
+``` js
+const departmentCode =
+    prompt("Enter department code:");
+
+if (departmentCode) {
+    console.log(
+        "Searching department:",
+        departmentCode
+    );
+}
+```
+
+`prompt()` returns a string or `null` if the user cancels.
+
+In modern production UIs, a custom form/modal is often preferred over
+`prompt()`.
+
+
+## `location`
+
+Provides information about the current URL and allows navigation.
+
+Real application example:
+
+``` js
+console.log("Current page:", location.href);
+```
+
+After successful login:
+
+``` js
+function loginSuccess() {
+    location.href = "/dashboard.html";
+}
+```
+
+This is commonly used for navigation and redirects.
+
+
+## `navigator`
+
+Provides information and browser-related APIs.
+
+For example:
+
+``` js
+console.log("Language:", navigator.language);
+console.log("Online:", navigator.onLine);
+```
+
+An application can react to online/offline state:
+
+``` js
+window.addEventListener("online", () => {
+    console.log("Internet connection restored");
+});
+
+window.addEventListener("offline", () => {
+    console.log("Internet connection lost");
+});
+```
+
+This can be useful in applications that need to warn users when network
+connectivity changes.
+
+## `screen`
+
+Provides information about the user's physical screen.
+
+``` js
+console.log("Screen width:", screen.width);
+console.log("Screen height:", screen.height);
+```
+
+Do not confuse:
+
+``` js
+screen.width
+```
+
+with:
+
+``` js
+window.innerWidth
+```
+
+`screen.width` describes the screen.
+
+`window.innerWidth` describes the browser viewport.
+
+For responsive UI, CSS media queries are normally preferred.
+
+
+# 17. Timers
+
+Timers allow JavaScript to schedule code.
+
+Main concepts:
+
+-   `setTimeout`
+-   `setInterval`
+-   `clearTimeout`
+-   `clearInterval`
+
+Timers are asynchronous scheduling mechanisms. They do not mean that
+JavaScript creates a separate thread that runs the callback immediately.
+
+
+## `setTimeout`
+
+Runs a function once after a delay.
+
+## Real application example --- Auto-hide notification
+
+Suppose a web application displays:
+
+``` text
+Expense approved successfully
+```
+
+The notification should disappear after 3 seconds.
+
+``` js
+function showNotification(message) {
+    const notification =
+        document.querySelector("#notification");
+
+    notification.textContent = message;
+    notification.classList.add("show");
+
+    setTimeout(() => {
+        notification.classList.remove("show");
+    }, 3000);
+}
+
+showNotification("Expense approved successfully");
+```
+
+The important idea is:
+
+``` text
+Show notification
+       ↓
+Wait approximately 3 seconds
+       ↓
+Hide notification
+```
+
+## `clearTimeout`
+
+Sometimes we need to cancel a scheduled operation.
+
+Example: a search box waits for the user to stop typing before making an
+API request.
+
+``` js
+let searchTimer;
+
+function searchStudents(searchText) {
+    clearTimeout(searchTimer);
+
+    searchTimer = setTimeout(() => {
+        console.log("Searching API for:", searchText);
+
+        // API request would happen here
+    }, 500);
+}
+```
+
+Now if the user types:
+
+``` text
+A
+Ar
+Aru
+Arun
+```
+
+the previous timeout is cancelled each time.
+
+Only after the user stops typing for approximately 500ms does the search
+run.
+
+This pattern is called **debouncing**.
+
+It is commonly used for:
+
+-   search boxes
+-   autocomplete
+-   filtering
+-   resize handlers
+-   API requests triggered by typing
+
+
+## `setInterval`
+
+Runs a function repeatedly at approximately the specified interval.
+
+## Real application example --- Dashboard polling
+
+Suppose an admin dashboard periodically checks whether new expense
+requests are available.
+
+``` js
+let pollingTimer;
+
+async function checkPendingExpenses() {
+    try {
+        const response =
+            await fetch("/api/expenses/pending");
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch expenses");
+        }
+
+        const expenses = await response.json();
+
+        console.log(
+            "Pending expenses:",
+            expenses.length
+        );
+
+        updateExpenseCount(expenses.length);
+
+    } catch (error) {
+        console.error(
+            "Polling failed:",
+            error.message
+        );
+    }
+}
+
+function updateExpenseCount(count) {
+    const element =
+        document.querySelector("#expenseCount");
+
+    element.textContent = count;
+}
+
+// Check immediately
+checkPendingExpenses();
+
+// Then check periodically
+pollingTimer = setInterval(
+    checkPendingExpenses,
+    30000
+);
+```
+
+This checks the server approximately every 30 seconds.
+
+
+## `clearInterval`
+
+When the application no longer needs polling, stop it.
+
+``` js
+clearInterval(pollingTimer);
+```
+
+For example, if the user logs out:
+
+``` js
+function logout() {
+    clearInterval(pollingTimer);
+
+    location.href = "/login.html";
+}
+```
+
+This prevents unnecessary background work.
+
+
+# Timer decision
+
+Use:
+
+``` js
+setTimeout()
+```
+
+when the operation should happen **once after a delay**.
+
+Example:
+
+``` text
+Show message → wait 3 seconds → hide message
+```
+
+Use:
+
+``` js
+setInterval()
+```
+
+when something needs to happen **repeatedly**.
+
+Example:
+
+``` text
+Check server → wait 30 seconds → check again
+```
+
+Use:
+
+``` js
+clearTimeout()
+```
+
+to cancel a timeout.
+
+Use:
+
+``` js
+clearInterval()
+```
+
+to stop an interval.
+
+# Important practical mistakes with timers
+
+## 1. Forgetting to clear intervals
+
+This can cause unnecessary work after a page/component is no longer
+needed.
+
+``` js
+const timer = setInterval(() => {
+    // work
+}, 1000);
+
+// Later
+clearInterval(timer);
+```
+
+## 2. Assuming exact timing
+
+This:
+
+``` js
+setTimeout(callback, 1000);
+```
+
+means approximately **not before the callback can be scheduled after
+1000ms**, not that it will execute at exactly 1000ms.
+
+The callback waits for the JavaScript event loop to be able to run it.
+
+## 3. Creating multiple intervals accidentally
+
+Bad pattern:
+
+``` js
+function startPolling() {
+    setInterval(checkServer, 5000);
+}
+```
+
+If `startPolling()` is called five times, you may create five intervals.
+
+A safer application pattern is to keep the timer ID and manage its
+lifecycle.
+
+``` js
+let pollingTimer = null;
+
+function startPolling() {
+    if (pollingTimer !== null) {
+        return;
+    }
+
+    pollingTimer = setInterval(
+        checkServer,
+        5000
+    );
+}
+
+function stopPolling() {
+    clearInterval(pollingTimer);
+    pollingTimer = null;
+}
+```
+
+This prevents accidentally starting duplicate polling timers.
+
