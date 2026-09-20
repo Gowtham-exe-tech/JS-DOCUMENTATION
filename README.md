@@ -1345,7 +1345,7 @@ console.log(session.isActive()); // false
 
 # Arrays
 
-* Arrays are used to store multiple values in a single variable.
+* An array is an ordered collection of values stored under one variable.
 
 * They are commonly used when we have a collection of related data such as users, products, orders, expenses, students etc.
 
@@ -1355,16 +1355,25 @@ console.log(session.isActive()); // false
 
 ```js
 const products = ["Laptop", "Mouse", "Keyboard"];
-
 console.log(products);
-```
 
-* Arrays are zero-indexed, so the first value starts from index `0`.
+//new array 
+
+const students = [];
+
+const students = new Array();
+```
 * An array can contain different data types, but in real applications it is usually better to keep related data in a consistent structure.
 
 ## Indexing
 
+* Index = how far away from the beginning.( Offset from the beginning)
+
+* Arrays are **zero based-indexing**, so the first value starts from index `0`.
+
 * It is used to access or change a particular value in an array.
+
+* **Even** if we are using **const**  array supports** elements update **but **not reassigning**.
 
 ```js
 const products = ["Laptop", "Mouse", "Keyboard"];
@@ -1381,14 +1390,26 @@ products[1] = "Wireless Mouse";
 
 console.log(products);
 ```
-
-* Useful when we know the position of the value we want to access.
 * `array.length` gives the number of elements in the array.
+
+* In real applications, ApIs return collections of data.
+
+* eg:
+```js
+const expenses = [
+    { employee: "Arun", amount: 500 },
+    { employee: "Priya", amount: 1200 },
+    { employee: "Kumar", amount: 800 }
+];
+for (const expense of expenses) {
+    console.log(expense.employee);
+}
+```
 
 ## `push()`
 
 * Adds one or more elements to the end of an array.
-
+*  It returns a **new length of array**.
 Ex: Adding a new order to an order list
 
 ```js
@@ -1403,7 +1424,7 @@ console.log(orders);
 ## `pop()`
 
 * Removes the last element from an array.
-
+* Returns the **element that was removed**
 Eg: Processing a stack of pending tasks
 
 ```js
@@ -1420,7 +1441,6 @@ console.log(tasks); // ["Task A", "Task B"]
 ## `shift()`
 
 * It removes the first element from an array.
-
 Example: Processing the first customer in a queue
 
 ```js
@@ -1437,14 +1457,12 @@ console.log(customerQueue);  // ["Customer B", "Customer C"]
 ## `unshift()`
 
 * It adds one or more elements to the beginning of an array.
-
 Eg: Adding an urgent support ticket to the front of a queue
 
 ```js
 const tickets = ["Ticket 102", "Ticket 103"];
 
 tickets.unshift("Urgent Ticket 101");
-
 console.log(tickets);
 ```
 
@@ -1458,56 +1476,54 @@ console.log(tickets);
 The basic structure is:
 `array.splice(start, deleteCount, items);`
 
-Eg: Removing a cancelled order from an order list
+Eg:
 
 ```js
+
+//Remove
 const orders = ["ORD101", "ORD102", "ORD103"];
 orders.splice(1, 1);
 console.log(orders);
+
+// Here:
+// - `1` → start from index 1
+// - `1` → remove one element
+
+//ADD
+const orders = ["ORD101", "ORD102", "ORD103"];
+orders.splice(1, 0, "ORD105");
+console.log(orders);
+
+//Replace
+const orders = ["ORD101", "ORD102", "ORD103"];
+orders.splice(1, 1, "ORD105");
+console.log(orders);
+
 ```
-Here:
-- `1` → start from index 1
-- `1` → remove one element
-
-Ex: Replace a product
-
-```js
-const products = ["Laptop", "Mouse", "Keyboard"];
-
-products.splice(1, 1, "Wireless Mouse");
-console.log(products);
-```
-
 * `splice()` modifies the original array.
 * Useful when we need to change the array at a specific position.
 
 ## `slice()`
 * It creates a new array containing a portion of the original array.
 
+* It returns copied portion.
+
 ```js
 const orders = ["ORD101", "ORD102", "ORD103", "ORD104"];
 
-const recentOrders = orders.slice(2);
+const recentOrders = orders.slice(1,2); //end is excluded
 console.log(recentOrders);
 ```
-
-`slice()` does not change the original array.
-
-Eg:
-
-```js
-const orders = ["ORD101", "ORD102", "ORD103", "ORD104"];
-
-const selectedOrders = orders.slice(1, 3);
-console.log(selectedOrders);
-```
-
-This gets the elements from index `1` up to, but not including, index `3`.
 
 * `slice()` → creates a new portion of an array.
 * `splice()` → changes the original array.
 
-## `map()`
+**Example**:
+* splice() : Removing an item from the locl cart
+
+* slice() : Displaying only the first 10 products among the product complete list.
+
+## `map()` "transform every element"
 
 * It creates a new array by transforming every element of the original array.
 
@@ -1535,12 +1551,11 @@ Ex: Adding tax to product prices
 
 ```js
 const prices = [1000, 2000, 3000];
-
 const pricesWithTax = prices.map(price => price * 1.18);
 console.log(pricesWithTax);
 ```
 
-## `filter()`
+## `filter()` "keep elements that satisfy consdition"
 
 * creates a new array containing only the elements that satisfy a condition.
 
@@ -1562,7 +1577,7 @@ console.log(highValueOrders);
 * It does not modify the original array.
 * The callback must produce a truthy/falsy result.
 
-## `reduce()`
+## `reduce()` "combine elements into one result"
 
 * It is used when we want to combine all array elements into a single result.
 
@@ -1574,9 +1589,7 @@ const orders = [
     { id: 103, amount: 800 }
 ];
 
-const total = orders.reduce((sum, order) => {
-    return sum + order.amount;
-}, 0);
+const total = orders.reduce((sum,order)=>sum + order.amount, 0);
 console.log(total);
 ```
 
@@ -3322,3 +3335,277 @@ function stopPolling() {
 
 This prevents accidentally starting duplicate polling timers.
 
+# ES6+ Features
+
+- `let` and `const` are modern ways to create variables. `let` is used when the value needs to change, and `const` is used when the variable should not be reassigned. Both are block scoped, so they are safer than `var`.
+
+```js
+let status = "Pending";
+status = "Approved";
+
+const expense = {
+    amount: 2500,
+    status: "Pending"
+};
+
+expense.status = "Approved";
+```
+
+`const` does not make an object completely unchangeable. It only prevents assigning a new value to the variable.
+
+- Arrow functions are a shorter way to write function expressions. They are commonly used for callbacks like `map()`, `filter()`, and event-related logic.
+
+```js
+const expenses = [
+    { employee: "Arun", amount: 500 },
+    { employee: "Priya", amount: 1500 }
+];
+
+const pendingAmounts = expenses.map(expense => expense.amount);
+```
+
+They are useful when the function is small and simple. Normal functions are still useful when you need their own `this` behavior or other normal-function features.
+
+- Template literals use backticks and `${}` to put variables or expressions directly inside a string.
+
+```js
+const employee = "Gowtham";
+const amount = 2500;
+
+const message = `${employee} submitted an expense of ₹${amount}`;
+console.log(message);
+```
+
+They are useful when creating dynamic messages, HTML text, logs, API messages, and UI content.
+
+- Spread syntax `...` expands values. It is commonly used to copy or combine arrays and objects without directly changing the original value.
+
+```js
+const oldExpense = {
+    employee: "Gowtham",
+    amount: 2500
+};
+
+const updatedExpense = {
+    ...oldExpense,
+    status: "Approved"
+};
+
+console.log(updatedExpense);
+```
+
+Here the properties of `oldExpense` are copied into a new object and `status` is added.
+
+- Rest syntax `...` collects multiple values into one array. It is mainly used when a function can receive any number of arguments.
+
+```js
+function calculateTotal(...amounts) {
+    return amounts.reduce((total, amount) => total + amount, 0);
+}
+
+console.log(calculateTotal(500, 1200, 800));
+```
+
+Spread expands values, while rest collects values.
+
+- Destructuring extracts values from arrays or objects into variables. It is useful when working with API responses and objects with many properties.
+
+```js
+const employee = {
+    id: 101,
+    name: "Gowtham",
+    role: "Developer"
+};
+
+const { name, role } = employee;
+
+console.log(name);
+console.log(role);
+```
+
+Instead of repeatedly writing `employee.name` and `employee.role`, the required values are directly available.
+
+- Modules allow JavaScript code to be separated into different files. This makes large applications easier to maintain because each file can handle a specific responsibility.
+
+```js
+// employee.js
+export const employee = {
+    name: "Gowtham",
+    role: "Developer"
+};
+```
+
+```js
+// app.js
+import { employee } from "./employee.js";
+
+console.log(employee.name);
+```
+
+Modules use `export` to make values available from a file and `import` to use those values in another file.
+
+# Modules
+
+- Named exports are used when a file needs to export multiple values.
+
+```js
+// calculation.js
+export const taxRate = 0.18;
+
+export function calculateTax(amount) {
+    return amount * taxRate;
+}
+```
+
+```js
+// app.js
+import { calculateTax, taxRate } from "./calculation.js";
+
+console.log(calculateTax(2500));
+console.log(taxRate);
+```
+
+The imported name normally matches the exported name.
+
+- A default export is used when a module has one main value or functionality. The importing file can give it any name.
+
+```js
+// api.js
+export default function getExpenses() {
+    return ["Travel", "Food", "Office"];
+}
+```
+
+```js
+// app.js
+import getExpenses from "./api.js";
+
+console.log(getExpenses());
+```
+
+A file can have one default export, while it can have multiple named exports.
+
+- In the browser, modules can be loaded using `type="module"`.
+
+```html
+<script type="module" src="./app.js"></script>
+```
+
+This allows `import` and `export` to work between JavaScript files.
+
+- In a real project, applications usually contain many modules such as API logic, components, utilities, and configuration. A module bundler/build tool processes these files and prepares the application for development and production.
+
+```text
+src/
+├── api/
+│   └── expenseApi.js
+├── components/
+│   └── ExpenseList.js
+├── utils/
+│   └── formatCurrency.js
+└── app.js
+```
+
+Webpack and Vite are tools used in JavaScript projects for development and building. Vite provides a fast development server and production build process. Webpack is a more configurable bundler that can process modules and assets.
+
+# JSON
+
+- JSON means JavaScript Object Notation. It is a text format commonly used for sending and storing structured data. APIs commonly send JSON between frontend and backend.
+
+```json
+{
+    "id": 101,
+    "name": "Gowtham",
+    "role": "Developer"
+}
+```
+
+JSON looks similar to a JavaScript object, but JSON is text data and follows stricter syntax.
+
+- `JSON.parse()` converts a JSON string into a JavaScript value.
+
+```js
+const response = '{"id":101,"name":"Gowtham","role":"Developer"}';
+
+const employee = JSON.parse(response);
+
+console.log(employee.name);
+```
+
+This is commonly used when JSON data is received from an API.
+
+- `JSON.stringify()` converts a JavaScript value into a JSON string.
+
+```js
+const employee = {
+    id: 101,
+    name: "Gowtham",
+    role: "Developer"
+};
+
+const jsonData = JSON.stringify(employee);
+
+console.log(jsonData);
+```
+
+This is commonly used when sending data to an API or storing structured data as text.
+
+- JSON can be used with APIs to send data from frontend to backend and receive data back.
+
+```js
+const employee = {
+    name: "Gowtham",
+    role: "Developer"
+};
+
+fetch("/api/employees", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify(employee)
+});
+```
+
+The JavaScript object is converted to JSON text before being sent.
+
+- A shallow copy copies only the first level of an object. Nested objects are still referenced from the original object.
+
+```js
+const employee = {
+    name: "Gowtham",
+    department: {
+        name: "Development"
+    }
+};
+
+const copy = { ...employee };
+
+copy.name = "Arun";
+copy.department.name = "Testing";
+
+console.log(employee.name);
+console.log(employee.department.name);
+```
+
+The top-level `name` is independent, but `department` is still shared.
+
+- A deep copy creates an independent copy of nested data. For simple JSON-compatible data, `JSON.stringify()` followed by `JSON.parse()` can be used.
+
+```js
+const employee = {
+    name: "Gowtham",
+    department: {
+        name: "Development"
+    }
+};
+
+const copy = JSON.parse(JSON.stringify(employee));
+
+copy.department.name = "Testing";
+
+console.log(employee.department.name);
+console.log(copy.department.name);
+```
+
+This works for common JSON-compatible data, but it is not suitable for values such as functions, `undefined`, `BigInt`, `Date`, `Map`, and `Set`.

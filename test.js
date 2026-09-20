@@ -77,3 +77,8 @@
 
 // console.log(result);
 
+const orders = ["ORD101", "ORD102", "ORD103", "ORD104"];
+
+const recentOrders = orders.slice(1,2);
+console.log(recentOrders);
+console.log(orders);
