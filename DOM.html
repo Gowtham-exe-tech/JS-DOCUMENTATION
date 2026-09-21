@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shopping Cart</title>
+</head>
+
+<body>
+
+    <h1>Products</h1>
+    <div id="products">
+
+        <div class="product" data-name="Laptop" data-price="50000">
+            <h3>Laptop</h3>
+            <p>₹50,000</p>
+            <button class="add-button">Add to Cart</button>
+        </div>
+
+        <div class="product" data-name="Mouse" data-price="1000">
+            <h3>Mouse</h3>
+            <p>₹1,000</p>
+            <button class="add-button">Add to Cart</button>
+        </div>
+
+        <div class="product" data-name="Keyboard" data-price="2000">
+            <h3>Keyboard</h3>
+            <p>₹2,000</p>
+            <button class="add-button">Add to Cart</button>
+        </div>
+
+    </div>
+
+
+    <h2>Cart</h2>
+    <div id="cart">
+        <p id="emptyMessage">Cart is empty</p>
+    </div>
+    <h3>
+        Total: ₹<span id="total">0</span>
+    </h3>
+
+    <script>
+
+        const products = document.getElementById("products");
+        const cart = document.getElementById("cart");
+        const totalElement = document.getElementById("total");
+        const emptyMessage = document.getElementById("emptyMessage");
+        let total = 0;
+
+        products.addEventListener("click", function(event) {
+            if (!event.target.classList.contains("add-button")) {
+                return;
+            }
+            const product = event.target.closest(".product");
+            const name = product.dataset.name;
+            const price = Number(product.dataset.price);
+
+            // Create a new DOM element
+            const cartItem = document.createElement("div");
+            cartItem.classList.add("cart-item");
+            cartItem.innerHTML = `
+                <span>${name} - ₹${price}</span>
+                <button class="remove-button">Remove</button>`;
+
+            // Store price inside the DOM element
+            cartItem.dataset.price = price;
+
+            // Add item to cart
+            cart.appendChild(cartItem);
+
+            // Update total
+            total += price;
+            totalElement.textContent = total;
+
+            // Remove empty message
+            emptyMessage.remove();
+
+        });
+
+        cart.addEventListener("click", function(event) {
+            if (!event.target.classList.contains("remove-button")) {
+                return;
+            }
+            const cartItem = event.target.closest(".cart-item");
+            const price = Number(cartItem.dataset.price);
+            total -= price;
+            totalElement.textContent = total;
+
+            // Remove element from DOM
+            cartItem.remove();
+
+        });
+
+    </script>
+</body>
+</html>

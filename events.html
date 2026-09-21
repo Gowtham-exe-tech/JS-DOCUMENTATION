@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Form</title>
+</head>
+<body>
+
+    <form id="loginForm">
+
+        <label>Email:</label>
+        <input type="email" id="email">
+
+        <p id="emailMessage"></p>
+
+        <label>Password:</label>
+        <input type="password" id="password">
+
+        <p id="passwordMessage"></p>
+
+        <button type="submit" id="loginButton">
+            Login
+        </button>
+
+        <p id="result"></p>
+
+    </form>
+
+    <script>
+        const form = document.getElementById("loginForm");
+        const email = document.getElementById("email");
+        const password = document.getElementById("password");
+        const emailMessage = document.getElementById("emailMessage");
+        const passwordMessage = document.getElementById("passwordMessage");
+        const result = document.getElementById("result");
+
+        // input event
+        email.addEventListener("input", function () {
+            if (email.value.length > 0) {
+                emailMessage.textContent = "Email entered";
+            } else {
+                emailMessage.textContent = "";
+            }
+        });
+
+        // focus event
+        password.addEventListener("focus", function () {
+            passwordMessage.textContent = "Password should contain at least 6 characters";
+        });
+
+        // blur event
+        password.addEventListener("blur", function () {
+            if (password.value.length < 6) {
+                passwordMessage.textContent = "Password is too short";
+            } else {
+                passwordMessage.textContent = "Password looks good";
+            }
+        });
+
+        // submit event
+        form.addEventListener("submit", function (event) {
+            event.preventDefault();
+            if (email.value === "") {
+                result.textContent = "Please enter your email";
+                return;
+            }
+            if (password.value.length < 6) {
+                result.textContent = "Invalid password";
+                return;
+            }
+            result.textContent = "Login request can be sent to backend";
+        });
+    </script>
+
+</body>
+</html>

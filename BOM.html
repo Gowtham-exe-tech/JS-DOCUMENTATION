@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>BOM Example</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 30px;
+            background: white;
+            color: #222;
+            transition: 0.3s;
+        }
+
+        body.dark {
+            background: #222;
+            color: white;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .card {
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+
+        body.dark .card {
+            border-color: #666;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        #status {
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>BOM Practical Dashboard</h1>
+        <div class="card">
+            <h2>1. Window</h2>
+            <p id="windowInfo"></p>
+            <p>Resize your browser window and watch the values change.</p>
+        </div>
+
+        <div class="card">
+            <h2>2. Location</h2>
+            <p id="locationInfo"></p>
+            <button id="reloadButton">
+                Reload Page
+            </button>
+        </div>
+
+        <div class="card">
+            <h2>3. Browser History</h2>
+            <p id="historyInfo">Current page state: Home</p>
+
+            <button id="productsButton">
+                Go to Products
+            </button>
+
+            <button id="backButton">
+                Browser Back
+            </button>
+        </div>
+
+        <div class="card">
+            <h2>4. Network Status</h2>
+            <p id="networkStatus"></p>
+            <p>Turn your internet connection off and observe this value.</p>
+        </div>
+
+        <div class="card">
+            <h2>5. Local Storage</h2>
+            <p id="visitCount"></p>
+
+            <button id="clearStorageButton">
+                Clear Visit Count
+            </button>
+        </div>
+
+        <div class="card">
+            <h2>6. Theme</h2>
+            <button id="themeButton">
+                Toggle Theme
+            </button>
+            <p id="themeInfo"></p>
+        </div>
+
+        <div class="card">
+            <h2>7. Timer</h2>
+            <p id="timerInfo">
+                Waiting...
+            </p>
+        </div>
+
+    </div>
+
+
+    <script>
+
+        const windowInfo = document.getElementById("windowInfo");
+        function updateWindowSize() {
+            windowInfo.textContent =
+                `Width: ${window.innerWidth}px | Height: ${window.innerHeight}px`;
+        }
+        updateWindowSize();
+        window.addEventListener("resize", updateWindowSize);
+
+        const locationInfo = document.getElementById("locationInfo");
+
+        const reloadButton = document.getElementById("reloadButton");
+
+        locationInfo.textContent = `Current URL: ${window.location.href}`;
+
+        reloadButton.addEventListener("click", function() {
+            window.location.reload();
+        });
+
+        const historyInfo = document.getElementById("historyInfo");
+
+        const productsButton = document.getElementById("productsButton");
+
+        const backButton = document.getElementById("backButton");
+
+
+        productsButton.addEventListener("click", function() {
+            window.history.pushState(
+                {},
+                "",
+                "?page=products"
+            );
+
+            historyInfo.textContent = "Current page state: Products";
+        });
+
+
+        backButton.addEventListener("click", function() {
+            window.history.back();
+        });
+
+
+        window.addEventListener("popstate", function() {
+
+            if (window.location.search === "?page=products") {
+                historyInfo.textContent =
+                    "Current page state: Products";
+            } else {
+                historyInfo.textContent =
+                    "Current page state: Home";
+            }
+        });
+
+        const networkStatus = document.getElementById("networkStatus");
+
+        function updateNetworkStatus() {
+            if (navigator.onLine) {
+                networkStatus.textContent =
+                    "🟢 Online";
+            } else {
+                networkStatus.textContent =
+                    "🔴 Offline";
+            }
+        }
+        updateNetworkStatus();
+        window.addEventListener(
+            "online",
+            updateNetworkStatus
+        );
+        window.addEventListener(
+            "offline",
+            updateNetworkStatus
+        );
+
+
+        const visitCount = document.getElementById("visitCount");
+        const clearStorageButton = document.getElementById("clearStorageButton");
+        let count = Number(localStorage.getItem("visitCount")) || 0;
+        count++;
+
+        localStorage.setItem(
+            "visitCount",
+            count
+        );
+
+        visitCount.textContent =
+            `You have opened this page ${count} times.`;
+
+        clearStorageButton.addEventListener(
+            "click",
+            function() {
+                localStorage.removeItem("visitCount");
+                visitCount.textContent =
+                    "Visit count cleared. Reload the page to start again.";
+            }
+        );
+
+        const themeButton =  document.getElementById("themeButton");
+        const themeInfo = document.getElementById("themeInfo");
+        let currentTheme = localStorage.getItem("theme");
+
+
+        if (currentTheme === "dark") {
+            document.body.classList.add("dark");
+            themeInfo.textContent =
+                "Current theme: Dark";
+        } else {
+            themeInfo.textContent =
+                "Current theme: Light";
+        }
+
+        themeButton.addEventListener(
+            "click",
+            function() {
+                document.body.classList.toggle("dark");
+                const isDark = document.body.classList.contains("dark");
+
+                if (isDark) {
+                    localStorage.setItem(
+                        "theme",
+                        "dark"
+                    );
+                    themeInfo.textContent =
+                        "Current theme: Dark";
+                } else {
+                    localStorage.setItem(
+                        "theme",
+                        "light"
+                    );
+                    themeInfo.textContent =
+                        "Current theme: Light";
+                }
+            }
+        );
+
+        const timerInfo = document.getElementById("timerInfo");
+
+        setTimeout(function() {
+            timerInfo.textContent =
+                "5 seconds have passed.";
+        }, 5000);
+    </script>
+</body>
+</html>

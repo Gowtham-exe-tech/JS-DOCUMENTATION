@@ -5,7 +5,7 @@ const text = "JavaScript";
 
 console.log(text.length);
 console.log(text[0]);
-console.log(text[text.length - 1]);
+console.log(text[text.length - 1]); // last charc
 
 
 console.log(text.toUpperCase());
@@ -70,23 +70,9 @@ console.log(info);
 
 
 const quote = "He said \"Hello\"";
-console.log(quote);
-
-
-
 const path = "C:\\Users\\Gowtham";
+console.log(quote);
 console.log(path);
-
-
-
-const html = `
-    <div>
-        <h1>Hello Gowtham</h1>
-        <p>Welcome</p>
-    </div>
-`;
-console.log(html);
-
 
 // Login example
 const inputEmail = "  GOWTHAM@GMAIL.COM  ";
@@ -109,7 +95,7 @@ if (productName.toLowerCase().includes(search.toLowerCase())) {
 //define username
 const fullName = "Gowtham G";
 const username = fullName
-    .toLowerCase()
     .trim()
+    .toLowerCase()
     .replaceAll(" ", "_");
 console.log(username);

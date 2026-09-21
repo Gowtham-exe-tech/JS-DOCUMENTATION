@@ -77,8 +77,136 @@
 
 // console.log(result);
 
-const orders = ["ORD101", "ORD102", "ORD103", "ORD104"];
+// const orders = ["ORD101", "ORD102", "ORD103", "ORD104"];
 
-const recentOrders = orders.slice(1,2);
-console.log(recentOrders);
-console.log(orders);
+// const recentOrders = orders.slice(1,2);
+// console.log(recentOrders);
+// console.log(orders);
+
+
+
+// -----------------------------------------------------------------------------------------------
+//OBJECTS
+//------------------------------------------------------------------------------------------------------
+// const objectnew = {
+//     name:"hey",
+//     likes: "100",
+//     followers: "150"
+// };
+
+// const neew = "likes";
+// console.log(objectnew[neew]);
+
+// const user = {
+//     name: "Gowtham",
+
+//     greet() {
+//         console.log(this);
+//     }
+// };
+
+// user.greet();
+
+// const myobj = {};
+// const str = "MyString";
+
+// myobj.str = "this is a string field";
+// myobj.num_field = "this is a number field";
+// myobj["i43_field"] = "this is a 43 field";
+
+// console.log(myobj["i43_field"]);
+// console.log(myobj);
+
+// const obj1 = {name:"heyyy"};
+// const obj2 = obj1;
+
+// obj1["age"] = 23;
+
+// console.log(obj1===obj2);
+
+// const user = {
+//     name : "hey",
+
+//     greet :  () => {
+//         console.log(this.name);
+//     },
+// }
+
+
+// user.greet();
+
+
+// const employee = {
+//     id: 101,
+//     name: "Gowtham",
+//     role: "Developer",
+
+//     department: {
+//         name: "Development",
+//         code: "DEV"
+//     },
+
+//     address: {
+//         city: "Tiruppur",
+//         state: "Tamil Nadu"
+//     }
+// };
+
+// console.log(employee.department.code);
+
+
+// const employee = {
+//     id: 101,
+//     name: "Gowtham",
+
+//     skills: [
+//         "JavaScript",
+//         "Node.js",
+//         "Express"
+//     ],
+
+//     expenses: [
+//         {
+//             id: 1,
+//             category: "Travel",
+//             amount: 1200
+//         },
+//         {
+//             id: 2,
+//             category: "Food",
+//             amount: 500
+//         }
+//     ]
+// };
+
+// const expenseTotal = employee.expenses.reduce((sum,expense) =>  {
+//             sum = sum+expense.amount
+// ,0});
+
+
+// const expense = {
+//     id: 501,
+//     employee: "Gowtham",
+//     category: "Travel",
+//     amount: 2500,
+//     status: "Pending"
+// };
+
+// const {employee, amount, status} = expense;
+
+// console.log(employee);
+// console.log(amount);
+// console.log(status);
+
+// const keysOfExpense = Object.keys(expense);
+// const valueOfExpense = Object.values(expense);
+// const entriesOfExpense = Object.entries(expense);
+
+// console.log(keysOfExpense);
+// console.log(valueOfExpense);
+// console.log(entriesOfExpense);
+
+
+// for (const {key, value} of Object.entries(expense)) {
+//     console.log(`${key}: ${value}`);
+// }
