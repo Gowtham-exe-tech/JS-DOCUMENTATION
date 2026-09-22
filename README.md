@@ -1357,9 +1357,9 @@ console.log(products);
 
 //new array 
 
-const students = [];
+const students = []; // typeof array
 
-const students = new Array();
+const students = new Array(); //typeof object
 ```
 * An array can contain different data types, but in real applications it is usually better to keep related data in a consistent structure.
 
@@ -1371,7 +1371,7 @@ const students = new Array();
 
 * It is used to access or change a particular value in an array.
 
-* **Even** if we are using **const**  array supports** elements update **but **not reassigning**.
+* **Even** if we are using **const**  array supports** elements update but **not reassigning**.
 
 ```js
 const products = ["Laptop", "Mouse", "Keyboard"];
@@ -2314,153 +2314,6 @@ For example:
 -   authorization error
 -   network error
 
-## Real application example --- Student registration
-
-* Imagine a student management application where the frontend sends student data to a backend API.
-
-The application needs to:
-1.  validate the data
-2.  send the request
-3.  check the response
-4.  show an appropriate message
-5.  hide the loading state even if something fails
-
-``` js
-class ValidationError extends Error {
-    constructor(message) {
-        super(message);
-        this.name = "ValidationError";
-    }
-}
-
-async function registerStudent(student) {
-    try {
-        // Client-side validation
-        if (!student.name || student.name.trim() === "") {
-            throw new ValidationError("Student name is required");
-        }
-
-        if (!student.email || !student.email.includes("@")) {
-            throw new ValidationError("Valid email is required");
-        }
-
-        // Show loading state
-        document.querySelector("#registerBtn").disabled = true;
-        document.querySelector("#loading").textContent = "Registering...";
-
-        // Send data to backend
-        const response = await fetch("/api/students", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(student)
-        });
-
-        // fetch() does not automatically throw for HTTP 400/500.
-        // We explicitly check the response.
-        if (!response.ok) {
-            throw new Error(`Registration failed: ${response.status}`);
-        }
-
-        const result = await response.json();
-
-        console.log("Student registered:", result);
-
-        document.querySelector("#message").textContent =
-            "Student registered successfully";
-
-    } catch (error) {
-        if (error instanceof ValidationError) {
-            document.querySelector("#message").textContent =
-                `Validation error: ${error.message}`;
-        } else {
-            document.querySelector("#message").textContent =
-                "Unable to register student. Please try again.";
-
-            console.error(error);
-        }
-
-    } finally {
-        // Runs for both success and failure
-        document.querySelector("#registerBtn").disabled = false;
-        document.querySelector("#loading").textContent = "";
-    }
-}
-
-registerStudent({
-    name: "Arun",
-    email: "arun@example.com"
-});
-```
-
-### What is happening?
-
-``` text
-User submits form
-       ↓
-Validate input
-       ↓
-Invalid? ──→ throw ValidationError
-       ↓
-Valid
-       ↓
-Send API request
-       ↓
-API fails? ──→ catch
-       ↓
-API succeeds
-       ↓
-Show success
-       ↓
-finally
-       ↓
-Remove loading state
-```
-
-### Common mistakes
-
-#### 1. Catching errors without doing anything
-
-``` js
-try {
-    // code
-} catch (error) {
-}
-```
-
-This hides the problem and makes debugging difficult.
-
-#### 2. Assuming `fetch()` throws for HTTP errors
-
-This is a common mistake:
-
-``` js
-try {
-    const response = await fetch("/api/students");
-} catch (error) {
-    console.log("API failed");
-}
-```
-
-A `404` or `500` response does not automatically mean the `fetch()`
-promise rejects.
-
-Check:
-
-``` js
-if (!response.ok) {
-    throw new Error("Request failed");
-}
-```
-
-#### 3. Using `try...catch` everywhere
-
-Do not wrap every line of code in `try...catch`.
-
-Use it where an operation can fail and where the application has a
-meaningful way to handle that failure.
-
 
 # 14. Events
 
@@ -2473,14 +2326,6 @@ Examples:
 -   user submits a form
 -   user selects an option
 -   keyboard key is pressed
-
-Main concepts:
-
--   Event listeners
--   Event object
--   Event bubbling
--   Event delegation
-
 
 ## Event listeners
 
@@ -2556,9 +2401,7 @@ expenseForm.addEventListener("submit", function (event) {
 });
 ```
 
-The event listener is the connection between the user's action and
-application logic.
-
+The event listener is the connection between the user's action and application logic.
 
 ## Event object
 
@@ -2580,21 +2423,21 @@ event.type
 
 ### `event.target`
 
-The actual element where the event originated.
+* The actual element where the event originated.
 
 ### `event.currentTarget`
 
-The element whose event listener is currently running.
+* The element whose event listener is currently running.
 
-This distinction becomes important when working with event bubbling and
+* This distinction becomes important when working with event bubbling and
 delegation.
 
 ## Event bubbling
 
-When an event happens on a child element, the event can travel upward
+* When an event happens on a child element, the event can travel upward
 through its parent elements.
 
-For example, an expense row may contain buttons:
+* For example, an expense row may contain buttons:
 
 ``` html
 <div id="expenseList">
@@ -2612,7 +2455,7 @@ For example, an expense row may contain buttons:
 </div>
 ```
 
-If the button is clicked, the event can move upward:
+* If the button is clicked, the event can move upward:
 
 ``` text
 Approve button
@@ -2630,12 +2473,12 @@ This is event bubbling.
 
 ## Event delegation
 
-Event delegation uses bubbling intentionally.
+* Event delegation uses bubbling intentionally.
 
-Instead of adding a listener to every button, we add one listener to the
+* Instead of adding a listener to every button, we add one listener to the
 parent.
 
-This is especially useful when elements are created dynamically.
+* This is especially useful when elements are created dynamically.
 
 ## Real application example --- Expense approval list
 
@@ -4298,3 +4141,761 @@ UI is updated
 * For modern JavaScript development, `async/await` is generally the easiest syntax for sequential asynchronous workflows, while Promise methods such as `Promise.all()` remain important for concurrency and handling multiple asynchronous operations.
 
 * When reading older JavaScript code, `.then().catch()` chains are still important to understand because many existing applications and libraries use them. Knowing both styles prevents confusion when working with real codebases.
+
+# Classes
+
+* **Technical definition:** A class in JavaScript is a syntactic structure used to define objects and their behavior. JavaScript classes internally use the prototype-based inheritance system.
+
+* A class is a blueprint from which I can create multiple objects that have similar data and behavior.
+
+* **What it does:**
+  * defines how an object should be created
+  * initializes object data using `constructor()`
+  * defines methods that can be shared through the prototype
+  * allows inheritance using `extends`
+  * allows parent functionality to be accessed using `super`
+  * allows class-level methods and properties using `static`
+
+* The main reason I use classes is when my application has multiple objects belonging to the same type and those objects need common behavior.
+
+* Example: In an e-commerce application, thousands of orders may have:
+  * order ID
+  * customer
+  * items
+  * total
+  * status
+  * payment information
+  * methods such as `calculateTotal()`, `cancel()`, `updateStatus()`
+
+* Instead of manually creating unrelated objects and functions, I can define the structure and behavior once using a class.
+```js
+  class Order {
+      constructor(id, customer, items) {
+          this.id = id;
+          this.customer = customer;
+          this.items = items;
+          this.status = "pending";
+      }
+
+      calculateTotal() {
+          return this.items.reduce(
+              (total, item) => total + item.price * item.quantity,
+              0
+          );
+      }
+
+      cancel() {
+          if (this.status === "shipped") {
+              throw new Error("Shipped order cannot be cancelled");
+          }
+
+          this.status = "cancelled";
+      }
+  }
+```
+* `constructor()` is a special method that runs automatically when I use `new Order(...)`.
+* It is normally used to initialize the object's properties.
+* `this` inside the constructor refers to the newly created object.
+
+* When I create:
+
+  const order = new Order(101, customer, items);
+
+  JavaScript creates a new object and initializes it through the constructor.
+
+* Methods such as `calculateTotal()` are not normally copied separately into every order object.
+* They are placed on the class prototype and can be shared by instances.
+
+* `extends` allows one class to inherit from another class.
+```js
+  class DigitalOrder extends Order {
+      downloadInvoice() {
+          return `/invoices/${this.id}.pdf`;
+      }
+  }
+```
+* `DigitalOrder` inherits the functionality of `Order`.
+* I use inheritance when there is a genuine "is-a" relationship.
+* A digital order **is an** order, so inheritance can make sense.
+
+* `super()` calls the parent constructor.
+```js
+  class DigitalOrder extends Order {
+      constructor(id, customer, items, downloadUrl) {
+          super(id, customer, items);
+          this.downloadUrl = downloadUrl;
+      }
+  }
+```
+* `super()` is important because the parent class is responsible for initializing its part of the object.
+* In a derived class constructor, I cannot use `this` before calling `super()`.
+
+* `super.method()` can call a method from the parent class when I want to extend rather than completely replace its behavior.
+
+* `static` creates a method belonging to the class itself rather than individual instances.
+```js
+  class Order {
+      static isValidId(id) {
+          return Number.isInteger(id) && id > 0;
+      }
+  }
+
+  Order.isValidId(101);
+```
+* I use static methods when the operation is related to the class but does not require a particular object instance.
+
+* Real use cases for classes:
+  * Order management
+  * User management
+  * Payment processing
+  * Product models
+  * File handling
+  * API clients
+  * WebSocket connections
+  * authentication services
+  * game entities
+  * database/domain models
+
+* I should not create a class just because something exists in the application.
+* If I only need a few independent operations, normal functions may be simpler.
+
+* **Key points:**
+  * class = blueprint for objects
+  * `new` creates an instance
+  * `constructor()` initializes instance data
+  * methods define object behavior
+  * `extends` provides inheritance
+  * `super()` accesses parent constructor/functionality
+  * `static` belongs to the class itself
+  * classes are built on JavaScript prototypes internally
+
+
+# Prototypes & Inheritance
+
+* **Technical definition:** A prototype is an object from which another object can inherit properties and methods. JavaScript performs property lookup through a prototype chain when a property is not found directly on the object.
+
+*  An object can use properties and methods from another object through a linked chain.
+
+* JavaScript inheritance is fundamentally prototype-based.
+* Classes are only a cleaner syntax built on top of this mechanism.
+
+* Example:
+```js
+  const userMethods = {
+      login() {
+          console.log(`${this.name} logged in`);
+      }
+  };
+
+  const user = Object.create(userMethods);
+
+  user.name = "Gowtham";
+  user.login();
+```
+* `user` does not directly contain `login()`.
+* JavaScript looks at `user`, does not find `login()`, then checks its prototype.
+* It finds `login()` there and executes it.
+
+* This lookup process is the **prototype chain**.
+
+  user
+    ↓
+  userMethods
+    ↓
+  Object.prototype
+    ↓
+  null
+
+* If JavaScript cannot find a property anywhere in the chain, the result is usually `undefined`.
+
+* Constructor functions were traditionally used to create reusable object structures.
+```js
+  function User(name, role) {
+      this.name = name;
+      this.role = role;
+  }
+
+  User.prototype.hasPermission = function () {
+      return this.role === "admin";
+  };
+```
+* Every object created with:
+```js
+  const user = new User("Gowtham", "admin");
+
+  can access `hasPermission()` through `User.prototype`.
+```
+* The important point is that the method does not need to be recreated for every object.
+
+* `__proto__` exposes the object's prototype.
+
+  `user.__proto__ === User.prototype;`
+
+* I should know what `__proto__` means because it appears often when inspecting JavaScript objects.
+* For normal application code, I should prefer clearer APIs such as `Object.getPrototypeOf()` instead of manually manipulating `__proto__`.
+
+* `Object.create()` creates an object whose prototype is the object supplied to it.
+
+* This can be useful when I want objects to inherit behavior directly without creating a class.
+
+* **What inheritance actually does:** It allows an object or class to reuse functionality defined somewhere else instead of duplicating that functionality.
+
+* Real application use case:
+  * A base `Notification` object can provide common behavior.
+  * `EmailNotification`, `SMSNotification`, and `PushNotification` can provide specialized behavior.
+  * Shared functionality does not need to be duplicated.
+
+* With classes, this same prototype mechanism appears through `extends`.
+
+* **Key points:**
+  * JavaScript uses prototype-based inheritance
+  * objects can inherit properties/methods from prototypes
+  * property lookup follows the prototype chain
+  * `Object.prototype` is near the top of most normal object chains
+  * `null` represents the end of the chain
+  * constructor functions can use `.prototype`
+  * classes use prototypes internally
+  * `__proto__` refers to an object's prototype
+  * `Object.create()` can create objects with a chosen prototype
+
+
+# this Keyword
+
+* **Technical definition:** `this` is a special value determined by the execution context of a function. For regular functions, its value depends primarily on how the function is called.
+
+* `this` tells a function which object or context it is currently operating with.
+
+* The most important rule is that I should not decide what `this` means by looking only at where the function was written.
+* For regular functions, I should look at **how the function was called**.
+
+* In an object method:
+```js
+  const order = {
+      total: 5000,
+
+      getTotal() {
+          return this.total;
+      }
+  };
+
+  order.getTotal();
+```
+* `this` refers to `order` because the method was called through `order`.
+
+* In classes, `this` normally refers to the current instance.
+```js
+  class Cart {
+      constructor() {
+          this.items = [];
+      }
+
+      addItem(item) {
+          this.items.push(item);
+      }
+  }
+```
+* If I create:
+
+  `const cart = new Cart();`
+
+* `this` inside `addItem()` refers to that particular `cart` object.
+
+* This is useful because the same method can work with many different instances.
+
+* Arrow functions are different.
+* Arrow functions do not create their own `this`.
+* They take `this` from their surrounding lexical scope.
+
+* This becomes important in asynchronous callbacks and event handlers.
+```js
+  class Dashboard {
+      constructor() {
+          this.count = 0;
+
+          document
+              .querySelector("#increase")
+              .addEventListener("click", () => {
+                  this.count++;
+                  this.render();
+              });
+      }
+
+      render() {
+          document.querySelector("#count").textContent = this.count;
+      }
+  }
+```
+* The arrow function keeps the `this` belonging to the `Dashboard` instance.
+
+* `call()` executes a function immediately while explicitly setting its `this`.
+
+* `apply()` does the same but receives function arguments as an array.
+
+* `bind()` creates a new function with a fixed `this`.
+
+* Real application use case:
+  * A class method is passed to `setTimeout()`, an event listener, or another callback.
+  * The original object context can be lost.
+  * `bind()` can explicitly preserve the object context.
+
+  setTimeout(notification.send.bind(notification), 1000);
+
+* `this` is heavily used in:
+  * classes
+  * object methods
+  * event handling
+  * callback handling
+  * reusable object behavior
+  * APIs that depend on object context
+
+* **Key points:**
+  * regular function → `this` depends on how it is called
+  * object method → normally the object before the dot
+  * class method → instance when called normally through the instance
+  * arrow function → does not have its own `this`
+  * `call()` → invoke now with chosen `this`
+  * `apply()` → invoke now with chosen `this` and argument array
+  * `bind()` → create a new function with chosen `this`
+
+
+# Higher-Order Functions
+
+* **Technical definition:** A higher-order function is a function that accepts another function as an argument, returns a function, or both.
+
+* A function can receive another function as data or create another function as its result.
+
+* JavaScript supports this because functions are first-class values.
+* I can store a function in a variable, pass it to another function, return it, or store it in an object/array.
+
+* Higher-order functions are heavily used in application development because they allow behavior to be passed around instead of hard-coding behavior into every function.
+
+* `map()` transforms every item into another value.
+
+* Real application:
+```js
+  const invoiceRows = invoices.map(invoice => ({
+      id: invoice.id,
+      customer: invoice.customerName,
+      amount: invoice.total,
+      status: invoice.status
+  }));
+```
+* Here I am converting backend invoice objects into the structure required by the frontend.
+
+* `filter()` creates a new array containing only values that satisfy a condition.
+```js
+  const pendingInvoices = invoices.filter(
+      invoice => invoice.status === "pending"
+  );
+```
+* This is useful when displaying only pending records in an admin dashboard.
+
+* `reduce()` processes multiple values and produces one final result.
+```js
+  const totalRevenue = invoices.reduce(
+      (total, invoice) => total + invoice.total,
+      0
+  );
+```
+* This is useful for dashboard calculations such as:
+  * total revenue
+  * total expenses
+  * total marks
+  * inventory value
+  * transaction totals
+
+* `forEach()` runs a function for each item but does not create a transformed array.
+```js
+  notifications.forEach(notification => {
+      notification.markAsRead();
+  });
+```
+* I should use `map()` when I need a new transformed array.
+* I should use `filter()` when I need selected items.
+* I should use `reduce()` when I need to combine items into a result.
+* I should use `forEach()` when I simply need to perform an action for every item.
+
+* A function can also return another function.
+```js
+  function createRoleChecker(requiredRole) {
+      return function (user) {
+          return user.role === requiredRole;
+      };
+  }
+
+  const isAdmin = createRoleChecker("admin");
+```
+* This is useful when I want to create reusable behavior based on configuration.
+
+* Higher-order functions are common in:
+  * frontend data processing
+  * Express middleware
+  * event handling
+  * validation
+  * authorization
+  * callbacks
+  * array processing
+  * reusable business logic
+
+* **Key points:**
+  * functions can be passed as values
+  * functions can return functions
+  * `map`, `filter`, `reduce`, and `forEach` use callbacks
+  * higher-order functions help separate data from behavior
+  * they are heavily used in modern JavaScript
+
+
+# Functional Programming Concepts
+
+* **Technical definition:** Functional programming is a programming style that treats computation as transformations using functions while minimizing mutable state and side effects.
+
+* Instead of constantly changing existing data, I can create functions that take data, process it, and return new data.
+
+* JavaScript is not a purely functional language.
+* It supports functional programming along with object-oriented and procedural programming.
+
+* A **pure function** produces the same output for the same input and does not create observable side effects.
+```js
+  function calculateTax(amount, rate) {
+      return amount * rate;
+  }
+```
+* This is predictable because the result depends only on the parameters.
+
+* Pure functions are useful for:
+  * calculations
+  * validation
+  * formatting
+  * data transformation
+  * business rules
+
+* A function becomes harder to predict when it depends on or modifies external state.
+
+* **Immutability** means I do not directly modify existing data when updating application state.
+```js
+  const updatedUser = {
+      ...user,
+      role: "manager"
+  };
+```
+* Instead of modifying `user`, I create a new object.
+
+* This is especially useful in frontend applications where predictable state changes are important.
+
+* **Composition** means combining smaller functions to build a larger operation.
+
+* For an order processing system, I might have:
+
+  validateOrder()
+  → applyDiscount()
+  → calculateTax()
+  → calculateShipping()
+  → createInvoice()
+
+* Each function has one responsibility.
+* I can test each function independently and combine them into a larger workflow.
+
+* **Currying** means converting a function that accepts multiple arguments into multiple functions that each accept fewer arguments, commonly one argument at a time.
+
+* This is useful when part of the configuration can be fixed first and reused later.
+
+* Real application example:
+```js
+  function createDiscountCalculator(discountRate) {
+      return function (amount) {
+          return amount - amount * discountRate;
+      };
+  }
+
+  const employeeDiscount = createDiscountCalculator(0.15);
+
+  employeeDiscount(5000);
+```
+* Here the discount rate is configured once and the returned function can be reused for multiple prices.
+
+* Functional programming concepts are useful when:
+  * processing collections
+  * transforming API responses
+  * handling application state
+  * writing business calculations
+  * creating reusable utilities
+  * reducing unexpected side effects
+
+* **Key points:**
+  * pure function → predictable input/output
+  * immutability → avoid directly changing existing data
+  * composition → combine small functions
+  * currying → configure functions progressively
+  * JavaScript supports functional programming but is not purely functional
+
+
+# Regular Expressions (RegEx)
+
+* **Technical definition:** A regular expression is a pattern used to match, search, extract, validate, or replace sequences of characters in text.
+
+* Regex allows me to describe a text pattern and ask JavaScript whether some text follows or contains that pattern.
+
+* Regex is useful when the structure of the text matters.
+
+* Example from an employee management system:
+
+  `const employeeIdPattern = /^EMP-\d{4}$/;`
+
+* This checks whether an employee ID follows the expected structure such as:
+
+ ` EMP-2045`
+
+* `^` means the pattern must start at the beginning.
+* `$` means the pattern must end at the end.
+* `\d` represents a digit.
+* `{4}` means exactly four digits.
+
+* `test()` returns `true` or `false`.
+
+  `employeeIdPattern.test(employeeId);`
+
+* This is useful for validation.
+
+* `match()` finds matching text.
+
+  `const invoiceIds = text.match(/INV-\d+/g);`
+
+* This can be useful when processing uploaded invoice text and extracting invoice identifiers.
+
+* `replace()` replaces matching text.
+
+  `const cleanedPhone = phone.replace(/\D/g, "");`
+
+* This removes non-digit characters from a phone number before storing it in a standardized format.
+
+* `exec()` performs a match and provides detailed match information including captured groups.
+
+* Regex flags modify how the pattern behaves:
+  * `g` → find all matches
+  * `i` → ignore uppercase/lowercase differences
+  * `m` → multiline behavior
+  * `u` → Unicode handling
+  * `s` → allows `.` to match line terminators
+
+* Common regex symbols:
+  * `^` → beginning
+  * `$` → end
+  * `.` → any character
+  * `\d` → digit
+  * `\w` → word character
+  * `\s` → whitespace
+  * `+` → one or more
+  * `*` → zero or more
+  * `?` → zero or one
+  * `[]` → character set
+  * `()` → capture group
+  * `|` → OR
+
+* Real application use cases:
+  * employee ID validation
+  * invoice number extraction
+  * phone number cleaning
+  * searching logs
+  * validating structured codes
+  * extracting IDs from text
+  * replacing unwanted characters
+  * frontend input validation
+
+* Regex should not be used just because it is powerful.
+* If a normal JavaScript condition is clearer, use the normal condition.
+* Extremely complicated regex becomes difficult to read, debug, and maintain.
+
+* Also, frontend regex validation is not enough for security.
+* Important validation must still be performed on the backend because users can bypass frontend JavaScript.
+
+* **Key points:**
+  * regex describes a text pattern
+  * `test()` → check whether pattern exists
+  * `match()` → retrieve matches
+  * `replace()` → replace matching content
+  * `exec()` → detailed matching information
+  * flags modify regex behavior
+  * regex is useful for structured text, not complex data parsing
+
+
+# Error Handling - Advanced
+
+* **Technical definition:** Advanced error handling is the process of creating, propagating, identifying, transforming, logging, and handling errors across different layers of an application.
+
+* It is not only about catching an error. I need to understand where the error happened, how it travels through the application, and which layer should handle it.
+
+* `Error` represents a runtime/application failure.
+
+* A custom error extends `Error` when I need an error type specific to my application.
+```js
+  class ValidationError extends Error {
+      constructor(message, field) {
+          super(message);
+          this.name = "ValidationError";
+          this.field = field;
+      }
+  }
+```
+* Now I can throw:
+```js
+  throw new ValidationError(
+      "Email is required",
+      "email"
+  );
+```
+* The benefit is that the error carries structured information.
+* The error handler can check its type and respond appropriately.
+
+* Real applications may have:
+
+  ValidationError
+  AuthenticationError
+  AuthorizationError
+  NotFoundError
+  PaymentError
+
+* **Error propagation** means an error moves upward through the call stack when the current function does not handle it.
+
+* Example application flow:
+
+  API Controller
+      ↓
+  Order Service
+      ↓
+  Payment Service
+      ↓
+  Payment API
+      ↓
+  Error occurs
+      ↓
+  Error propagates upward
+      ↓
+  Appropriate error handler handles it
+
+* I should not catch an error just because I can.
+* The current layer should catch an error only when it knows what to do with it.
+
+* For example, a low-level database function may not know how to display an error to the user.
+* It can allow the error to propagate to a service/controller layer that knows how to convert it into an appropriate response.
+
+* Rethrowing allows the current layer to perform some work and then pass the error upward.
+```js
+  try {
+      await saveOrder(order);
+  } catch (error) {
+      console.error("Order save failed");
+      throw error;
+  }
+
+* A custom error can also wrap a lower-level error.
+
+  try {
+      await paymentService.charge(amount);
+  } catch (error) {
+      throw new PaymentError(
+          "Payment processing failed",
+          { cause: error }
+      );
+  }
+```
+* `cause` allows the original error to be preserved while giving the application a more meaningful error.
+
+* **Stack trace** contains information about where the error occurred and the sequence of function calls that led to it.
+
+* Example:
+
+  Error: Payment failed
+      at processPayment()
+      at checkout()
+      at handleCheckout()
+
+* Stack traces are mainly for developers and logging systems.
+* I should not send raw stack traces to users because they may expose internal application information.
+
+* In a real backend application, the flow can be:
+
+  Database error
+      ↓
+  Service catches or propagates
+      ↓
+  Controller receives error
+      ↓
+  Central error handler
+      ↓
+  Log detailed stack trace
+      ↓
+  Convert to safe API response
+      ↓
+  Frontend displays user-friendly message
+
+* Expected errors and unexpected errors should be treated differently.
+
+* Expected:
+  * invalid input
+  * unauthorized request
+  * resource not found
+  * duplicate record
+  * payment rejected
+
+* Unexpected:
+  * programming bug
+  * unexpected database failure
+  * corrupted application state
+  * unknown runtime failure
+
+* Expected errors can usually be converted into meaningful responses.
+* Unexpected errors should be logged carefully and normally result in a generic user-facing message.
+
+* With asynchronous JavaScript, `try/catch` works when I `await` the Promise inside the `try` block.
+```js
+  async function loadOrders() {
+      try {
+          const response = await fetch("/api/orders");
+
+          if (!response.ok) {
+              throw new Error("Failed to load orders");
+          }
+
+          return await response.json();
+      } catch (error) {
+          console.error("Order loading failed:", error);
+          throw error;
+      }
+  }
+```
+* A common mistake is silently swallowing errors:
+```js
+  try {
+      await saveOrder(order);
+  } catch (error) {
+  }
+```
+* This is bad because the application loses useful debugging information.
+
+* Another common mistake is showing the raw technical error directly to users.
+
+  Error: SQL connection refused at DatabaseConnection.js:42
+
+* The user does not need that information.
+* The developer needs it in logs.
+
+* A better separation is:
+
+  Developer log:
+  "Database connection refused..."
+
+  User response:
+  "We couldn't complete your request. Please try again."
+
+* **Key points:**
+  * custom errors represent application-specific failures
+  * `extends Error` creates specialized error types
+  * errors can propagate through multiple layers
+  * catch an error where meaningful handling is possible
+  * rethrow when another layer should handle it
+  * stack traces help developers find the failure path
+  * `cause` can preserve the original error
+  * detailed errors belong in logs
+  * safe, meaningful messages belong in user-facing responses
+  * asynchronous errors should be handled correctly with `await` / Promise handling
+

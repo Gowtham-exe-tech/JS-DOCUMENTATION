@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Dashboard</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      max-width: 1000px; 
+      margin: 40px auto; 
+      padding: 20px; 
+      background:#f5f7fb; 
+    }
+    h1 { 
+      margin-bottom: 8px;
+     } 
+    .grid { 
+      display:grid; 
+      grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); 
+      gap:16px; 
+    }
+    .card { 
+      background:white; 
+      padding:18px; 
+      border-radius:12px; 
+      box-shadow:0 2px 10px #0001; 
+    }
+    button { 
+      padding:9px 13px; border:0; 
+      border-radius:7px; 
+      cursor:pointer; margin:4px; 
+    }
+    .status { 
+      font-weight:bold; 
+    } 
+    #output { 
+      margin-top:20px; 
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Order Management</h1>
+  <p>Classes, constructor, methods, inheritance, super and static in one browser application.</p>
+  <div id="orders" class="grid"></div>
+  <div id="output" class="card"></div>
+  
+  <script src="script.js"></script>
+
+</body>
+</html>

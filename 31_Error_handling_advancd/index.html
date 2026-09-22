@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Checkout - Advanced Error Handling</title>
+    <style>
+        body{
+            font-family:Arial;
+            max-width:800px;
+            margin:40px auto;
+            padding:20px;
+            background:#f5f7fb
+        }
+        .card{
+            background:white;
+            padding:22px;
+            border-radius:12px;
+            box-shadow:0 2px 10px #0001
+        }
+        button{
+            padding:10px 14px;
+            border:0;
+            border-radius:7px;
+            cursor:pointer;
+            margin:4px
+        }
+        #user{
+            margin-top:18px;
+            padding:12px;
+            background:#eef2f7;
+            border-radius:8px
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Checkout Error Handling</h1>
+        <p>Different failures are represented by different custom errors.</p>
+        <button data-case="valid">Successful checkout</button>
+        <button data-case="validation">Validation error</button>
+        <button data-case="payment">Payment error</button>
+        <button data-case="unknown">Unexpected error</button>
+        <div id="user"></div>
+    </div>
+    
+    <script src="script.js"></script>
+</body></html>

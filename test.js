@@ -287,6 +287,8 @@
 // console.log(date);
 
 
-const ne = "hi";
-console.log(Number(ne));
+// const ne = "hi";
+// console.log(Number(ne));
 
+const arr = ['hi', 'hello', 'king'];
+console.log(arr.at('-1'));

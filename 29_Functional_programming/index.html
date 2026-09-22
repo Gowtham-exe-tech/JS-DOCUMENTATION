@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Expense Report - Functional Programming</title>
+    <style>
+        body{
+            font-family:Arial;
+            max-width:850px;
+            margin:40px auto;
+            padding:20px;
+            background:#f5f7fb
+        }
+        .card{
+            background:white;
+            padding:20px;
+            margin:14px 0;
+            border-radius:12px;
+            box-shadow:0 2px 10px #0001
+        }
+        button{
+            padding:10px 14px;
+            border:0;
+            border-radius:7px;
+            cursor:pointer
+        }
+        li{
+            margin:8px 0
+        }
+    </style>
+</head>
+<body>
+    <h1>Expense Approval Report</h1>
+    <p>This example uses pure functions, immutability, composition and currying.</p>
+    <div class="card">
+        <button id="raise">Approve Office Expenses</button>
+        <div id="report"></div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
