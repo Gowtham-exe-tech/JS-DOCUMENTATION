@@ -35,3 +35,33 @@ const paymentAmount = (total, discount) => {
     return total - discount;
 };
 console.log(`Amount to pay: ${paymentAmount(total,discount)}`);
+
+
+////////////////////////////////////////////////////
+
+
+/// function treated as value/data 
+const paymentMethods = {
+    card: function(amount) {
+        // card payment
+    },
+
+    upi: function(amount) {
+        // UPI payment
+    },
+
+    cash: function(amount) {
+        // cash payment
+    }
+};
+
+/// Actual operation in your application
+
+function calculateOrderTotal(order) {
+}
+
+function validateOrder(order) {
+}
+
+function createInvoice(order) {
+}

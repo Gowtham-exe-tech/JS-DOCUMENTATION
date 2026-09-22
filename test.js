@@ -210,3 +210,83 @@
 // for (const {key, value} of Object.entries(expense)) {
 //     console.log(`${key}: ${value}`);
 // }
+
+
+
+// hello();
+
+// const hello = function () {
+//     console.log(`Hello`);
+// }
+
+// let x = 10;
+// let power = (M) => x**2;
+// console.log(power());
+ 
+
+// function logging (message, ...details) {
+//     console.log(`Log: ${message}`);
+
+//     for (const detail of details) {
+//         console.log(" -> ",detail);
+//     }
+// }
+
+// logging("server started.....");
+// logging("payment failed",102,"upi",1500);
+// logging("user logged in",200);
+
+// let amountInput = "90.99";
+
+// const amount = parseFloat(amountInput);
+
+// if (Number.isNaN(amount)) {
+//     console.log("Invalid amount");
+// } else {
+//     const displayAmount = amount.toFixed(2);
+
+//     console.log(`₹${displayAmount}`);
+// }
+
+// const expense = {
+//     id : 101,
+//     amount: 3500,
+//     Status: "pending",
+//     submittedAt: new Date(),
+// }
+
+// console.log(expense);
+
+// const dis_per = 10;
+// const amount = 500;
+
+// const discount = () => amount * (dis_per / 100);
+
+// console.log(discount());
+
+// const expense = {
+//     id : 101,
+//     amount: 3500,
+//     Status: "pending",
+//     submittedAt: Date.now(),//timestamp
+// }
+
+// console.log(expense);
+
+// const createdAt = new Date(expense.submittedAt);
+
+// //format for user
+// const date = createdAt.toLocaleString("en-IN", {
+//     day: "2-digit",
+//     month: "short",
+//     year: "numeric",
+//     hour: "2-digit",
+//     minute: "2-digit",
+// });
+
+// console.log(date);
+
+
+const ne = "hi";
+console.log(Number(ne));
+

@@ -1094,7 +1094,7 @@ console.log(`Amount to pay: ${paymentAmount(total,discount)}`);
 
 * If the argument is missing when needed parmeter is needed, the parameter will get `undefined`.
 
-###Default parameter
+### Default parameter
 
 ```js
 function greet(name = "Guest") {
@@ -1114,15 +1114,13 @@ greet();
 * It shoud be the last parameter of the function
 
 ```js
-function calculateTotal(...amounts) {
-    let total = 0;
+function logging (message, ...details) {
+    console.log(`Log: ${message}`);
 
-    for (const amount of amounts) {
-        total += amount;
+    for (const detail of details) {
+        console.log(" ",detail);
     }
-    return total;
 }
-console.log(calculateTotal(100, 200, 300));
 ```
 
 ## Hoisting
@@ -2036,12 +2034,13 @@ const total = price * quantity;
 Example: Converting user input
 
 ```js
-const quantity = "5";
-const parsedQuantity = parseInt(quantity, 10);
-console.log(parsedQuantity);
+const quantity = parseInt(
+    document.querySelector("#quantity").value,
+    10
+);
 ```
 
-* The `10` specifies that the number should be interpreted as decimal.
+* The `10` specifies that the number should be interpreted as decimal, base.
 
 * Useful when receiving integer values as strings from forms, URLs or APIs.
 
@@ -2056,7 +2055,7 @@ const numericPrice = parseFloat(price);
 console.log(numericPrice);
 ```
 
-* Useful for prices, measurements, percentages etc.
+* Useful for price, tax, measurements etc.
 
 ## `toFixed()`
 
@@ -2069,17 +2068,17 @@ const amount = 1499.567;
 console.log(amount.toFixed(2));
 ```
 
-Result:
+Result: `1499.57`
 
-`1499.57`
-
-* Note: `toFixed()` returns a string.
+* Note: `toFixed()` returns a **string**.
 
 ```js
 const amount = 1499.567;
 const formattedAmount = amount.toFixed(2);
 console.log(typeof formattedAmount); // string
 ```
+**ParseInt, ParseFloat : conversion**
+**toFixed : formatting**
 
 ## `isNaN()`
 
@@ -2134,7 +2133,7 @@ console.log(highestMark);
 
 # Dates & Times
 
-* JavaScript uses the `Date` object to work with dates and times.
+* JavaScript uses the `Date` object to work with dates and times (i.e) **representing a specific point in time.**
 
 * Dates are commonly used for order dates, payment dates, login times, deadlines, created dates etc.
 
@@ -2142,7 +2141,7 @@ console.log(highestMark);
 
 ```js
 const currentDate = new Date();
-console.log(currentDate);
+console.log(currentDate); //2026-09-22T09:24:23.945Z
 ```
 
 * This creates a `Date` object containing the current date and time.
@@ -2161,11 +2160,9 @@ console.log(order);
 
 ## Date Methods
 
-Common methods:
-
 `getFullYear()` → gets year
 
-`getMonth()` → gets month
+`getMonth()` → gets month, starts from 0
 
 `getDate()` → gets day of the month
 
@@ -2179,7 +2176,6 @@ Ex:
 
 ```js
 const date = new Date();
-
 console.log(date.getFullYear());
 console.log(date.getMonth());
 console.log(date.getDate());
@@ -2196,18 +2192,21 @@ Note: `getMonth()` returns a zero-based month.
 
 * It can be used to display a date in a human-readable format.
 
-```js
-const orderDate = new Date();
-console.log(orderDate.toLocaleDateString());
-```
-
 Example:
 ```js
 const orderDate = new Date();
 
 console.log(
     orderDate.toLocaleDateString("en-IN")
-);
+); //22/9/2026
+
+const formatted = orderDate.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+});
+
+console.log(formatted); //22 Sept 2026
 ```
 
 * Useful when displaying dates to users.
@@ -2216,12 +2215,6 @@ console.log(
 ## Timestamps
 
 * represents a date/time as the number of milliseconds since January 1, 1970 UTC.
-
-```js
-const timestamp = Date.now();
-
-console.log(timestamp);
-```
 
 Ex: Measuring how long an operation takes
 
@@ -2237,6 +2230,9 @@ console.log(`Operation took ${endTime - startTime} ms`);
 
 * Timestamps are useful for comparing dates and measuring elapsed time.
 * APIs and databases commonly store dates in standardized formats or timestamps.
+
+**current date = new Date(); timestamp = Date.now();** 
+
 
 ## Comparing Dates
 
@@ -2256,15 +2252,17 @@ if (currentDate > deadline) {
 ```
 
 * Useful for deadlines, expiry dates, due dates, appointments etc.
+
 * Be careful with time zones when working with real-world applications across different countries.
 
 # 13. Error Handling
 
-Error handling is used to prevent the application from breaking when
+* Error handling is used to prevent the application from breaking when
 something unexpected happens.
 
-Main concepts:
+* **Error** when they are **uncaught** break the flow of the program.
 
+Main concepts:
 -   `try`
 -   `catch`
 -   `finally`
@@ -2273,16 +2271,15 @@ Main concepts:
 
 ## try
 
-`try` contains code that may produce an error.
+* `try` contains code that may produce an error.
 
-In a real application, this is useful around operations such as API
-calls, JSON parsing, file operations, or database operations.
+* In a real application, this is useful around operations such as API calls, JSON parsing, file operations, or database operations.
 
 ## catch
 
-`catch` handles the error when something fails.
+* `catch` handles the error when something fails.
 
-The error object normally gives useful information such as:
+* The error object normally gives useful information such as:
 
 ``` js
 error.message
@@ -2292,27 +2289,26 @@ error.stack
 
 ## finally
 
-`finally` runs whether the operation succeeds or fails.
+* `finally` runs whether the operation succeeds or fails.
 
-A common use is cleanup, such as hiding a loading indicator after an API
+* A common use is cleanup, such as hiding a loading indicator after an API
 request.
 
 ## throw
 
-`throw` is used when our application detects an invalid condition and
+* `throw` is used when our application detects an invalid condition and
 wants to stop the current operation with an error.
 
-For example, an API may return a response successfully, but the
+* For example, an API may return a response successfully, but the
 application may still consider it invalid because required data is
 missing.
 
 ## Custom errors
 
-Custom errors are useful when a larger application needs to distinguish
+* Custom errors are useful when a larger application needs to distinguish
 between different types of failures.
 
 For example:
-
 -   validation error
 -   authentication error
 -   authorization error
@@ -2320,11 +2316,9 @@ For example:
 
 ## Real application example --- Student registration
 
-Imagine a student management application where the frontend sends
-student data to a backend API.
+* Imagine a student management application where the frontend sends student data to a backend API.
 
 The application needs to:
-
 1.  validate the data
 2.  send the request
 3.  check the response

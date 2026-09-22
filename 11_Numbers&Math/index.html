@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout Calculator</title>
+</head>
+<body>
+
+    <h1>Checkout</h1>
+    <form id="checkoutForm">
+
+        <label for="price">Product Price</label>
+        <input type="text" id="price" placeholder="Enter price">
+        <br><br>
+        
+        <label for="quantity">Quantity</label>
+        <input type="number" id="quantity" min="1"placeholder="Enter quantity">
+        <br><br>
+
+        <label for="discount">Discount</label>
+        <input type="text" id="discount" placeholder="Enter discount">
+        <br><br>
+
+        <button type="submit">Calculate Total</button>
+    </form>
+
+    <hr>
+    <div id="result"></div>
+    <script>
+            const form = document.querySelector("#checkoutForm");
+            const result = document.querySelector("#result");
+
+            form.addEventListener("submit", function (event) {
+
+                event.preventDefault();
+
+                // Get values from HTML
+                const priceInput = document.querySelector("#price").value;
+                const quantityInput = document.querySelector("#quantity").value;
+                const discountInput = document.querySelector("#discount").value;
+
+                // Convert strings into numbers
+                const price = parseFloat(priceInput);
+                const quantity = parseInt(quantityInput, 10);
+                const discount = parseFloat(discountInput);
+
+                // Validate numbers
+                if (Number.isNaN(price) || Number.isNaN(quantity) || Number.isNaN(discount)) {
+                    result.textContent = "Please enter valid numbers.";
+                    return;
+                }
+
+                const subtotal = price * quantity;
+                const gst = subtotal * 0.18;
+                const total = subtotal + gst - discount;
+
+                result.innerHTML = `
+                    <p>Price: ₹${price.toFixed(2)}</p>
+                    <p>Quantity: ${quantity}</p>
+                    <p>Subtotal: ₹${subtotal.toFixed(2)}</p>
+                    <p>GST (18%): ₹${gst.toFixed(2)}</p>
+                    <p>Discount: ₹${discount.toFixed(2)}</p>
+                    <h2>Total: ₹${total.toFixed(2)}</h2>`;
+            });
+    </script>
+
+</body>
+</html>
