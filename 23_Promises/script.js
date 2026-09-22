@@ -1,5 +1,4 @@
 const output = document.querySelector("#output");
-
 const createOrder = () =>
   new Promise((resolve) => {
     setTimeout(() => resolve({ orderId: 501, amount: 2499 }), 700);
@@ -28,7 +27,6 @@ const sendConfirmation = (order) =>
 
 document.querySelector("#checkoutBtn").addEventListener("click", () => {
   output.textContent = "Starting checkout...";
-
   createOrder()
     .then(reserveInventory)
     .then(chargePayment)

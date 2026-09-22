@@ -1,10 +1,7 @@
-// Real app example: a small task manager using ES6+ features.
-
 const tasks = [
   { id: 1, title: "Fix login bug", status: "pending", tags: ["bug", "backend"] },
   { id: 2, title: "Update dashboard", status: "done", tags: ["frontend"] }
 ];
-
 const output = document.querySelector("#output");
 const input = document.querySelector("#taskInput");
 
@@ -25,7 +22,6 @@ const addTask = (title, ...tags) => {
 document.querySelector("#addBtn").addEventListener("click", () => {
   const title = input.value.trim();
   if (!title) return;
-
   const defaultTags = ["user-created"];
   addTask(title, ...defaultTags);
   input.value = "";
@@ -34,11 +30,9 @@ document.querySelector("#addBtn").addEventListener("click", () => {
 document.querySelector("#summaryBtn").addEventListener("click", () => {
   const [firstTask, ...remainingTasks] = tasks;
   const doneCount = tasks.filter(({ status }) => status === "done").length;
-
   output.textContent = `Task count: ${tasks.length}
-Done: ${doneCount}
-First task: ${firstTask.title}
-Remaining tasks: ${remainingTasks.length}
-
-${tasks.map(renderTask).join("\n")}`;
+                        Done: ${doneCount}
+                        First task: ${firstTask.title}
+                        Remaining tasks: ${remainingTasks.length}
+                        ${tasks.map(renderTask).join("\n")}`;
 });
