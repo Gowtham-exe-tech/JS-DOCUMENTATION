@@ -1343,678 +1343,3041 @@ console.log(session.isActive()); // false
 
 # Arrays
 
-* An array is an ordered collection of values stored under one variable.
-
-* They are commonly used when we have a collection of related data such as users, products, orders, expenses, students etc.
-
-## Creating an Array
-
-* An array can contain multiple values and the values can be accessed using their index.
+* Array is used when we need to store multiple values in one variable.
+* In real applications, arrays usually contain objects and nested arrays instead of simple values.
+* Example: In a job application system, one application can contain education, skills, internships, documents and reviews.
 
 ```js
-const products = ["Laptop", "Mouse", "Keyboard"];
-console.log(products);
-
-//new array 
-
-const students = []; // typeof array
-
-const students = new Array(); //typeof object
+const applications = [
+    {
+        applicationId: "APP-2026-0001",
+        applicant: {
+            name: "Gowtham Kumar",
+            location: {
+                city: "Coimbatore",
+                state: "Tamil Nadu"
+            },
+            education: [
+                {
+                    degree: "B.E",
+                    department: "Computer Science",
+                    cgpa: 8.4
+                }
+            ],
+            skills: [
+                {
+                    name: "JavaScript",
+                    level: "Intermediate",
+                    experience: 1.5
+                },
+                {
+                    name: "Python",
+                    level: "Intermediate",
+                    experience: 2
+                },
+                {
+                    name: "React",
+                    level: "Beginner",
+                    experience: 0.8
+                }
+            ],
+            internships: [
+                {
+                    company: "Tech Solutions Pvt Ltd",
+                    role: "Software Developer Intern",
+                    duration: "3 months",
+                    technologies: ["JavaScript", "Node.js", "Express", "MongoDB"]
+                }
+            ]
+        },
+        position: {
+            title: "Full Stack Developer",
+            department: "Engineering"
+        },
+        status: "Pending",
+        submittedAt: "2026-09-20",
+        review: null
+    }
+]
 ```
-* An array can contain different data types, but in real applications it is usually better to keep related data in a consistent structure.
 
-## Indexing
+## Creating arrays
 
-* Index = how far away from the beginning.( Offset from the beginning)
-
-* Arrays are **zero based-indexing**, so the first value starts from index `0`.
-
-* It is used to access or change a particular value in an array.
-
-* **Even** if we are using **const**  array supports** elements update but **not reassigning**.
+* Arrays can be created using `[]`.
+* In production applications, arrays are normally created from API responses, database queries, user input or data processing rather than manually writing every item.
 
 ```js
-const products = ["Laptop", "Mouse", "Keyboard"];
-
-console.log(products[0]); // Laptop
-console.log(products[2]); // Keyboard
+const applications = [
+    {
+        id: 1,
+        name: "Gowtham",
+        status: "Pending"
+    },
+    {
+        id: 2,
+        name: "Arun",
+        status: "Shortlisted"
+    }
+]
 ```
-Ex: Updating a product name
+
+* The important thing is that an array can contain objects, and those objects can contain more arrays and objects.
+
+## Accessing array elements
+
+* Array index starts from `0`.
+* We use an index when we specifically need one item from an array.
 
 ```js
-const products = ["Laptop", "Mouse", "Keyboard"];
+const applications = [
+    { id: 1, name: "Gowtham" },
+    { id: 2, name: "Arun" },
+    { id: 3, name: "Priya" }
+]
 
-products[1] = "Wireless Mouse";
-
-console.log(products);
+console.log(applications[1].name)
 ```
-* `array.length` gives the number of elements in the array.
 
-* In real applications, ApIs return collections of data.
+```text
+Arun
+```
 
-* eg:
+* In a real application, this can be used when we already know the position of an item, but normally we use methods like `find()` when we need to locate an object using its ID.
+
+## Changing array values
+
+* Arrays are mutable, which means existing elements can be changed.
+* This is useful when application state changes, such as changing an applicant status.
+
 ```js
-const expenses = [
-    { employee: "Arun", amount: 500 },
-    { employee: "Priya", amount: 1200 },
-    { employee: "Kumar", amount: 800 }
-];
-for (const expense of expenses) {
-    console.log(expense.employee);
+applications[0].status = "Shortlisted"
+```
+
+* The original object inside the array is modified.
+
+## Adding items with push()
+
+* `push()` adds one or more items to the end of an array.
+* Production example: when an admin adds another skill to an applicant.
+
+```js
+application.applicant.skills.push({
+    name: "Docker",
+    level: "Beginner",
+    experience: 0.5
+})
+```
+
+* The new skill becomes part of the existing applicant data.
+
+## Removing items with pop()
+
+* `pop()` removes the last item from an array.
+* It is useful when the latest item needs to be removed, but in production we usually remove data based on an ID or condition instead of assuming the last item is the one we need.
+
+```js
+const lastSkill = application.applicant.skills.pop()
+```
+
+## Adding items with unshift()
+
+* `unshift()` adds an item to the beginning of an array.
+* This can be useful when the newest activity or notification should appear first.
+
+```js
+notifications.unshift({
+    id: "NOT-1005",
+    message: "New application received",
+    createdAt: "2026-09-24T09:30:00"
+})
+```
+
+## Removing items with shift()
+
+* `shift()` removes the first item from an array.
+* It can be useful for queue-like data where the oldest item is processed first.
+
+```js
+const nextApplication = applicationQueue.shift()
+```
+
+* After removing the first application, the next application becomes the first item.
+
+## length
+
+* `length` tells how many elements are currently inside an array.
+* In production, it can be used for dashboard counts, validation and checking whether data exists.
+
+```js
+const totalApplications = applications.length
+```
+
+```text
+5
+```
+
+## forEach()
+
+* `forEach()` runs a function for every item in an array.
+* It is commonly used when we need to perform an action for every item, such as creating table rows or displaying notifications.
+
+```js
+applications.forEach(application => {
+    console.log(
+        application.applicationId,
+        application.applicant.name,
+        application.status
+    )
+})
+```
+
+* It is mainly used for side effects. It does not create a new array from the returned values.
+
+## map()
+
+* `map()` creates a new array by transforming every item.
+* In production, it is useful when API data needs to be converted into UI data or another structure.
+
+```js
+const applicantNames = applications.map(application => {
+    return application.applicant.name
+})
+```
+
+```text
+[
+    "Gowtham Kumar",
+    "Arun Prakash",
+    "Priya Devi"
+]
+```
+
+* Example of converting API data for a dashboard:
+
+```js
+const dashboardData = applications.map(application => ({
+    id: application.applicationId,
+    applicant: application.applicant.name,
+    position: application.position.title,
+    status: application.status
+}))
+```
+
+## filter()
+
+* `filter()` creates a new array containing only the items that satisfy a condition.
+* This is heavily used in production for search, status filters, permissions and reports.
+
+```js
+const shortlistedApplications = applications.filter(application => {
+    return application.status === "Shortlisted"
+})
+```
+
+* The original `applications` array is not changed.
+
+## find()
+
+* `find()` returns the first object that matches a condition.
+* This is useful when we need one specific record, usually by ID.
+
+```js
+const application = applications.find(application => {
+    return application.applicationId === "APP-2026-0003"
+})
+```
+
+* This is commonly used when an admin clicks `View Application`.
+
+## findIndex()
+
+* `findIndex()` returns the index of the first matching item.
+* It is useful when we need to find an item and then update or remove it.
+
+```js
+const index = applications.findIndex(application => {
+    return application.applicationId === "APP-2026-0003"
+})
+```
+
+* If no item is found, it returns `-1`.
+
+## some()
+
+* `some()` checks whether at least one item satisfies a condition.
+* It returns `true` or `false`.
+
+```js
+const hasShortlistedApplicant = applications.some(application => {
+    return application.status === "Shortlisted"
+})
+```
+
+* Production use: checking whether an admin has any pending approval, whether a cart contains restricted products, or whether a user has a required permission.
+
+## every()
+
+* `every()` checks whether all items satisfy a condition.
+* It also returns `true` or `false`.
+
+```js
+const allApplicationsReviewed = applications.every(application => {
+    return application.review !== null
+})
+```
+
+* This can be useful when checking whether every application in a review batch has been processed.
+
+## includes()
+
+* `includes()` checks whether an array contains a specific value.
+* It is useful for simple arrays such as roles, permissions or technologies.
+
+```js
+const allowedRoles = [
+    "HR",
+    "Manager",
+    "Admin"
+]
+
+if (allowedRoles.includes(currentUser.role)) {
+    console.log("Access allowed")
 }
 ```
 
-## `push()`
+* For arrays containing objects, `includes()` is usually not enough because it checks object references. Methods like `some()` or `find()` are better.
 
-* Adds one or more elements to the end of an array.
-*  It returns a **new length of array**.
-Ex: Adding a new order to an order list
+## sort()
 
-```js
-const orders = ["ORD101", "ORD102"];
-orders.push("ORD103");
-console.log(orders);
-```
-
-* `push()` changes the original array.
-* Useful when new data needs to be added to the end of a collection.
-
-## `pop()`
-
-* Removes the last element from an array.
-* Returns the **element that was removed**
-Eg: Processing a stack of pending tasks
+* `sort()` rearranges the original array.
+* In production, it can be used to sort applications by submission date, experience, CGPA or priority.
 
 ```js
-const tasks = ["Task A", "Task B", "Task C"];
-
-const task = tasks.pop();
-console.log(task);  // Task C
-console.log(tasks); // ["Task A", "Task B"]
+applications.sort((a, b) => {
+    return new Date(b.submittedAt) - new Date(a.submittedAt)
+})
 ```
 
-* `pop()` changes the original array.
-* It returns the removed element.
+* This sorts the newest applications first.
 
-## `shift()`
-
-* It removes the first element from an array.
-Example: Processing the first customer in a queue
+* Another production example:
 
 ```js
-const customerQueue = ["Customer A", "Customer B", "Customer C"];
-
-const customer = customerQueue.shift();
-console.log(customer);       // Customer A
-console.log(customerQueue);  // ["Customer B", "Customer C"]
+applications.sort((a, b) => {
+    return b.applicant.education[0].cgpa -
+           a.applicant.education[0].cgpa
+})
 ```
 
-* Useful when implementing a simple queue.
+* Be careful because `sort()` changes the original array.
+
+## reverse()
+
+* `reverse()` reverses the order of an array.
 * It changes the original array.
 
-## `unshift()`
-
-* It adds one or more elements to the beginning of an array.
-Eg: Adding an urgent support ticket to the front of a queue
-
 ```js
-const tickets = ["Ticket 102", "Ticket 103"];
-
-tickets.unshift("Urgent Ticket 101");
-console.log(tickets);
+applications.reverse()
 ```
 
-* Useful when a new item needs to be placed at the beginning.
-* It changes the original array.
+* In production, it can be useful when changing display order, but we should avoid changing shared application state accidentally.
 
-## `splice()`
+## slice()
 
-* It is used to add, remove, or replace elements at a specific position.
-
-The basic structure is:
-`array.splice(start, deleteCount, items);`
-
-Eg:
+* `slice()` creates a portion of an array without changing the original array.
+* It is useful for pagination.
 
 ```js
-
-//Remove
-const orders = ["ORD101", "ORD102", "ORD103"];
-orders.splice(1, 1);
-console.log(orders);
-
-// Here:
-// - `1` → start from index 1
-// - `1` → remove one element
-
-//ADD
-const orders = ["ORD101", "ORD102", "ORD103"];
-orders.splice(1, 0, "ORD105");
-console.log(orders);
-
-//Replace
-const orders = ["ORD101", "ORD102", "ORD103"];
-orders.splice(1, 1, "ORD105");
-console.log(orders);
-
+const pageSize = 10
+const currentPage = 2
+const start = (currentPage - 1) * pageSize
+const end = start + pageSize
+const pageApplications = applications.slice(start, end)
 ```
-* `splice()` modifies the original array.
-* Useful when we need to change the array at a specific position.
 
-## `slice()`
-* It creates a new array containing a portion of the original array.
+* This is a common pattern for displaying only one page of a large dataset.
 
-* It returns copied portion.
+## splice()
+
+* `splice()` can add, remove or replace items inside an array.
+* Unlike `slice()`, it changes the original array.
 
 ```js
-const orders = ["ORD101", "ORD102", "ORD103", "ORD104"];
-
-const recentOrders = orders.slice(1,2); //end is excluded
-console.log(recentOrders);
+applications.splice(index, 1)
 ```
 
-* `slice()` → creates a new portion of an array.
-* `splice()` → changes the original array.
+* This can remove an application from local application state, but in a real production system the backend/database would normally also need to be updated.
 
-**Example**:
-* splice() : Removing an item from the locl cart
+## reduce()
 
-* slice() : Displaying only the first 10 products among the product complete list.
-
-## `map()` "transform every element"
-
-* It creates a new array by transforming every element of the original array.
-
-Eg: Getting product names from product objects
+* `reduce()` processes the entire array and produces one final value.
+* It is very useful for totals, counts, grouping and dashboard calculations.
 
 ```js
-const products = [
-    { id: 1, name: "Laptop", price: 50000 },
-    { id: 2, name: "Mouse", price: 1000 },
-    { id: 3, name: "Keyboard", price: 2000 }
-];
-
-const productNames = products.map(product => product.name);
-console.log(productNames);
+const totalApplications = applications.reduce((total, application) => {
+    return total + 1
+}, 0)
 ```
 
-O/P:
-`["Laptop", "Mouse", "Keyboard"]`
-
-* Use `map()` when we want to transform every item.
-* It returns a new array.
-* The original array is not changed.
-
-Ex: Adding tax to product prices
+* A more useful production example:
 
 ```js
-const prices = [1000, 2000, 3000];
-const pricesWithTax = prices.map(price => price * 1.18);
-console.log(pricesWithTax);
+const statusCount = applications.reduce((result, application) => {
+
+    const status = application.status
+
+    if (!result[status]) {
+        result[status] = 0
+    }
+
+    result[status]++
+
+    return result
+
+}, {})
 ```
 
-## `filter()` "keep elements that satisfy consdition"
-
-* creates a new array containing only the elements that satisfy a condition.
-
-Ex: Getting high-value orders
+Result:
 
 ```js
-const orders = [
-    { id: 101, amount: 500 },
-    { id: 102, amount: 1500 },
-    { id: 103, amount: 800 },
-    { id: 104, amount: 2000 }
-];
-
-const highValueOrders = orders.filter(order => order.amount > 1000);
-console.log(highValueOrders);
+{
+    Pending: 2,
+    Shortlisted: 2,
+    Rejected: 1
+}
 ```
 
-* Use `filter()` when we want to select some items from an array.
-* It does not modify the original array.
-* The callback must produce a truthy/falsy result.
+* This type of logic is useful for admin dashboards and analytics.
 
-## `reduce()` "combine elements into one result"
+## flat()
 
-* It is used when we want to combine all array elements into a single result.
+* `flat()` converts nested arrays into a single-level array.
+* It is useful when API data contains arrays inside arrays.
 
-Ex: Calculating total order amount
 ```js
-const orders = [
-    { id: 101, amount: 500 },
-    { id: 102, amount: 1500 },
-    { id: 103, amount: 800 }
-];
-
-const total = orders.reduce((sum,order)=>sum + order.amount, 0);
-console.log(total);
+const allTechnologies = applications.flatMap(application => {
+    return application.applicant.internships.map(internship => {
+        return internship.technologies
+    })
+})
 ```
 
-Here:
-`sum` → accumulated result
-`order` → current item
-`0` → initial value
+* If the result contains nested arrays, `flat()` can flatten them.
 
-* Useful for calculating totals, counts, averages, grouping values etc.
-* Unlike `map()` and `filter()`, the final result does not have to be an array.
+## flatMap()
 
-- `map()` → transform every item
-- `filter()` → select some items
-- `reduce()` → combine items into one result
+* `flatMap()` combines `map()` and one level of `flat()`.
+* It is useful when every application can contain multiple internships, skills or documents and we want one combined list.
+
+```js
+const allSkills = applications.flatMap(application => {
+    return application.applicant.skills
+})
+```
+
+* Now `allSkills` contains the skills from all applicants in one array.
+
+## Array.isArray()
+
+* `Array.isArray()` checks whether a value is actually an array.
+* This is useful when processing API data because the backend may return `null`, an object or an array depending on the situation.
+
+```js
+if (Array.isArray(application.applicant.internships)) {
+    console.log("Internship data exists")
+}
+```
+
+* This prevents mistakes such as calling `.map()` or `.forEach()` on a non-array value.
+
+## Checking an empty array
+
+* An empty array is truthy in JavaScript.
+
+```js
+if (application.applicant.internships) {
+    // This still runs when internships = []
+}
+```
+
+* The correct way to check whether it contains data is:
+
+```js
+if (application.applicant.internships.length > 0) {
+    console.log("Applicant has internships")
+}
+```
+
+## Chaining array methods
+
+* Production code often combines multiple array methods to process data.
+* Example: find all JavaScript developers who are shortlisted and have more than one year of experience.
+
+```js
+const result = applications
+    .filter(application => application.status === "Shortlisted")
+    .filter(application => {
+        return application.applicant.skills.some(skill =>
+            skill.name === "JavaScript" &&
+            skill.experience >= 1
+        )
+    })
+```
+
+* Each method handles one responsibility, making the data processing easier to understand.
+
+## Arrays with nested objects
+
+* Real application data is usually not a simple array of strings.
+* One array item can contain objects, and those objects can contain other arrays.
+
+```js
+const applications = [
+    {
+        applicant: {
+            name: "Gowtham",
+            skills: [
+                {
+                    name: "JavaScript",
+                    experience: 2
+                }
+            ],
+            internships: [
+                {
+                    company: "ABC Technologies",
+                    technologies: [
+                        "JavaScript",
+                        "Node.js",
+                        "MongoDB"
+                    ]
+                }
+            ]
+        }
+    }
+]
+```
+
+* To access the technology:
+
+```js
+applications[0]
+    .applicant
+    .internships[0]
+    .technologies[1]
+```
+
+```text
+Node.js
+```
+
+* This type of nested structure is common when frontend applications receive structured JSON from backend APIs.
+
+## Array destructuring
+
+* Destructuring allows values from an array to be stored in separate variables.
+* It is useful when we know the position of the values we need.
+
+```js
+const skills = [
+    "JavaScript",
+    "Python",
+    "React"
+]
+
+const [primarySkill, secondSkill] = skills
+```
+
+* `primarySkill` gets `"JavaScript"` and `secondSkill` gets `"Python"`.
+
+## Spread operator with arrays
+
+* The spread operator `...` copies array values into another array.
+* It is commonly used when creating a new array without modifying the original one.
+
+```js
+const existingSkills = [
+    "JavaScript",
+    "Python"
+]
+
+const updatedSkills = [
+    ...existingSkills,
+    "React"
+]
+```
+
+* This pattern is very common in frontend state management because we often create a new array instead of directly modifying existing state.
+
+## Rest parameter with arrays
+
+* Rest `...` collects multiple values into an array.
+* It is useful when a function can receive an unknown number of values.
+
+```js
+function calculateTotal(...amounts) {
+
+    return amounts.reduce((total, amount) => {
+        return total + amount
+    }, 0)
+}
+```
+
+```js
+calculateTotal(1200, 500, 800, 300)
+```
+
+* `amounts` becomes an array containing all the arguments.
+
+## Converting API data into arrays
+
+* In production, arrays commonly come from API responses.
+```js
+const response = await fetch("/api/applications")
+const applications = await response.json()
+```
+
+* After parsing the response, we can use normal array methods like `filter()`, `map()`, `find()` and `reduce()`.
+
+* Example:
+```js
+const pendingApplications = applications.filter(
+    application => application.status === "Pending"
+)
+```
+
+## Important difference between array methods
+
+* `forEach()` → perform something for every item
+* `map()` → transform every item into a new array
+* `filter()` → keep matching items
+* `find()` → get one matching item
+* `findIndex()` → get the index of one matching item
+* `some()` → check if at least one matches
+* `every()` → check if all match
+* `reduce()` → combine many items into one result
+* `sort()` → reorder items
+* `slice()` → copy part of an array
+* `splice()` → modify part of an array
+* `flat()` → flatten nested arrays
+* `flatMap()` → map and flatten one level
+
+## Array processing in a real application
+
+* A production admin page can use many array methods together.
+
+```text
+applications.json
+       ↓
+fetch()
+       ↓
+applications[]
+       ↓
+filter() → status/search
+       ↓
+find() → view one application
+       ↓
+map() → create table data
+       ↓
+some() → check skills
+       ↓
+sort() → order applications
+       ↓
+reduce() → dashboard statistics
+       ↓
+flatMap() → collect all applicant skills
+       ↓
+slice() → pagination
+```
 
 # Objects
 
-* Objects are used to represent a real-world entity using properties and values.
+* Object is used to represent one entity with related data.
+* In real applications, objects usually represent things like users, applicants, products, orders, employees, API responses, etc.
+* An object can contain strings, numbers, arrays, other objects and even functions.
 
-Ex:A user has a name, email and role.
+## Job application object
 
-```js
-const user = {
-    name: "Gowtham",
-    email: "gowtham@example.com",
-    role: "Developer"
-};
-```
-
-## Properties
-
-*  Properties represent the data belonging to an object.
+* In our job application system, one application can be represented as one large object.
 
 ```js
-console.log(user.name);
-console.log(user["email"]);
-```
+const application = {
+    applicationId: "APP-2026-0001",
 
-* Properties can also be accessed using bracket notation.
-* Bracket notation is useful when the property name is stored dynamically.
+    applicant: {
+        personal: {
+            firstName: "Gowtham",
+            lastName: "Kumar",
+            age: 21,
+            phone: "+91-9876543210"
+        },
 
-```js
-const property = "email";
-console.log(user[property]);
-```
+        address: {
+            doorNo: "12/45",
+            street: "Gandhi Nagar",
+            city: "Coimbatore",
+            state: "Tamil Nadu",
+            pincode: "641001"
+        },
 
-## Updating and Adding Properties
+        education: [
+            {
+                degree: "B.E",
+                department: "Computer Science",
+                institution: "Erode Sengunthar Engineering College",
+                graduationYear: 2027,
+                cgpa: 8.4
+            },
+            {
+                degree: "HSC",
+                institution: "ABC Higher Secondary School",
+                graduationYear: 2023,
+                percentage: 89
+            }
+        ],
 
-```js
-const user = {
-    name: "Gowtham",
-    role: "Developer"
-};
+        skills: [
+            {
+                name: "JavaScript",
+                level: "Intermediate",
+                experience: 1.5,
+                verified: true
+            },
+            {
+                name: "Python",
+                level: "Intermediate",
+                experience: 2,
+                verified: true
+            },
+            {
+                name: "React",
+                level: "Beginner",
+                experience: 0.8,
+                verified: false
+            }
+        ],
 
-user.role = "Full Stack Developer";
-user.experience = 1;
-console.log(user);
-```
-
-* Objects are commonly used to represent API data, database records, users, products, orders etc.
-
-## Dynamic property access
-
-```js
-function updateField(user,field, value){
-    user[field] = value;
-}
-
-updateField(user,"role","tester");
-```
-
-
-## Methods
-
-* A method is a function stored as a property of an object.
-
-Ex:
-
-```js
-const expense = {
-    employee: "Gowtham",
-    amount: 2500,
-    status: "Pending",
-
-    approve() {
-        this.status = "Approved";
-        console.log(`${this.employee}'s expense was approved`);
-    }
-};
-
-expense.approve();
-```
-
-Here `login()` is a method of the `user` object.
-
-* **this** is commonly refers to the object that called the function.
-
-* Methods are useful when an action is related to the object.
-
-## Nested Objects
-
-* An object can contain another object as a property.
-
-Ex: User profile information
-
-```js
-const user = {
-    name: "Gowtham",
-    email: "gowtham@example.com",
-
-    address: {
-        city: "Coimbatore",
-        country: "India"
-    }
-};
-
-console.log(user.address.city);
-```
-
-* Nested objects are commonly found in API responses and database data.
-* They allow related information to be grouped together.
-
-## Deleting
-
-```js
-const employee = {
-    name: "Gowtham",
-    role: "Developer",
-    salary: 45000
-};
-
-delete employee.salary;
-console.log(employee);
-```
-
-* But deleting an property in real applications to semd needed object details frontend is not the way.
-
-* Instead we can do this:
-
-```js
-const employee = {
-    name: "Gowtham",
-    role: "Developer",
-    salary: 45000,
-    password: "secret"
-};
-
-const publicEmployee = {
-    name: employee.name,
-    role: employee.role
-};
-```
-* To check whether a property exists in object use **in** operator.
-
-## Nested Objects
-
-```js
-const employee = {
-    id: 101,
-    name: "Gowtham",
-    role: "Developer",
-
-    department: {
-        name: "Development",
-        code: "DEV"
+        internships: [
+            {
+                company: "Tech Solutions Pvt Ltd",
+                role: "Software Developer Intern",
+                duration: "3 months",
+                technologies: [
+                    "JavaScript",
+                    "Node.js",
+                    "Express",
+                    "MongoDB"
+                ]
+            }
+        ]
     },
 
-    address: {
-        city: "Tiruppur",
-        state: "Tamil Nadu"
+    position: {
+        title: "Full Stack Developer",
+        department: "Engineering",
+        experienceRequired: 1
+    },
+
+    applicationStatus: {
+        current: "Pending",
+        updatedAt: "2026-09-20T10:30:00",
+        updatedBy: "System"
+    },
+
+    documents: {
+        resume: {
+            fileName: "gowtham-resume.pdf",
+            fileType: "application/pdf",
+            fileSize: 245760,
+            uploadedAt: "2026-09-20T10:20:00"
+        }
+    },
+
+    review: {
+        reviewed: false,
+        reviewer: null,
+        rating: null,
+        comments: null
+    },
+
+    metadata: {
+        source: "company-career-page",
+        ipAddress: "192.168.1.20",
+        createdAt: "2026-09-20T10:15:00",
+        lastModifiedAt: "2026-09-20T10:30:00"
     }
-};
-
-console.log(employee.department.code);
-
+}
 ```
 
-* Object inside object = nested object.
+## Creating an object
 
-* Array inside object = collection belonging to that object.
-
-* Objects inside an array = multiple real-world records.
-
-## Destructuring
-
-* Destructuring is used to extract values from objects or arrays directly into variables.
-
-Ex:
+* Objects are created using `{}`.
+* Objects store data using `key: value` pairs.
 
 ```js
-const expense = {
-    id: 501,
-    employee: "Gowtham",
-    category: "Travel",
-    amount: 2500,
+const applicant = {
+    name: "Gowtham",
+    age: 21,
+    position: "Full Stack Developer"
+}
+```
+
+* In production, an object usually represents one complete record instead of only a few values.
+
+## Object properties
+
+* A property is a key-value pair inside an object.
+* The key describes what the value represents.
+
+```js
+const application = {
+    applicationId: "APP-2026-0001",
+    status: "Pending",
+    submittedAt: "2026-09-20"
+}
+```
+
+* Here `applicationId`, `status` and `submittedAt` are properties.
+
+## Accessing object properties
+
+* We can access properties using dot notation.
+* Dot notation is normally the easiest way when the property name is known.
+
+```js
+console.log(application.applicationId)
+console.log(application.status)
+```
+
+```text
+APP-2026-0001
+Pending
+```
+
+## Bracket notation
+
+* Bracket notation is useful when the property name is stored inside a variable or when the property name contains special characters.
+
+```js
+const field = "applicationStatus"
+
+console.log(application[field])
+```
+
+* This is very useful in dynamic forms and API-driven applications where the property we want to access is decided at runtime.
+
+## Dot notation vs bracket notation
+
+```js
+application.applicant.personal.firstName
+```
+
+* Use dot notation when we already know the property name.
+
+```js
+const field = "firstName"
+
+application.applicant.personal[field]
+```
+
+* Use bracket notation when the property name comes dynamically.
+
+## Nested objects
+
+* Objects can contain other objects.
+* Production data is usually nested because one entity can have many related details.
+
+```js
+application.applicant.address.city
+```
+
+```text
+Coimbatore
+```
+
+* Here we move through multiple levels:
+
+```text
+application
+    ↓
+applicant
+    ↓
+address
+    ↓
+city
+```
+
+## Objects containing arrays
+
+* An object can contain arrays.
+* This is very common when one entity can have multiple values.
+
+```js
+application.applicant.skills
+```
+
+* The value is an array containing multiple skill objects.
+
+```js
+application.applicant.skills[0].name
+```
+
+```text
+JavaScript
+```
+
+* This means we are combining object and array access.
+
+## Arrays containing objects
+
+* Arrays can contain multiple objects.
+* This is the normal structure for API collections.
+
+```js
+const applications = [
+    {
+        applicationId: "APP-2026-0001",
+        applicant: {
+            name: "Gowtham"
+        }
+    },
+    {
+        applicationId: "APP-2026-0002",
+        applicant: {
+            name: "Arun"
+        }
+    }
+]
+```
+
+* Each array element represents one application object.
+
+## Adding a property
+
+* JavaScript allows us to add a new property to an existing object.
+* This can be useful when additional information becomes available.
+
+```js
+application.review.status = "Pending"
+```
+
+* If `review.status` did not exist before, JavaScript creates it.
+
+## Updating a property
+
+* Existing object properties can be changed.
+* This is common when application state changes.
+
+```js
+application.applicationStatus.current = "Shortlisted"
+```
+
+* The application now contains the updated status.
+
+## Deleting a property
+
+* `delete` removes a property from an object.
+* It should be used carefully because removing data can affect other parts of the application.
+
+```js
+delete application.metadata.ipAddress
+```
+
+* The `ipAddress` property no longer exists in that object.
+
+## Checking whether a property exists
+
+* We sometimes need to check whether an object contains a property before using it.
+
+```js
+if ("review" in application) {
+    console.log("Review information exists")
+}
+```
+
+* This is useful when API responses can have optional fields.
+
+## Object.hasOwn()
+
+* `Object.hasOwn()` checks whether a property directly belongs to the object.
+* It is useful when processing dynamic API or configuration objects.
+
+```js
+if (Object.hasOwn(application, "review")) {
+    console.log("Application has review data")
+}
+```
+
+* This is safer for checking an object's own properties than relying only on inherited properties.
+
+## Optional chaining
+
+* Optional chaining `?.` allows us to safely access nested properties that may not exist.
+* This is extremely useful with API data because some fields may be `null` or missing.
+
+```js
+const reviewer =
+    application.review?.reviewer?.name
+```
+
+* If `reviewer` or `name` does not exist, JavaScript returns `undefined` instead of throwing an error.
+
+## Nullish coalescing
+
+* `??` gives a fallback value when the left side is `null` or `undefined`.
+* It is useful when displaying optional API data.
+
+```js
+const reviewer =
+    application.review?.reviewer?.name ?? "Not reviewed yet"
+```
+
+* If there is no reviewer, the UI can show `Not reviewed yet`.
+
+## Object destructuring
+
+* Destructuring allows us to extract properties into variables.
+* It is useful when we repeatedly use values from a large object.
+
+```js
+const {
+    applicationId,
+    applicationStatus,
+    position
+} = application
+```
+
+* Now we can directly use:
+
+```js
+console.log(applicationId)
+console.log(applicationStatus.current)
+console.log(position.title)
+```
+
+## Nested destructuring
+
+* We can also destructure nested objects.
+* This can make complex API data easier to work with.
+
+```js
+const {
+    applicant: {
+        personal: {
+            firstName,
+            lastName
+        }
+    }
+} = application
+```
+
+```js
+console.log(firstName)
+console.log(lastName)
+```
+
+* This is useful when a function needs only a small part of a large API object.
+
+## Renaming during destructuring
+
+* A property can be stored using a different variable name.
+
+```js
+const {
+    applicationId: id
+} = application
+```
+
+* The object property is still called `applicationId`, but the local variable is called `id`.
+
+## Default values in destructuring
+
+* We can provide a default value when a property is `undefined`.
+
+```js
+const {
+    reviewer = "Not assigned"
+} = application.review
+```
+
+* This is useful for optional fields.
+
+## Object spread operator
+
+* The spread operator `...` copies properties from one object into another object.
+* It is commonly used when creating updated objects without changing the original object.
+
+```js
+const updatedApplication = {
+    ...application,
+    applicationStatus: {
+        ...application.applicationStatus,
+        current: "Shortlisted"
+    }
+}
+```
+
+* This is very common in frontend state updates.
+
+## Why spread is useful
+
+* Instead of directly changing shared data:
+
+```js
+application.applicationStatus.current = "Shortlisted"
+```
+
+* We can create a new object:
+
+```js
+const updatedApplication = {
+    ...application,
+    applicationStatus: {
+        ...application.applicationStatus,
+        current: "Shortlisted"
+    }
+}
+```
+
+* This is especially important when working with UI state and frameworks where detecting a new object reference matters.
+
+## Object.assign()
+
+* `Object.assign()` copies properties from one or more objects into another object.
+* It can be used when combining configuration or updating an object.
+
+```js
+const applicationFlags = {
+    reviewed: true,
+    shortlisted: true
+}
+Object.assign(application, applicationFlags)
+```
+
+* The properties from `applicationFlags` are copied into `application`.
+
+## Object.keys()
+
+* `Object.keys()` returns an array containing an object's property names.
+* It is useful when we do not know the object's keys beforehand.
+
+```js
+const fields = Object.keys(application.applicationStatus)
+console.log(fields)
+```
+
+```text
+[
+    "current",
+    "updatedAt",
+    "updatedBy"
+]
+```
+
+* This is useful for dynamic forms, validation and admin interfaces.
+
+## Object.values()
+
+* `Object.values()` returns an array containing the values of an object.
+* It is useful when we only care about the values and not their property names.
+
+```js
+const statusData = Object.values(
+    application.applicationStatus
+)
+
+console.log(statusData)
+```
+
+## Object.entries()
+
+* `Object.entries()` converts an object into an array of `[key, value]` pairs.
+* This is useful when dynamically displaying or processing object data.
+
+```js
+const statusData = Object.entries(application.applicationStatus)
+statusData.forEach(([key, value]) => {
+    console.log(key, value)
+})
+```
+
+* This is useful for building dynamic admin tables or debugging API responses.
+
+## Computed property names
+
+* Computed properties allow us to create an object property using a variable.
+* This is useful when form fields or API fields are dynamic.
+
+```js
+const fieldName = "status"
+const fieldValue = "Pending"
+const applicationData = { [fieldName]: fieldValue}
+```
+
+Result:
+
+```js
+{
     status: "Pending"
-};
-
-const {employee, amount, status: approval} = expense;
-
-console.log(employee);
-console.log(amount);
-console.log(approval);
-```
-
-* Destructuring is very common when working with API responses and function parameters.
-
-Ex:
-
-```js
-function showEmployee({ name, role }) {
-    console.log(name);
-    console.log(role);
-}
-
-const employee = {
-    name: "Gowtham",
-    role: "Developer"
-};
-
-showEmployee(employee);
-```
-
-* uses for " From object -> take the values needed -> create convnient varibles.
-
-## `Object.keys()`
-
-* It returns an array containing the object's property names.
-
-```js
-const user = {
-    name: "Gowtham",
-    role: "Developer",
-    active: true
-};
-
-console.log(Object.keys(user));
-```
-
-O/P:
-`["name", "role", "active"]`
-
-* Useful when we need to dynamically inspect or iterate through an object's properties.
-
-## `Object.values()`
-
-* It returns an array containing the object's property values.
-
-```js
-const user = {
-    name: "Gowtham",
-    role: "Developer",
-    active: true
-};
-
-console.log(Object.values(user));
-```
-
-## `Object.entries()`
-
-* It returns an array containing `[key, value]` pairs.
-
-```js
-const user = {
-    name: "Gowtham",
-    role: "Developer"
-};
-
-console.log(Object.entries(user));
-```
-
-Ex: Displaying user information dynamically
-
-```js
-for (const [key, value] of Object.entries(user)) {
-    console.log(`${key}: ${value}`);
 }
 ```
 
-* `Object.keys()` → keys
-* `Object.values()` → values
-* `Object.entries()` → key + value pairs
+* This is commonly used when building dynamic form data.
 
-# Strings
+## Object shorthand
 
-* Strings are used to represent text.
-
-* Strings are **immutable**, methods don't directly modify the original string, neeed to store the returned value.
-
-* Examples include usernames, emails, names, passwords, API messages, URLs, search text, status messages, etc
+* If the property name and variable name are the same, we can write the property only once.
 
 ```js
-const userName = "Gowtham";
-const email = "gowtham@example.com";
+const applicantName = "Gowtham"
+const applicantAge = 21
+const applicant = {applicantName,applicantAge}
 ```
 
-* **String Interpolation** including variables inside a string.
-
-## String Length
-
-* `length` returns the number of characters in a string.
-
-Ex: Checking minimum password length
+* Instead of:
 
 ```js
-if (password.length < 8) {
-    console.log("Password must contain at least 8 characters");
+const applicant = {
+    applicantName: applicantName,
+    applicantAge: applicantAge
 }
 ```
 
-## String Methods
+## Methods inside objects
 
-* String methods are used to process and manipulate text.
-
-Example:
+* An object can contain functions.
+* When a function belongs to an object, it can represent an action related to that object.
 
 ```js
-const email = "  GOWTHAM@EXAMPLE.COM  ";
-const cleanedEmail = email.trim().toLowerCase();
-console.log(cleanedEmail);
-```
-
-Common methods:
-
-`trim()` : removes whitespace from beginning and end
-
-`toUpperCase()` :  converts to uppercase
-
-`toLowerCase()` : converts to lowercase
-
-`includes()` :  checks whether text exists
-```js
-const productName = "Wireless Keyboard";
-
-if (productName.toLowerCase().includes("keyboard")) {
-    console.log("Keyboard product found");
+const application = {
+    applicationId: "APP-2026-0001",
+    status: "Pending",
+    approve() {
+        this.status = "Shortlisted"
+    }
 }
 ```
 
-`startsWith()` : checks beginning
+* Calling `application.approve()` changes the application's status.
 
-`endsWith()` : checks ending
+## this inside an object
+
+* `this` normally refers to the object that calls the method.
+* This allows an object's method to work with that object's own data.
 
 ```js
-const email = "user@gmail.com";
+const application = {
+    status: "Pending",
+    approve() {
+        this.status = "Shortlisted"
+    }
+}
+application.approve()
+console.log(application.status)
+```
 
-if (email.endsWith("@gmail.com")) {
-    console.log("Gmail account");
+```text
+Shortlisted
+```
+
+## Objects and dynamic application state
+
+* Objects are commonly used to represent the current state of an application.
+* For example, an admin review can change several related values.
+
+```js
+application.review = {
+    reviewed: true,
+    reviewer: {
+        id: "EMP-102",
+        name: "HR Team"
+    },
+    rating: 4.5,
+    comments: "Strong backend fundamentals",
+    reviewedAt: "2026-09-24T10:30:00"
 }
 ```
 
-`indexof()` : retunrs the position where a pieceof text starts if not returns '-1'.
+* The object now contains the complete review information.
 
-`replace()` : finds text and returns a new string with the replacement, for first matching occurence & `replaceall()` for every matching occurence.
+## Copying an object
 
-```js
-const username = "Gowtham Kumar";
-const formattedUsername = username.replaceAll(" ", "_");
-console.log(formattedUsername);
-```
-
-`split()` : converts a string into an array
- based on separator.
+* Objects are reference values.
+* Assigning one object to another variable does not create a completely independent object.
 
 ```js
-const skills = "Js, Python, Html";
-const skillArray = skills.split(",");
-console.log(skillArray);
+const original = {
+    status: "Pending"
+}
+const copy = original
+copy.status = "Shortlisted"
+console.log(original.status)
 ```
+* Both variables refer to the same object in memory.
 
-`join()` : converts the array into string.
+## Shallow copy
+* Spread syntax creates a shallow copy of an object.
+* The top-level properties are copied, but nested objects still share references.
 
 ```js
-const skills = ["JS", "Node.js", "Express"];
-const result = skills.join(", ");
-console.log(result);
+const copiedApplication = {
+    ...application
+}
 ```
-## Template Literals
+* Changing a top-level property is separate, but nested objects can still point to the same data.
 
-* It use backticks and allow variables or expressions to be inserted using `${}`.
+## Deep copy
+
+* Deep copying creates a separate copy of nested data too.
+* One common modern approach is `structuredClone()`.
 
 ```js
-const customer = "Gowtham";
-const amount = 1500;
-
-console.log(`Hello ${customer}, your order amount is ₹${amount}`);
+const copiedApplication =
+    structuredClone(application)
 ```
 
-* Useful for dynamically creating messages.
-* Commonly used when displaying API/database data in the UI.
+* Now nested objects and arrays are also copied.
 
-## Concatenation
+* This can be useful when we need to modify a complex application object independently from the original.
 
-* Concatenation means joining strings together.
+## Object.freeze()
+
+* `Object.freeze()` prevents changes to an object's top-level properties.
+* It can be useful for configuration or constant application data.
+
+```js
+const applicationConfig = {
+    maxResumeSize: 5242880,
+    allowedFileTypes: ["pdf", "doc", "docx"]
+}
+
+Object.freeze(applicationConfig)
+```
+
+* Freeze is shallow, so nested objects and arrays require additional handling if deep immutability is needed.
+
+## Object.seal()
+
+* `Object.seal()` prevents adding or deleting properties.
+* Existing properties can still be changed.
+
+```js
+Object.seal(application)
+```
+
+* This can be useful when the object structure should remain fixed but values can still change.
+
+## Object with dynamic data
+
+* Applications often receive objects where the keys are not known beforehand.
+* Example: skill statistics generated from applicant data.
+
+```js
+const skillSummary = {
+    JavaScript: {
+        applicants: 42,
+        averageExperience: 1.8
+    },
+
+    Python: {
+        applicants: 31,
+        averageExperience: 2.1
+    },
+
+    React: {
+        applicants: 28,
+        averageExperience: 1.6
+    }
+}
+```
+
+* We can access a dynamic skill using bracket notation.
+
+```js
+const skill = "JavaScript"
+
+console.log(
+    skillSummary[skill].applicants
+)
+```
+
+## Object containing arrays and nested objects
+
+* Real objects are usually a combination of all these structures.
+* One application can contain nested objects, arrays of objects and arrays inside those objects.
+
+```js
+const application = {
+
+    applicationId: "APP-2026-0001",
+
+    applicant: {
+
+        personal: {
+            name: "Gowtham Kumar"
+        },
+
+        skills: [
+            {
+                name: "JavaScript",
+
+                certifications: [
+                    {
+                        name: "JavaScript Algorithms",
+                        issuer: "FreeCodeCamp",
+                        year: 2026
+                    }
+                ]
+            }
+        ],
+
+        internships: [
+            {
+                company: "Tech Solutions",
+
+                projects: [
+                    {
+                        name: "Employee Management",
+                        technologies: [
+                            "JavaScript",
+                            "Node.js",
+                            "MongoDB"
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}
+```
+
+* Accessing deeply nested data:
+```js
+application.applicant.internships[0].projects[0].technologies[1]
+```
+* This type of nesting is common in complex API responses.
+
+## Objects from API responses
+
+* In real frontend development, objects usually come from a backend API.
+
+```js
+const response = await fetch("/api/applications")
+const applications = await response.json()
+```
+
+* Each application returned by the API is an object.
+
+```js
+applications[0].applicant.personal.name
+```
+
+* After receiving the data, object and array operations are used together to display and process it.
+
+## example
+
+* Suppose an admin wants to find the names of shortlisted applicants who have JavaScript experience greater than one year.
+
+```js
+const shortlistedDevelopers = applications
+    .filter(application =>
+        application.applicationStatus.current === "Shortlisted"
+    )
+    .filter(application =>
+        application.applicant.skills.some(skill =>
+            skill.name === "JavaScript" &&
+            skill.experience > 1
+        )
+    )
+    .map(application =>
+        application.applicant.personal.name
+    )
+```
+
+* Here objects and arrays are working together.
+
+```text
+applications
+    ↓
+filter()
+    ↓
+application object
+    ↓
+applicant object
+    ↓
+skills array
+    ↓
+skill object
+    ↓
+some()
+    ↓
+map()
+    ↓
+applicant names
+```
+
+## Important 
+
+* Object → represents one entity or record.
+* Property → data stored inside an object.
+* Nested object → object inside another object.
+* Array inside object → used when one entity has multiple records.
+* Dot notation → access a known property.
+* Bracket notation → access a dynamic property.
+* Destructuring → extract properties into variables.
+* Spread → create a new object using existing properties.
+* Optional chaining → safely access possibly missing nested data.
+* `??` → provide a fallback for `null` or `undefined`.
+* `Object.keys()` → get property names.
+* `Object.values()` → get property values.
+* `Object.entries()` → get key-value pairs.
+* `Object.hasOwn()` → check whether a property belongs directly to the object.
+* `structuredClone()` → create a deep copy of supported data.
+* Objects are reference values, so assigning an object to another variable normally copies the reference, not the whole object.
+
+# JavaScript Strings
+
+* A string is used to store text in JavaScript.
+* Strings can contain names, email addresses, phone numbers, application status, file names, descriptions, locations, etc.
+* Strings can be written using single quotes, double quotes, or template literals.
 
 ```js
 const firstName = "Gowtham";
-const lastName = "G";
-
-const fullName = firstName + " " + lastName;
+const lastName = 'Kumar';
+const position = `Full Stack Developer`;
 ```
 
-* Template literals are usually easier to read when the string contains multiple values.
-
-## Escaping
-
-* Some characters have special meaning inside strings. A backslash `\` is used to escape them.
+* In my Job Application project, most user-entered form values are strings.
 
 ```js
-const message = "User said \"Hello\"";
-
-console.log(message);
+const applicantName = "Gowtham Kumar";
+const email = "gowtham@example.com";
+const phone = "+91-9876543210";
+const city = "Coimbatore";
+const status = "Pending";
 ```
 
-Other common escape sequences:
-
- - \n  new line
- - \t  tab
- - \"  double quote
- - \'  single quote
- - \\  backslash
-
-Ex:
+* Even if the user enters a number in an HTML input, the value received from the input is normally a string.
 
 ```js
-console.log("Order Details:\nLaptop\nMouse\nKeyboard");
+const age = document.querySelector("#age").value;
+
+console.log(typeof age);
 ```
+
+* The output will be:
+
+```text
+string
+```
+
+* If I actually need a number, I have to convert it.
+
+```js
+const age = Number(
+    document.querySelector("#age").value
+);
+```
+
+## Creating Strings
+
+* I can create strings using single quotes.
+
+```js
+const name = 'Gowtham';
+```
+
+* I can also use double quotes.
+
+```js
+const name = "Gowtham";
+```
+
+* Template literals use backticks.
+
+```js
+const name = `Gowtham`;
+```
+
+* Template literals are useful when I need to insert variables inside a string.
+
+```js
+const name = "Gowtham";
+const position = "Full Stack Developer";
+
+const message = `${name} applied for ${position}.`;
+```
+
+## Accessing Characters
+
+* A string has indexes starting from `0`.
+
+```js
+const name = "Gowtham";
+
+console.log(name[0]);
+console.log(name[1]);
+console.log(name[2]);
+```
+
+Output:
+
+```text
+G
+o
+w
+```
+
+* This is useful when I need to access a particular character.
+
+```js
+const applicationId = "APP-2026-0001";
+
+console.log(applicationId[0]);
+```
+
+* Output:
+
+```text
+A
+```
+
+## length
+
+* `length` gives the number of characters in a string.
+
+```js
+const name = "Gowtham";
+
+console.log(name.length);
+```
+
+* In my Job Application project, I can use it to validate input length.
+
+```js
+const name = "Gowtham Kumar";
+
+if (name.length < 3) {
+    console.log("Name is too short");
+}
+```
+
+* It can also be used when limiting long text before displaying it.
+
+## Strings are Immutable
+
+* Strings cannot be changed directly after they are created.
+* String methods normally return a new string instead of modifying the original string.
+
+```js
+let name = "gowtham";
+
+name.toUpperCase();
+
+console.log(name);
+```
+
+Output:
+
+```text
+gowtham
+```
+
+* The original string is still unchanged.
+
+```js
+const name = "gowtham";
+
+const formattedName = name.toUpperCase();
+
+console.log(formattedName);
+```
+
+Output:
+
+```text
+GOWTHAM
+```
+
+* This is important when cleaning or formatting form values because I should store the returned value if I need the changed string.
+
+## toUpperCase()
+
+* Converts all characters into uppercase.
+
+```js
+const status = "pending";
+
+const formattedStatus =
+    status.toUpperCase();
+
+console.log(formattedStatus);
+```
+
+Output:
+
+```text
+PENDING
+```
+
+* In my Job Application project, I can use this when displaying application status in a consistent format.
+
+```js
+const status =
+    application.applicationStatus.current;
+
+console.log(status.toUpperCase());
+```
+
+## toLowerCase()
+
+* Converts all characters into lowercase.
+
+```js
+const email = "GOWTHAM@EXAMPLE.COM";
+
+const normalizedEmail =
+    email.toLowerCase();
+```
+
+* This is useful for email and search values because users may enter uppercase or lowercase characters.
+
+```js
+const enteredEmail =
+    " Gowtham@Example.com ";
+
+const email =
+    enteredEmail
+        .trim()
+        .toLowerCase();
+
+console.log(email);
+```
+
+Output:
+
+```text
+gowtham@example.com
+```
+
+## trim()
+
+* Removes spaces from the beginning and end of a string.
+* It does not remove spaces between words.
+
+```js
+const name = "   Gowtham Kumar   ";
+
+const cleanedName = name.trim();
+
+console.log(cleanedName);
+```
+
+Output:
+
+```text
+Gowtham Kumar
+```
+
+* In my Job Application form, users may accidentally enter spaces before or after their name or email.
+* I can clean the value before validating or sending it.
+
+```js
+const email =
+    document.querySelector("#email").value
+        .trim()
+        .toLowerCase();
+```
+
+## trimStart()
+
+* Removes spaces from the beginning of a string.
+
+```js
+const name = "   Gowtham";
+
+console.log(name.trimStart());
+```
+
+Output:
+
+```text
+Gowtham
+```
+
+## trimEnd()
+
+* Removes spaces from the end of a string.
+
+```js
+const name = "Gowtham   ";
+
+console.log(name.trimEnd());
+```
+
+Output:
+
+```text
+Gowtham
+```
+
+## includes()
+
+* Checks whether a string contains another string.
+* It returns `true` or `false`.
+
+```js
+const position = "Full Stack Developer";
+
+console.log(
+    position.includes("Stack")
+);
+```
+
+Output:
+
+```text
+true
+```
+
+* In my admin page, I can use it when searching applications.
+
+```js
+const position =
+    application.position.title;
+
+if (position.includes("Developer")) {
+    console.log("Developer position");
+}
+```
+
+* `includes()` is case-sensitive.
+
+```js
+console.log(
+    "JavaScript".includes("javascript")
+);
+```
+
+Output:
+
+```text
+false
+```
+
+* So for user search, I normally convert both values to lowercase.
+
+```js
+const search =
+    searchValue.trim().toLowerCase();
+
+const position =
+    application.position.title.toLowerCase();
+
+if (position.includes(search)) {
+    console.log("Application found");
+}
+```
+
+## startsWith()
+
+* Checks whether a string starts with a particular value.
+
+```js
+const applicationId = "APP-2026-0001";
+
+console.log(
+    applicationId.startsWith("APP-")
+);
+```
+
+Output:
+
+```text
+true
+```
+
+* In my Job Application project, application IDs follow a format like `APP-2026-0001`.
+* I can check whether the ID starts with the expected prefix.
+
+```js
+const applicationId =
+    application.applicationId;
+
+if (applicationId.startsWith("APP-")) {
+    console.log("Valid application ID format");
+}
+```
+
+## endsWith()
+
+* Checks whether a string ends with a particular value.
+
+```js
+const fileName =
+    "gowtham-resume.pdf";
+
+console.log(
+    fileName.endsWith(".pdf")
+);
+```
+
+Output:
+
+```text
+true
+```
+
+* This can be useful when checking uploaded resume file names.
+
+```js
+const fileName =
+    application.documents.resume.fileName;
+
+if (fileName.toLowerCase().endsWith(".pdf")) {
+    console.log("PDF resume");
+}
+```
+
+## indexOf()
+
+* `indexOf()` returns the position where a value first appears.
+* If the value does not exist, it returns `-1`.
+
+```js
+const position =
+    "Full Stack Developer";
+
+console.log(
+    position.indexOf("Stack")
+);
+```
+
+* This can be useful when I need the exact position of a character or substring.
+
+```js
+const email =
+    application.applicant.personal.email;
+
+const atPosition =
+    email.indexOf("@");
+
+console.log(atPosition);
+```
+
+* I can use this to find where the `@` character exists in an email.
+
+## lastIndexOf()
+
+* `lastIndexOf()` finds the last occurrence of a value.
+
+```js
+const fileName =
+    "gowtham.resume.final.pdf";
+
+console.log(
+    fileName.lastIndexOf(".")
+);
+```
+
+* This is useful for file extensions because the last `.` normally separates the extension.
+
+```js
+const fileName =
+    application.documents.resume.fileName;
+
+const extension =
+    fileName
+        .slice(fileName.lastIndexOf("."))
+        .toLowerCase();
+
+console.log(extension);
+```
+
+Output:
+
+```text
+.pdf
+```
+
+## charAt()
+
+* `charAt()` returns the character at a specific index.
+
+```js
+const name = "Gowtham";
+
+console.log(
+    name.charAt(0)
+);
+```
+
+Output:
+
+```text
+G
+```
+
+* It is another way of accessing characters besides bracket notation.
+
+## at()
+
+* `at()` also returns a character using its index.
+
+```js
+const name = "Gowtham";
+
+console.log(name.at(0));
+```
+
+Output:
+
+```text
+G
+```
+
+* One useful difference is that `at()` supports negative indexes.
+
+```js
+const name = "Gowtham";
+
+console.log(name.at(-1));
+```
+
+Output:
+
+```text
+m
+```
+
+* This is useful when I need the last character without calculating `length - 1`.
+
+## slice()
+
+* `slice()` extracts part of a string.
+* It returns a new string.
+
+```js
+const position =
+    "Full Stack Developer";
+
+const result =
+    position.slice(0, 9);
+
+console.log(result);
+```
+
+Output:
+
+```text
+Full Stack
+```
+
+* The ending index is not included.
+
+* In my Job Application project, I can use it to get a file extension.
+
+```js
+const fileName =
+    application.documents.resume.fileName;
+
+const extension =
+    fileName.slice(
+        fileName.lastIndexOf(".")
+    );
+
+console.log(extension);
+```
+
+* I can also use it to limit long descriptions.
+
+```js
+const description =
+    application.applicant.internships[0]
+        .description;
+
+const preview =
+    description.slice(0, 60);
+
+console.log(`${preview}...`);
+```
+
+## substring()
+
+* `substring()` also extracts part of a string.
+
+```js
+const position =
+    "Full Stack Developer";
+
+const result =
+    position.substring(0, 9);
+```
+
+* `slice()` supports negative indexes, while `substring()` handles negative values differently.
+* For most normal text extraction, `slice()` is easier to remember.
+
+## replace()
+
+* `replace()` replaces the first matching value.
+
+```js
+const position =
+    "Full Stack Developer";
+
+const updated =
+    position.replace(
+        "Developer",
+        "Engineer"
+    );
+
+console.log(updated);
+```
+
+Output:
+
+```text
+Full Stack Engineer
+```
+
+* It does not modify the original string.
+
+## replaceAll()
+
+* `replaceAll()` replaces every occurrence.
+
+```js
+const skills =
+    "JavaScript, JavaScript, JavaScript";
+
+const result =
+    skills.replaceAll(
+        "JavaScript",
+        "JS"
+    );
+
+console.log(result);
+```
+
+Output:
+
+```text
+JS, JS, JS
+```
+
+* This is useful when the same text appears multiple times and all occurrences need to be changed.
+
+## split()
+
+* `split()` converts a string into an array.
+* The value passed to `split()` tells JavaScript where to divide the string.
+
+```js
+const skills =
+    "JavaScript,Python,React";
+
+const result =
+    skills.split(",");
+
+console.log(result);
+```
+
+Output:
+
+```text
+[
+    "JavaScript",
+    "Python",
+    "React"
+]
+```
+
+* This is useful when I receive comma-separated values from a form or API.
+
+```js
+const skillText =
+    "JavaScript,Python,React";
+
+const skills =
+    skillText
+        .split(",")
+        .map(skill => skill.trim());
+```
+
+* Now each skill is separated and extra spaces can be removed.
+
+## join()
+
+* `join()` converts array values into one string.
+* The value passed to `join()` is placed between the elements.
+
+```js
+const skills = [
+    "JavaScript",
+    "Python",
+    "React"
+];
+
+const result =
+    skills.join(", ");
+
+console.log(result);
+```
+
+Output:
+
+```text
+JavaScript, Python, React
+```
+
+* In my Job Application project, I can use it when displaying internship technologies.
+
+```js
+const technologies =
+    application.applicant.internships[0]
+        .technologies;
+
+const technologyText =
+    technologies.join(", ");
+
+console.log(technologyText);
+```
+
+Output:
+
+```text
+JavaScript, Node.js, Express, MongoDB
+```
+
+## split() + join()
+
+* `split()` can break a string into pieces.
+* `join()` can combine those pieces again.
+* This is useful when I need to change the format of text.
+
+```js
+const skillText =
+    "JavaScript,Python,React";
+
+const formattedSkills =
+    skillText
+        .split(",")
+        .map(skill => skill.trim())
+        .join(" | ");
+
+console.log(formattedSkills);
+```
+
+Output:
+
+```text
+JavaScript | Python | React
+```
+
+## concat()
+
+* `concat()` joins strings together.
+
+```js
+const firstName = "Gowtham";
+const lastName = "Kumar";
+
+const fullName =
+    firstName.concat(
+        " ",
+        lastName
+    );
+
+console.log(fullName);
+```
+
+* In my Job Application project:
+
+```js
+const firstName =
+    application.applicant.personal.firstName;
+
+const lastName =
+    application.applicant.personal.lastName;
+
+const fullName =
+    firstName.concat(
+        " ",
+        lastName
+    );
+```
+
+* Template literals are usually easier to read when there are many values.
+
+## Template Literals
+
+* Template literals use backticks.
+* They allow variables and expressions to be inserted using `${}`.
+
+```js
+const firstName = "Gowtham";
+const position = "Full Stack Developer";
+const status = "Pending";
+
+const message =
+    `${firstName} applied for ${position}. Current status: ${status}.`;
+```
+
+* In my Job Application admin page, this is useful when creating dynamic text.
+
+```js
+const firstName =
+    application.applicant.personal.firstName;
+
+const position =
+    application.position.title;
+
+const status =
+    application.applicationStatus.current;
+
+const message =
+    `${firstName} applied for ${position}. Current status: ${status}.`;
+```
+
+## Escape Characters
+
+* Escape characters allow special characters to be written inside strings.
+
+```js
+const message =
+    "Applicant's application is pending.";
+```
+
+* If I use the same quote type inside the string, I can escape it.
+
+```js
+const message =
+    "Applicant's name is \"Gowtham\"";
+```
+
+* Common escape characters:
+
+```text
+\n  new line
+\t  tab
+\"  double quote
+\'  single quote
+\\  backslash
+```
+
+## Comparing Strings
+
+* Strings can be compared using `===`.
+
+```js
+const status = "Pending";
+
+if (status === "Pending") {
+    console.log("Application is pending");
+}
+```
+
+* String comparison is case-sensitive.
+
+```js
+console.log("Pending" === "pending");
+```
+
+Output:
+
+```text
+false
+```
+
+* When comparing user input, I can normalize the case first.
+
+```js
+const enteredStatus =
+    "pending";
+
+if (
+    enteredStatus.toLowerCase() ===
+    "pending"
+) {
+    console.log(
+        "Application is pending"
+    );
+}
+```
+
+## Case-Insensitive Search
+
+* Search values entered by users can have different uppercase and lowercase characters.
+* I can convert both values to lowercase before searching.
+
+```js
+const searchValue =
+    "FULL STACK";
+
+const position =
+    "Full Stack Developer";
+
+if (
+    position
+        .toLowerCase()
+        .includes(
+            searchValue.toLowerCase()
+        )
+) {
+    console.log(
+        "Application found"
+    );
+}
+```
+
+* This is useful in the admin search box.
+
+## Cleaning Form Input
+
+* Form values should normally be cleaned before using them.
+* `trim()` removes accidental spaces.
+* `toLowerCase()` can normalize values like email addresses.
+
+```js
+const enteredEmail =
+    document.querySelector("#email").value;
+
+const email =
+    enteredEmail
+        .trim()
+        .toLowerCase();
+```
+
+* This prevents values like:
+
+```text
+   Gowtham@Example.com
+```
+
+* From being stored as:
+
+```text
+   Gowtham@Example.com
+```
+
+* Instead I can store:
+
+```text
+gowtham@example.com
+```
+
+## File Name Processing
+
+* Resume files contain useful string information in their names.
+* I can use string methods to find the extension.
+
+```js
+const fileName =
+    application.documents.resume.fileName;
+
+const extension =
+    fileName
+        .slice(fileName.lastIndexOf("."))
+        .toLowerCase();
+
+console.log(extension);
+```
+
+* If the file name is:
+
+```text
+gowtham-resume.pdf
+```
+
+* The result is:
+
+```text
+.pdf
+```
+
+## Phone Number Formatting
+
+* Phone numbers are usually stored as strings instead of numbers because they can contain `+`, spaces, country codes, or leading zeros.
+
+```js
+const phone =
+    application.applicant.personal.phone;
+
+console.log(phone);
+```
+
+* Example:
+
+```text
++91-9876543210
+```
+
+* If I need to remove hyphens:
+
+```js
+const formattedPhone =
+    phone.replaceAll("-", "");
+
+console.log(formattedPhone);
+```
+
+## Masking Sensitive Information
+
+* Sometimes I should not display the complete email address on an admin screen.
+
+```js
+const email =
+    application.applicant.personal.email;
+
+const [username, domain] =
+    email.split("@");
+
+const maskedEmail =
+    `${username.slice(0, 2)}***@${domain}`;
+
+console.log(maskedEmail);
+```
+
+* For example:
+
+```text
+gowtham@example.com
+```
+
+* Can be displayed as:
+
+```text
+go***@example.com
+```
+
+## Displaying Applicant Name
+
+* In the JSON data, first name and last name are separate strings.
+
+```js
+const firstName =
+    application.applicant.personal.firstName;
+
+const lastName =
+    application.applicant.personal.lastName;
+```
+
+* I can create the full name using a template literal.
+
+```js
+const fullName =
+    `${firstName} ${lastName}`;
+```
+
+* This value can then be displayed in the admin table.
+
+## Creating Application Summary
+
+* I can use multiple strings from an application to create a readable summary.
+
+```js
+const firstName =
+    application.applicant.personal.firstName;
+
+const position =
+    application.position.title;
+
+const city =
+    application.applicant.address.city;
+
+const status =
+    application.applicationStatus.current;
+
+const summary =
+    `${firstName} applied for ${position} from ${city}. Status: ${status}.`;
+
+console.log(summary);
+```
+
+* This can be used for table text, notification messages, logs, or application details.
+
+## Regular Expressions with Strings
+
+* Regular expressions are useful when simple string methods are not enough.
+* They are commonly used for pattern checking.
+
+```js
+const email =
+    application.applicant.personal.email;
+
+const emailPattern =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+if (emailPattern.test(email)) {
+    console.log("Valid email");
+}
+```
+
+* Another example is checking an application ID format.
+
+```js
+const applicationId =
+    application.applicationId;
+
+const pattern =
+    /^APP-\d{4}-\d{4}$/;
+
+if (pattern.test(applicationId)) {
+    console.log("Valid application ID");
+}
+```
+
+## match()
+
+* `match()` searches a string using a regular expression.
+* It can return the matching values.
+
+```js
+const text =
+    "Application ID: APP-2026-0001";
+
+const result =
+    text.match(/APP-\d{4}-\d{4}/);
+
+console.log(result);
+```
+
+* This can be useful when extracting application IDs from larger text.
+
+## search()
+
+* `search()` returns the position where a pattern is found.
+* If there is no match, it returns `-1`.
+
+```js
+const email =
+    "gowtham@example.com";
+
+const position =
+    email.search("@");
+
+console.log(position);
+```
+
+* It is useful when I only need to know whether or where a pattern exists.
+
+## padStart()
+
+* `padStart()` adds characters to the beginning of a string until it reaches a specific length.
+
+```js
+const number = "25";
+
+const formatted =
+    number.padStart(4, "0");
+
+console.log(formatted);
+```
+
+Output:
+
+```text
+0025
+```
+
+* This can be useful when creating formatted IDs or numbers.
+
+```js
+const applicationNumber =
+    "25";
+
+const formattedId =
+    `APP-2026-${applicationNumber.padStart(4, "0")}`;
+```
+
+Result:
+
+```text
+APP-2026-0025
+```
+
+## padEnd()
+
+* `padEnd()` adds characters to the end of a string.
+
+```js
+const status = "Pending";
+
+console.log(
+    status.padEnd(12, ".")
+);
+```
+
+* It can be useful for fixed-width text output such as console reports.
+
+## repeat()
+
+* `repeat()` repeats a string a specified number of times.
+
+```js
+const separator =
+    "-".repeat(30);
+
+console.log(separator);
+```
+
+* This can be useful for console-based reports.
+
+## String()
+
+* `String()` converts a value into a string.
+
+```js
+const applicationNumber = 25;
+
+const value =
+    String(applicationNumber);
+
+console.log(typeof value);
+```
+
+Output:
+
+```text
+string
+```
+
+* This is useful when I need to make sure a value is treated as text.
+
+## Converting Numbers to Strings
+
+* Numbers can be converted to strings using `String()` or `.toString()`.
+
+```js
+const experience = 2;
+
+const result =
+    String(experience);
+```
+
+* Or:
+
+```js
+const result =
+    experience.toString();
+```
+
+* After conversion, string methods can be used.
+
+```js
+const experience = 2;
+
+const value =
+    experience.toString();
+
+console.log(
+    value.padStart(2, "0")
+);
+```
+
+## JSON.stringify()
+
+* `JSON.stringify()` converts a JavaScript object into a JSON string.
+
+```js
+const application = {
+    applicationId: "APP-2026-0001",
+    status: "Pending"
+};
+
+const jsonData =
+    JSON.stringify(application);
+
+console.log(jsonData);
+```
+
+* This is useful when sending JavaScript data to an API or storing object data as JSON text.
+
+## JSON.parse()
+
+* `JSON.parse()` converts a JSON string back into a JavaScript object.
+
+```js
+const jsonData =
+    '{"applicationId":"APP-2026-0001","status":"Pending"}';
+
+const application =
+    JSON.parse(jsonData);
+
+console.log(
+    application.applicationId
+);
+```
+
+* In my Job Application project, the `applications.json` file contains JSON data that is converted into JavaScript values when I call:
+
+```js
+const response =
+    await fetch("../data/applications.json");
+
+const applications =
+    await response.json();
+```
+
+## Searching Application Data
+
+* In the admin page, I need to search applications using values such as name, email, position, city, or skill.
+* String methods are useful for this.
+
+```js
+function matchesApplication(
+    application,
+    searchValue
+) {
+    const search =
+        searchValue
+            .trim()
+            .toLowerCase();
+
+    const name =
+        `${application.applicant.personal.firstName}
+        ${application.applicant.personal.lastName}`
+            .toLowerCase();
+
+    const email =
+        application.applicant.personal.email
+            .toLowerCase();
+
+    const position =
+        application.position.title
+            .toLowerCase();
+
+    const city =
+        application.applicant.address.city
+            .toLowerCase();
+
+    return (
+        name.includes(search) ||
+        email.includes(search) ||
+        position.includes(search) ||
+        city.includes(search)
+    );
+}
+```
+
+* The important idea here is:
+* First clean the search value.
+* Convert values to the same case.
+* Use `includes()` to check whether the search text exists.
+
+## Creating Skill Display Text
+
+* In the application data, a skill contains separate information such as name, level, and experience.
+
+```js
+const skill = {
+    name: "JavaScript",
+    level: "Intermediate",
+    experience: 1.5
+};
+```
+
+* When displaying it in the admin page, I can create readable text.
+
+```js
+const skillText =
+    `${skill.name} - ${skill.level} - ${skill.experience} years`;
+```
+
+* Result:
+
+```text
+JavaScript - Intermediate - 1.5 years
+```
+
+## Creating Internship Technology Text
+
+* The internship data contains technology names.
+* I can create a readable string for displaying them.
+
+```js
+const technologies =
+    application.applicant
+        .internships[0]
+        .technologies;
+
+const technologyText =
+    technologies.join(", ");
+```
+
+* Result:
+
+```text
+JavaScript, Node.js, Express, MongoDB
+```
+
+## Limiting Long Text
+
+* Application descriptions can become long.
+* I can display only a small part in the table and show the complete text in the details page.
+
+```js
+const description =
+    application.applicant
+        .internships[0]
+        .description;
+
+function createPreview(
+    text,
+    limit = 60
+) {
+    const cleanedText =
+        text.trim();
+
+    if (cleanedText.length <= limit) {
+        return cleanedText;
+    }
+
+    return `${cleanedText.slice(0, limit)}...`;
+}
+```
+
+* If the description is longer than the limit, only the required portion is displayed.
+
+## Common String Mistakes
+
+* Forgetting that strings are immutable.
+
+```js
+const name = "gowtham";
+
+name.toUpperCase();
+
+console.log(name);
+```
+
+* The result is still:
+
+```text
+gowtham
+```
+
+* Correct way:
+
+```js
+const name = "gowtham";
+
+const upperName =
+    name.toUpperCase();
+```
+
+* Forgetting that `includes()` is case-sensitive.
+
+```js
+"JavaScript".includes("javascript");
+```
+
+* Better for user search:
+
+```js
+"JavaScript"
+    .toLowerCase()
+    .includes(
+        "javascript".toLowerCase()
+    );
+```
+
+* Forgetting to use `trim()` on form values.
+
+```js
+const email =
+    input.value;
+```
+
+* Better:
+
+```js
+const email =
+    input.value.trim();
+```
+
+* Using `==` instead of `===` when comparing values.
+
+```js
+if (status === "Pending") {
+    // ...
+}
+```
+
+* Forgetting that HTML input values are strings.
+
+```js
+const age =
+    document.querySelector("#age").value;
+
+console.log(typeof age);
+```
+
+* If a number is required:
+
+```js
+const age =
+    Number(
+        document.querySelector("#age").value
+    );
+```
+
+## How I Used Strings in My Job Application Project
+
+* Applicant names are stored as strings.
+* Email addresses are cleaned using `trim()` and `toLowerCase()`.
+* Application IDs are checked using `startsWith()`.
+* Resume file extensions are extracted using `lastIndexOf()` and `slice()`.
+* Search functionality uses `trim()`, `toLowerCase()`, and `includes()`.
+* Applicant names and application summaries are created using template literals.
+* Internship technologies are converted into readable text using `join()`.
+* Long internship descriptions are shortened using `slice()`.
+* Email addresses can be partially hidden using `split()` and `slice()`.
+* Application data can be converted between JavaScript objects and JSON strings using `JSON.stringify()` and `JSON.parse()`.
+
+## String Flow in My Job Application
+
+```text
+HTML form
+    ↓
+User enters text
+    ↓
+Read input value
+    ↓
+trim()
+    ↓
+Normalize case if required
+    ↓
+Validate
+    ↓
+Store or send data
+    ↓
+Receive data
+    ↓
+Search / format / display
+```
+
+## Important 
+* String is mainly used for text.
+* String indexes start from `0`.
+* `length` gives the number of characters.
+* Strings are immutable.
+* Most string methods return a new string.
+* `trim()` is useful for cleaning form input.
+* `toLowerCase()` is useful for case-insensitive search.
+* `includes()` checks whether text exists.
+* `startsWith()` checks the beginning.
+* `endsWith()` checks the ending.
+* `indexOf()` finds the position of text.
+* `slice()` extracts part of a string.
+* `replace()` changes the first matching value.
+* `replaceAll()` changes all matching values.
+* `split()` converts a string into an array.
+* `join()` creates a string from array values.
+* Template literals make dynamic text easier to create.
+* Regular expressions are useful for pattern validation.
+* `JSON.stringify()` converts an object into a JSON string.
+* `JSON.parse()` converts JSON text into a JavaScript object.
+* In my Job Application project, strings are mainly used for user input, validation, searching, formatting, file names, status values, IDs, and displaying information.
 
 # Numbers & Math
 
@@ -4898,4 +7261,702 @@ UI is updated
   * detailed errors belong in logs
   * safe, meaningful messages belong in user-facing responses
   * asynchronous errors should be handled correctly with `await` / Promise handling
+
+# Memory Management
+
+* JavaScript automatically manages memory for us. We don't normally allocate and release memory manually like C/C++.
+
+* Whenever an application creates data such as objects, arrays, functions, API responses, DOM elements, etc., memory is required to store that data.
+
+* The basic memory lifecycle is:
+
+  * Memory is allocated when data is created
+  * Application uses that data
+  * Data is no longer needed
+  * If nothing can reach that data anymore, it becomes unreachable
+  * Garbage collector can then reclaim that memory
+
+* In a real application, memory management becomes important when we are dealing with large amounts of data, long-running pages, API responses, caches, timers, event listeners, WebSockets, etc.
+
+* Example: imagine an admin dashboard for a job application system.
+
+* The admin page loads applications from the backend:
+
+```js
+const applicationState = {
+    applications: [],
+    selectedApplication: null,
+    filters: {
+        status: "pending",
+        department: "engineering"
+    },
+    search: "",
+    pagination: {
+        page: 1,
+        limit: 20
+    }
+};
+```
+
+* After receiving data from the API:
+
+```js
+const response = await fetch("/api/applications");
+const applications = await response.json();
+
+applicationState.applications = applications;
+```
+
+* Suppose the API returns:
+
+```js
+[
+    {
+        id: 1001,
+        applicant: {
+            name: "Gowtham",
+            email: "gowtham@example.com"
+        },
+        job: {
+            id: 501,
+            title: "Full Stack Developer",
+            department: "Engineering"
+        },
+        skills: [
+            { name: "JavaScript", level: 5 },
+            { name: "Node.js", level: 4 },
+            { name: "MongoDB", level: 4 }
+        ],
+        documents: [
+            {
+                type: "resume",
+                url: "/files/resume-1001.pdf",
+                size: 245000
+            }
+        ],
+        interview: {
+            rounds: [
+                {
+                    type: "technical",
+                    score: 85,
+                    interviewer: "Rahul"
+                },
+                {
+                    type: "hr",
+                    score: 90,
+                    interviewer: "Priya"
+                }
+            ]
+        }
+    }
+]
+```
+
+* This is not just one simple object. In a real application, an object can contain many nested objects and arrays.
+
+* When this data is stored in `applicationState.applications`, the state contains references to these objects.
+
+* Conceptually:
+
+```text
+applicationState
+      |
+      v
+applications array
+      |
+      +---- application object
+                |
+                +---- applicant object
+                |
+                +---- job object
+                |
+                +---- skills array
+                |
+                +---- documents array
+                |
+                +---- interview object
+                            |
+                            +---- rounds array
+```
+
+* The important point is that these nested objects occupy memory and are connected through references.
+
+* A reference means something still has access to an object in memory.
+
+* Example:
+
+```js
+const application = {
+    id: 1001,
+    applicant: {
+        name: "Gowtham"
+    }
+};
+
+const selectedApplication = application;
+```
+
+* Both variables refer to the same object.
+
+```text
+application --------\
+                     ---> application object
+selectedApplication-/
+```
+
+* So changing one reference can affect the same object:
+
+```js
+selectedApplication.applicant.name = "Arun";
+
+console.log(application.applicant.name);
+// Arun
+```
+
+* We did not create another application object.
+
+* We only created another reference to the existing object.
+
+* This is very important in production applications because multiple parts of an application may hold references to the same data.
+
+* For example:
+
+```js
+const applicationState = {
+    applications: [],
+    selectedApplication: null
+};
+
+applicationState.applications = applications;
+
+applicationState.selectedApplication =
+    applicationState.applications[0];
+```
+
+* Now the selected application is not a completely separate object.
+
+* It points to the same application object inside the applications array.
+
+```text
+applicationState
+      |
+      +---- applications
+      |         |
+      |         +---- application #1001 <----+
+      |                                      |
+      +---- selectedApplication -------------+
+```
+
+* If we do:
+
+```js
+applicationState.selectedApplication.status = "approved";
+```
+
+* The application inside `applications` can also reflect that change because both references point to the same object.
+
+* This is why understanding references is important before modifying application state.
+
+* Garbage collection is the process where JavaScript identifies objects that are no longer reachable and eventually releases their memory.
+
+* Example:
+
+```js
+let selectedApplication = {
+    id: 1001,
+    applicant: {
+        name: "Gowtham"
+    }
+};
+
+selectedApplication = null;
+```
+
+* Before setting it to `null`:
+
+```text
+selectedApplication
+        |
+        v
+application object
+```
+
+* After:
+
+```text
+selectedApplication ---> null
+
+application object
+        X
+   unreachable
+```
+
+* If there are no other references to that object, the object becomes unreachable.
+
+* The garbage collector can eventually remove it from memory.
+
+* Garbage collection does not mean JavaScript immediately deletes the object when we set the variable to `null`.
+
+* It means the object is now eligible for garbage collection. The JavaScript engine decides when the cleanup actually happens.
+
+* Example where the object is still reachable:
+
+```js
+let application = {
+    id: 1001,
+    applicant: {
+        name: "Gowtham"
+    }
+};
+
+let selectedApplication = application;
+
+application = null;
+```
+
+* Even though `application` is now `null`, the object is still reachable through `selectedApplication`.
+
+```text
+application --------> null
+
+selectedApplication
+        |
+        v
+application object
+```
+
+* So the object cannot be garbage collected yet.
+
+* If we also do:
+
+```js
+selectedApplication = null;
+```
+
+* Now neither variable references the object.
+
+* The object becomes unreachable and can eventually be collected.
+
+* This is the main idea behind garbage collection:
+
+```text
+Reachable object
+       ↓
+Keep it
+
+Unreachable object
+       ↓
+Can be garbage collected
+```
+
+* In production applications, memory leaks happen when data is no longer logically needed but something still keeps a reference to it.
+
+* Example: imagine our admin application has a cache.
+
+```js
+const applicationCache = new Map();
+
+function cacheApplication(application) {
+    applicationCache.set(application.id, application);
+}
+```
+
+* Every time the admin opens an application:
+
+```js
+cacheApplication(application);
+```
+
+* Suppose the admin opens 50,000 applications.
+
+* The cache now contains references to 50,000 application objects.
+
+* Even if the admin no longer needs the old applications, the `applicationCache` still references them.
+
+```text
+applicationCache
+      |
+      +---- application #1
+      +---- application #2
+      +---- application #3
+      +---- application #4
+      ...
+      +---- application #50000
+```
+
+* The garbage collector cannot remove those objects because they are still reachable through the cache.
+
+* If the cache continues growing forever, memory usage can continue increasing.
+
+* This is a memory leak.
+
+* The problem is not that garbage collection is broken.
+
+* The problem is that our application is accidentally keeping references to data that should have been released.
+
+* A real cache should normally have some cleanup strategy.
+
+```js
+function removeApplicationFromCache(id) {
+    applicationCache.delete(id);
+}
+```
+
+* Or the application may use an expiration policy so old data is automatically removed.
+
+* Event listeners are another common source of memory leaks.
+
+* Example:
+
+```js
+function openApplication(application) {
+
+    const modal = document.getElementById("applicationModal");
+
+    function handleApproval() {
+        approveApplication(application.id);
+    }
+
+    modal.addEventListener("click", handleApproval);
+}
+```
+
+* If `openApplication()` is called many times and we keep attaching new listeners without removing the old ones, we can create unnecessary references.
+
+* The listener function can also keep access to `application` through its closure.
+
+```text
+DOM element
+    |
+    +---- event listener
+              |
+              +---- handleApproval
+                        |
+                        +---- application
+```
+
+* If the application object is large, this chain can keep more data alive than expected.
+
+* A better approach is to clean up listeners when the modal is closed or destroyed.
+
+```js
+modal.removeEventListener("click", handleApproval);
+```
+
+* The function reference must be the same one that was originally registered.
+
+* Timers can create a similar problem.
+
+* Example:
+
+```js
+function monitorApplication(application) {
+
+    return setInterval(() => {
+        console.log(application.status);
+    }, 5000);
+}
+```
+
+* The interval callback has access to `application`.
+
+* As long as the interval continues running, the callback can continue holding that reference.
+
+* If the application is closed but we forget to stop the interval:
+
+```js
+const intervalId = monitorApplication(application);
+```
+
+* the interval can continue running unnecessarily.
+
+* We should clean it up:
+
+```js
+clearInterval(intervalId);
+```
+
+* A common production pattern is therefore:
+
+```js
+const intervalId = setInterval(checkApplicationStatus, 5000);
+
+// when component/page/application is destroyed
+clearInterval(intervalId);
+```
+
+* Closures can also keep data alive.
+
+* Example:
+
+```js
+function createApplicationController(application) {
+
+    return {
+        getApplication() {
+            return application;
+        },
+
+        approve() {
+            application.status = "approved";
+        }
+    };
+}
+```
+
+* The returned object contains functions that still have access to `application`.
+
+* Even after `createApplicationController()` finishes executing, the `application` object can remain alive because the returned functions still reference it.
+
+* This is normal closure behavior.
+
+* A closure itself is not a memory leak.
+
+* The problem happens when a long-lived object unintentionally keeps large amounts of data alive.
+
+* Example:
+
+```js
+const controllers = [];
+
+function createController(application) {
+    return {
+        getApplication() {
+            return application;
+        }
+    };
+}
+
+for (const application of applications) {
+    controllers.push(createController(application));
+}
+```
+
+* Now `controllers` keeps all those controller functions alive.
+
+* Those functions keep their corresponding applications alive through closures.
+
+```text
+controllers
+    |
+    +---- controller
+    |       |
+    |       +---- application
+    |
+    +---- controller
+    |       |
+    |       +---- application
+    |
+    +---- controller
+            |
+            +---- application
+```
+
+* If the application keeps adding controllers and never removes old ones, memory usage can continuously increase.
+
+* This is why long-lived arrays, caches, timers, listeners, subscriptions and global state need careful management.
+
+* Another important point is that `const` does not mean the object itself cannot change.
+
+```js
+const application = {
+    status: "pending"
+};
+
+application.status = "approved";
+```
+
+* This works because `const` prevents changing the variable's reference, not changing the object's internal properties.
+
+* This:
+
+```js
+application = {};
+```
+
+* is not allowed because we are trying to change the reference stored in the `const` variable.
+
+* But this:
+
+```js
+application.status = "approved";
+```
+
+* changes the existing object.
+
+* Arrays work the same way.
+
+```js
+const applications = [];
+
+applications.push(application);
+```
+
+* The array reference stays the same while its contents change.
+
+* This becomes important when large arrays are kept in application state.
+
+* Suppose an admin dashboard loads 100,000 applications:
+
+```js
+const applications = await fetchAllApplications();
+```
+
+* Keeping all 100,000 complex objects in browser memory may consume much more memory than loading only the required records.
+
+* Instead, production applications commonly use pagination:
+
+```text
+GET /applications?page=1&limit=20
+```
+
+* Instead of:
+
+```text
+100,000 applications
+        ↓
+Browser memory
+```
+
+* we can have:
+
+```text
+20 applications
+        ↓
+Browser memory
+```
+
+* Then when the user moves to another page, the application can replace or update the current data.
+
+* This is not only about performance. It also reduces unnecessary memory usage.
+
+* Large files should also not always be loaded completely into memory.
+
+* For example, if an application processes a 500 MB video or CSV file, loading the entire file into memory at once can create unnecessary memory pressure.
+
+* Production applications may use streaming or process data in smaller chunks instead.
+
+* A useful way to think about memory leaks is:
+
+```text
+Application no longer needs data
+              ↓
+Developer expects it to disappear
+              ↓
+But some reference still exists
+              ↓
+Object is still reachable
+              ↓
+Garbage collector keeps it
+              ↓
+Memory usage increases
+```
+
+* Common places to check when debugging a memory leak:
+
+```text
+Global variables
+        ↓
+Large arrays
+        ↓
+Caches
+        ↓
+Event listeners
+        ↓
+Timers
+        ↓
+Closures
+        ↓
+Subscriptions
+        ↓
+DOM references
+        ↓
+WebSocket connections
+```
+
+* In browser applications, Chrome DevTools provides the Memory tab for investigating memory problems.
+
+* Heap snapshots can help identify which objects are consuming memory and what is keeping those objects reachable.
+
+* The important questions when debugging memory are:
+
+```text
+Why is this object still in memory?
+
+Who is referencing it?
+
+Is that reference still required?
+
+If it is not required, why wasn't it removed?
+
+Is a timer/listener/cache/closure keeping it alive?
+```
+
+* Memory management is therefore not about manually deleting everything.
+
+* JavaScript already has garbage collection.
+
+* Our job as developers is to make sure unnecessary objects do not remain reachable accidentally.
+
+* The main concepts to remember:
+
+```text
+Reference
+→ something that provides access to an object
+
+Reachable
+→ object can still be accessed through existing references
+
+Unreachable
+→ no active reference can reach the object
+
+Garbage collection
+→ JavaScript eventually reclaims memory occupied by unreachable objects
+
+Memory leak
+→ application keeps references to data that it no longer needs
+```
+
+* Real production example:
+
+```text
+Admin opens application
+        ↓
+API returns complex application object
+        ↓
+State stores the object
+        ↓
+Selected application references the object
+        ↓
+Modal event listener references the selected application
+        ↓
+Timer monitors the application
+        ↓
+Cache stores the application
+```
+
+* Now the same application can be reachable through several paths.
+
+* If the admin closes the modal but we only remove the UI element while leaving the timer, cache, or listener active, the application may still remain in memory.
+
+* Proper cleanup means removing references that are no longer required.
+
+```text
+Close modal
+    ↓
+Remove event listener
+
+Stop monitoring
+    ↓
+clearInterval()
+
+Remove unnecessary cache entry
+    ↓
+cache.delete(id)
+
+Remove unused state reference
+    ↓
+selectedApplication = null
+```
+
 

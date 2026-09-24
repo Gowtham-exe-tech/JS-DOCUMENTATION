@@ -290,5 +290,147 @@
 // const ne = "hi";
 // console.log(Number(ne));
 
-const arr = ['hi', 'hello', 'king'];
-console.log(arr.at('-1'));
+// const arr = ['hi', 'hello', 'king'];
+// console.log(arr.at('-1')); // actual index = length + negative index
+
+// const orders = [
+//     { id: 101, amount: 500 },
+//     { id: 102, amount: 1500 },
+//     { id: 103, amount: 800 },
+//     { id: 104, amount: 2000 }
+// ];
+
+// const highValueOrders = orders.filter(order => order.amount >= 800 && order.amount <= 1500);
+// console.log(highValueOrders);
+
+// const products = [
+//     {
+//         id : 101,
+//         name: "product 1",
+//         rating: 4,
+//     },
+//     {
+//         id : 102,
+//         name: "product 2",
+//         rating: 1,
+//     },
+//     {
+//         id : 103,
+//         name: "product 3",
+//         rating: 3,
+//     },
+//     {
+//         id : 104,
+//         name: "product 4",
+//         rating: 4,
+//     },
+//     {
+//         id : 105,
+//         name: "product 5",
+//         rating: 1,
+//     },
+// ];
+
+// for (let i=0; i < products.length; i++){
+//     let mini = i;
+
+//     for (let j=i+1; j<products.length; j++){
+//         if(products[j].rating > products[mini].rating){
+//             mini = j;
+//         }
+//     }
+//     let temp = products[i];
+//     products[i] = products[mini];
+//     products[mini] = temp;
+
+// }
+
+// console.log(products);
+
+// built-in sort
+
+// products.sort((a,b) => a.rating - b.rating);
+// console.log(products);
+
+
+// const users = [
+//     {
+//         id: 1,
+//         skills: [
+//             {
+//                 name: 'python',
+//                 rating: 5,
+//             },
+//             {
+//                 name: 'c',
+//                 rating: 3,
+//             }
+//         ]
+//     },
+//     {
+//         id: 2,
+//         skills: [
+//             {
+//                 name: 'python',
+//                 rating: 2,
+//             },
+//             {
+//                 name: 'c',
+//                 rating: 4,
+//             },
+//             {
+//                 name: 'java',
+//                 rating: 3,
+//             }
+//         ]
+//     },
+//     {
+//         id: 3,
+//         skills: [
+//             {
+//                 name: 'python',
+//                 rating: 4,
+//             },
+//             {
+//                 name: 'c',
+//                 rating: 5,
+//             }
+//         ]
+//     }
+
+// ]
+
+
+// users.forEach(user => {
+//     user.skills.sort((a, b) => b.rating - a.rating);
+// });
+
+
+
+// users.sort((a, b) => {
+//     const totalA = a.skills.reduce((sum, skill) => sum + skill.rating, 0);
+//     const totalB = b.skills.reduce((sum, skill) => sum + skill.rating, 0);
+//     return totalB - totalA;
+// });
+
+
+// users.forEach(user => {
+//     let output = `${user.id}: `;
+
+//     user.skills.forEach(skill => {
+//         output += `${skill.name}(${skill.rating}) `;
+//     });
+
+//     console.log(output);
+// });
+
+const a = 10;
+const b = 20;
+
+if (a<b){
+    a = 30;
+    b = 40;
+}
+
+console.log(a);
+console.log(b);

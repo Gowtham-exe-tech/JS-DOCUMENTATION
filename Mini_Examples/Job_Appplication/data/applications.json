@@ -1,0 +1,515 @@
+[
+  {
+    "id": "APP-2026-0001",
+    "applicant": {
+      "firstName": "Gowtham",
+      "lastName": "Kumar",
+      "fullName": "Gowtham Kumar",
+      "age": 21,
+      "contact": {
+        "email": "gowtham.kumar@example.com",
+        "phone": "+91-9876543210"
+      },
+      "address": {
+        "line1": "12 Gandhi Road",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "postalCode": "641001"
+      }
+    },
+
+    "education": [
+      {
+        "degree": "B.E",
+        "specialization": "Computer Science and Engineering",
+        "institution": "ABC Engineering College",
+        "startYear": 2022,
+        "endYear": 2026,
+        "cgpa": 8.4
+      },
+      {
+        "degree": "HSC",
+        "specialization": "Computer Science",
+        "institution": "XYZ Higher Secondary School",
+        "startYear": 2020,
+        "endYear": 2022,
+        "percentage": 91.2
+      }
+    ],
+
+    "skills": [
+      {
+        "name": "JavaScript",
+        "level": "Intermediate",
+        "yearsOfExperience": 1.5
+      },
+      {
+        "name": "Python",
+        "level": "Intermediate",
+        "yearsOfExperience": 2
+      },
+      {
+        "name": "React",
+        "level": "Beginner",
+        "yearsOfExperience": 0.8
+      },
+      {
+        "name": "SQL",
+        "level": "Intermediate",
+        "yearsOfExperience": 1
+      }
+    ],
+
+    "internships": [
+      {
+        "company": "Tech Solutions Pvt Ltd",
+        "role": "Software Developer Intern",
+        "location": "Coimbatore",
+        "startDate": "2025-05-01",
+        "endDate": "2025-07-31",
+        "durationMonths": 3,
+        "description": "Worked on REST APIs and frontend integration.",
+        "technologies": [
+          "JavaScript",
+          "Node.js",
+          "Express",
+          "MongoDB"
+        ]
+      }
+    ],
+
+    "resume": {
+      "fileName": "gowtham-kumar-resume.pdf",
+      "fileType": "application/pdf",
+      "uploadedAt": "2026-09-23T10:30:00Z"
+    },
+
+    "application": {
+      "position": "Full Stack Developer",
+      "department": "Engineering",
+      "source": "Company Website",
+      "appliedAt": "2026-09-23T10:32:14Z"
+    },
+
+    "status": {
+      "current": "Pending",
+      "updatedAt": "2026-09-23T10:32:14Z",
+      "updatedBy": "System"
+    },
+
+    "review": {
+      "reviewed": false,
+      "rating": null,
+      "comments": null,
+      "reviewedBy": null,
+      "reviewedAt": null
+    }
+  },
+
+  {
+    "id": "APP-2026-0002",
+    "applicant": {
+      "firstName": "Arun",
+      "lastName": "Prakash",
+      "fullName": "Arun Prakash",
+      "age": 23,
+      "contact": {
+        "email": "arun.prakash@example.com",
+        "phone": "+91-9123456780"
+      },
+      "address": {
+        "line1": "45 Avinashi Road",
+        "city": "Tiruppur",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "postalCode": "641602"
+      }
+    },
+
+    "education": [
+      {
+        "degree": "B.Tech",
+        "specialization": "Information Technology",
+        "institution": "South India Institute of Technology",
+        "startYear": 2021,
+        "endYear": 2025,
+        "cgpa": 8.9
+      }
+    ],
+
+    "skills": [
+      {
+        "name": "Java",
+        "level": "Advanced",
+        "yearsOfExperience": 2
+      },
+      {
+        "name": "Spring Boot",
+        "level": "Intermediate",
+        "yearsOfExperience": 1.5
+      },
+      {
+        "name": "MySQL",
+        "level": "Advanced",
+        "yearsOfExperience": 2
+      },
+      {
+        "name": "Docker",
+        "level": "Beginner",
+        "yearsOfExperience": 0.5
+      }
+    ],
+
+    "internships": [
+      {
+        "company": "Cloud Systems India",
+        "role": "Backend Developer Intern",
+        "location": "Chennai",
+        "startDate": "2024-01-10",
+        "endDate": "2024-06-30",
+        "durationMonths": 6,
+        "description": "Developed REST APIs and worked with relational databases.",
+        "technologies": [
+          "Java",
+          "Spring Boot",
+          "MySQL",
+          "Docker"
+        ]
+      }
+    ],
+
+    "resume": {
+      "fileName": "arun-prakash-resume.pdf",
+      "fileType": "application/pdf",
+      "uploadedAt": "2026-09-20T08:45:00Z"
+    },
+
+    "application": {
+      "position": "Backend Developer",
+      "department": "Engineering",
+      "source": "LinkedIn",
+      "appliedAt": "2026-09-20T08:47:22Z"
+    },
+
+    "status": {
+      "current": "Shortlisted",
+      "updatedAt": "2026-09-21T11:20:00Z",
+      "updatedBy": "HR"
+    },
+
+    "review": {
+      "reviewed": true,
+      "rating": 4.5,
+      "comments": "Strong backend fundamentals and good API experience.",
+      "reviewedBy": "HR Team",
+      "reviewedAt": "2026-09-21T11:20:00Z"
+    }
+  },
+
+  {
+    "id": "APP-2026-0003",
+    "applicant": {
+      "firstName": "Priya",
+      "lastName": "Devi",
+      "fullName": "Priya Devi",
+      "age": 22,
+      "contact": {
+        "email": "priya.devi@example.com",
+        "phone": "+91-9988776655"
+      },
+      "address": {
+        "line1": "8 MG Road",
+        "city": "Chennai",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "postalCode": "600034"
+      }
+    },
+
+    "education": [
+      {
+        "degree": "B.E",
+        "specialization": "Electronics and Communication Engineering",
+        "institution": "Chennai Engineering Institute",
+        "startYear": 2022,
+        "endYear": 2026,
+        "cgpa": 7.8
+      }
+    ],
+
+    "skills": [
+      {
+        "name": "HTML",
+        "level": "Advanced",
+        "yearsOfExperience": 2
+      },
+      {
+        "name": "CSS",
+        "level": "Advanced",
+        "yearsOfExperience": 2
+      },
+      {
+        "name": "JavaScript",
+        "level": "Intermediate",
+        "yearsOfExperience": 1.5
+      },
+      {
+        "name": "Vue",
+        "level": "Intermediate",
+        "yearsOfExperience": 1
+      }
+    ],
+
+    "internships": [
+      {
+        "company": "Digital Works",
+        "role": "Frontend Developer Intern",
+        "location": "Chennai",
+        "startDate": "2025-06-01",
+        "endDate": "2025-08-31",
+        "durationMonths": 3,
+        "description": "Built responsive dashboards and reusable frontend components.",
+        "technologies": [
+          "HTML",
+          "CSS",
+          "JavaScript",
+          "Vue"
+        ]
+      },
+      {
+        "company": "Startup Labs",
+        "role": "UI Developer Intern",
+        "location": "Bangalore",
+        "startDate": "2025-09-01",
+        "endDate": "2025-10-31",
+        "durationMonths": 2,
+        "description": "Implemented UI improvements and accessibility fixes.",
+        "technologies": [
+          "HTML",
+          "CSS",
+          "JavaScript"
+        ]
+      }
+    ],
+
+    "resume": {
+      "fileName": "priya-devi-resume.docx",
+      "fileType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "uploadedAt": "2026-09-18T14:15:00Z"
+    },
+
+    "application": {
+      "position": "Frontend Developer",
+      "department": "Product Engineering",
+      "source": "Company Website",
+      "appliedAt": "2026-09-18T14:18:31Z"
+    },
+
+    "status": {
+      "current": "Pending",
+      "updatedAt": "2026-09-18T14:18:31Z",
+      "updatedBy": "System"
+    },
+
+    "review": {
+      "reviewed": false,
+      "rating": null,
+      "comments": null,
+      "reviewedBy": null,
+      "reviewedAt": null
+    }
+  },
+
+  {
+    "id": "APP-2026-0004",
+    "applicant": {
+      "firstName": "Rahul",
+      "lastName": "Sharma",
+      "fullName": "Rahul Sharma",
+      "age": 25,
+      "contact": {
+        "email": "rahul.sharma@example.com",
+        "phone": "+91-9001122334"
+      },
+      "address": {
+        "line1": "21 Residency Road",
+        "city": "Bangalore",
+        "state": "Karnataka",
+        "country": "India",
+        "postalCode": "560025"
+      }
+    },
+
+    "education": [
+      {
+        "degree": "MCA",
+        "specialization": "Computer Applications",
+        "institution": "Bangalore University",
+        "startYear": 2023,
+        "endYear": 2025,
+        "cgpa": 9.1
+      },
+      {
+        "degree": "BCA",
+        "specialization": "Computer Applications",
+        "institution": "Bangalore College",
+        "startYear": 2020,
+        "endYear": 2023,
+        "cgpa": 8.7
+      }
+    ],
+
+    "skills": [
+      {
+        "name": "Python",
+        "level": "Advanced",
+        "yearsOfExperience": 3
+      },
+      {
+        "name": "Django",
+        "level": "Advanced",
+        "yearsOfExperience": 2
+      },
+      {
+        "name": "PostgreSQL",
+        "level": "Intermediate",
+        "yearsOfExperience": 2
+      },
+      {
+        "name": "AWS",
+        "level": "Intermediate",
+        "yearsOfExperience": 1
+      }
+    ],
+
+    "internships": [
+      {
+        "company": "FinTech Systems",
+        "role": "Python Developer Intern",
+        "location": "Bangalore",
+        "startDate": "2024-02-01",
+        "endDate": "2024-08-01",
+        "durationMonths": 6,
+        "description": "Worked on backend services and database integration.",
+        "technologies": [
+          "Python",
+          "Django",
+          "PostgreSQL",
+          "AWS"
+        ]
+      }
+    ],
+
+    "resume": {
+      "fileName": "rahul-sharma-resume.pdf",
+      "fileType": "application/pdf",
+      "uploadedAt": "2026-09-15T09:10:00Z"
+    },
+
+    "application": {
+      "position": "Python Developer",
+      "department": "Backend Engineering",
+      "source": "Employee Referral",
+      "appliedAt": "2026-09-15T09:12:45Z"
+    },
+
+    "status": {
+      "current": "Rejected",
+      "updatedAt": "2026-09-17T15:30:00Z",
+      "updatedBy": "Hiring Manager"
+    },
+
+    "review": {
+      "reviewed": true,
+      "rating": 2.5,
+      "comments": "Good Python knowledge but lacks required production API experience.",
+      "reviewedBy": "Hiring Manager",
+      "reviewedAt": "2026-09-17T15:30:00Z"
+    }
+  },
+
+  {
+    "id": "APP-2026-0005",
+    "applicant": {
+      "firstName": "Meena",
+      "lastName": "Krishnan",
+      "fullName": "Meena Krishnan",
+      "age": 24,
+      "contact": {
+        "email": "meena.krishnan@example.com",
+        "phone": "+91-9112233445"
+      },
+      "address": {
+        "line1": "17 Anna Nagar",
+        "city": "Madurai",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "postalCode": "625020"
+      }
+    },
+
+    "education": [
+      {
+        "degree": "B.E",
+        "specialization": "Information Technology",
+        "institution": "Madurai Institute of Technology",
+        "startYear": 2020,
+        "endYear": 2024,
+        "cgpa": 8.1
+      }
+    ],
+
+    "skills": [
+      {
+        "name": "JavaScript",
+        "level": "Advanced",
+        "yearsOfExperience": 2.5
+      },
+      {
+        "name": "React",
+        "level": "Advanced",
+        "yearsOfExperience": 2
+      },
+      {
+        "name": "Node.js",
+        "level": "Intermediate",
+        "yearsOfExperience": 1.5
+      },
+      {
+        "name": "MongoDB",
+        "level": "Intermediate",
+        "yearsOfExperience": 1.5
+      }
+    ],
+
+    "internships": [],
+
+    "resume": {
+      "fileName": "meena-krishnan-resume.pdf",
+      "fileType": "application/pdf",
+      "uploadedAt": "2026-09-12T12:00:00Z"
+    },
+
+    "application": {
+      "position": "Frontend Developer",
+      "department": "Product Engineering",
+      "source": "Company Website",
+      "appliedAt": "2026-09-12T12:04:12Z"
+    },
+
+    "status": {
+      "current": "Shortlisted",
+      "updatedAt": "2026-09-13T10:15:00Z",
+      "updatedBy": "Recruiter"
+    },
+
+    "review": {
+      "reviewed": true,
+      "rating": 4,
+      "comments": "Strong frontend skills and good React experience.",
+      "reviewedBy": "Recruiter",
+      "reviewedAt": "2026-09-13T10:15:00Z"
+    }
+  }
+]

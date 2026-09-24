@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Application</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="./script.js" defer></script>
+</head>
+
+<body>
+
+    <main class="application-container">
+
+        <header class="form-header">
+            <h1>Job Application</h1>
+        </header>
+
+
+        <form id="application-form">
+
+            <!-- Personal Information -->
+            <section class="form-section">
+                <h2>Personal Information</h2>
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label for="applicantName">Applicant Name</label>
+                        <input type="text" id="applicantName" name="applicantName" placeholder="Enter name" required>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" name="age" placeholder="age" min="18" max="100" required>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" placeholder="phone number" required>
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <textarea id="address" name="address" rows="4" placeholder="address" required>
+                    </textarea>
+                </div>
+
+            </section>
+
+
+            <!-- Education -->
+            <section class="form-section">
+
+                <div class="section-heading">
+
+                        <h2>Education</h2>
+
+                    <button type="button" class="add-btn" id="addEducationBtn">
+                        + Add Education
+                    </button>
+
+                </div>
+
+
+                <div id="educationContainer"></div>
+                
+                <template id="educationTemplate">
+
+                    <div class="education-item">
+                        
+                        <div class="form-grid">
+
+                            <div class="form-group">
+                                <label>Degree Name</label>
+                                <input type="text" name="degreeName[]" placeholder="B.E Computer Science" required>
+                            </div>
+                            
+
+                            <div class="form-group">
+                                <label>Institution Name</label>
+                                <input type="text" name="institutionName[]" required>
+                            </div>
+
+                            
+                            <div class="form-group">
+                                <label>CGPA</label>
+                                <input type="number" name="cgpa[]" min="0" max="10" step="0.1" required>
+                            </div>
+                            
+                        </div>
+
+                        <button type="button" class="remove">Remove</button>
+                        
+                    </div>
+                    
+                    
+                </template>
+                
+            </section>
+            
+            
+            <!-- Skills -->
+            <section class="form-section">
+                
+                <div class="section-heading">
+                    <h2>Skills</h2>
+                    
+                    <button type="button" class="add-btn" id="addskillbtn"> 
+                        + Add Skill
+                    </button>
+                    
+                </div>
+                
+                
+                <div id="skillsContainer"></div>
+                
+                <template id="skillsTemplate">
+                    
+                    
+                    <div class="skill-item">
+                        
+                        <input type="text" name="skills[]" required>
+                        <button type="button" class="remove">Remove</button>
+                    </div>
+                </template>
+                
+            </section>
+
+            
+            <!-- Internship Experience -->
+            <section class="form-section">
+                
+                <div class="section-heading">
+                    
+                        <h2>Internship Experience</h2>
+                        
+                    <button type="button" class="add-btn" id="addInternshipBtn">
+                        + Add 
+                    </button>
+                    
+                </div>
+                
+
+                <div id="internshipContainer"></div>
+
+                <template id="internshipTemplate">
+
+                    <div class="internship-item">
+                        
+                        <div class="form-grid">
+                            
+                            <div class="form-group">
+                                <label>Company Name</label>
+                                <input type="text" name="companyName[]" required>
+                            </div>
+                            
+                            
+                            <div class="form-group">
+                                <label>Role</label>
+                                <input type="text" name="role[]" required>
+                            </div>
+                            
+                            
+                            <div class="form-group">
+                                <label>Period</label>
+                                <input type="text" name="internshipPeriod[]" required>
+                            </div>
+                            
+                        </div>
+                        
+                        <button type="button" class="remove">Remove</button>
+                    </div>
+                    
+                </template>
+
+            </section>
+
+
+            <!-- Resume
+            <section class="form-section">
+                <h2>Resume</h2>
+
+                <div class="form-group">
+                    <label for="resume">Upload Resume</label>
+                    <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx" required>
+                    <small>
+                        Supported formats: PDF, DOC, DOCX
+                    </small>
+                </div>
+
+            </section> -->
+
+ <!-- Vacency details        -->
+            <section class="form-section">
+
+                <div class="vacencyDetails">
+                    <h2>Vacency Details</h2>
+                    <div class="form-group">
+                        <p>No. of Vacency: <span id="vacencyValue"></span></p>
+                        <p>No. of Applicants applied: <span id="applied"></span></p>
+                        <p>Remaining Applications: <span id="available"></span></p>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- Submit -->
+            <div class="form-actions">
+
+                <button type="reset" class="secondaryBtn">Reset</button>
+
+                <button type="submit" class="submitBtn">Submit Application</button>
+
+            </div>
+
+        </form>
+
+    </main>
+</body>
+</html>
