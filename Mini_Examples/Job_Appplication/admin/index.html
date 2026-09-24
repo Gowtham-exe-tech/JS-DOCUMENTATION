@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Page</title>
+    <link rel="stylesheet" href="./style.css">
+    <script src="./script.js" defer></script>
+</head>
+
+<body>
+
+    <main class="admin-container">
+
+        <header class="admin-header">
+
+            <div>
+                <h1>Application Management</h1>
+            </div>
+
+        </header>
+
+        <!-- Dashboard Summary -->
+        <section class="summary-section">
+
+            <div class="summary-card">
+                <span>Total Applications</span>
+                <strong id="totalApplications">0</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>Pending</span>
+                <strong id="pendingApplications">0</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>Shortlisted</span>
+                <strong id="shortlistedApplications">0</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>Rejected</span>
+                <strong id="rejectedApplications">0</strong>
+            </div>
+
+        </section>
+
+
+        <!-- Search and Filter -->
+        <section class="filter-section">
+
+            <div class="search-box">
+
+                <label for="searchInput">
+                    Search Applications
+                </label>
+
+                <input type="text" id="searchInput" placeholder="Search by name, ID, position or location">
+            </div>
+
+
+            <div class="filter-box">
+
+                <label for="statusFilter">Status</label>
+
+                <select id="statusFilter">
+
+                    <option value="all">
+                        All
+                    </option>
+
+                    <option value="Pending">
+                        Pending
+                    </option>
+
+                    <option value="Shortlisted">
+                        Shortlisted
+                    </option>
+
+                    <option value="Rejected">
+                        Rejected
+                    </option>
+
+                </select>
+
+            </div>
+
+        </section>
+
+        <!-- Applications Table -->
+        <section class="applications-section">
+
+            <div class="section-header">
+
+                <div>
+                    <h2>Applications</h2>
+                    <p id="resultCount">0 applications</p>
+                </div>
+
+            </div>
+
+
+            <div class="table-container">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Application ID</th>
+                            <th>Applicant</th>
+                            <th>Position</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+
+                    </thead>
+                    <tbody id="applicationsTableBody"></tbody>
+
+                </table>
+
+            </div>
+
+            <p id="emptyMessage" class="empty-message">
+                No applications found.
+            </p>
+
+        </section>
+
+        <!-- Application Details -->
+        <section class="application-details" id="applicationDetails">
+            <div class="details-header">
+
+                <div>
+                    <h2>Application Details</h2>
+                    <p id="detailsApplicationId"></p>
+                </div>
+
+                <button type="button" id="closeDetailsBtn" class="close-btn">
+                    Close
+                </button>
+
+            </div>
+
+
+            <div id="detailsContent">
+
+            </div>
+
+        </section>
+
+        <!-- Loading -->
+        <div id="loadingMessage" class="message">
+            Loading applications...
+        </div>
+
+        <!-- Error -->
+        <div id="errorMessage" class="message error-message">
+        </div>
+
+    </main>
+
+</body>
+
+</html>
