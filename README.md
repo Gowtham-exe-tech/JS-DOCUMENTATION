@@ -4618,64 +4618,1403 @@ if (currentDate > deadline) {
 
 * Be careful with time zones when working with real-world applications across different countries.
 
-# 13. Error Handling
+# Error Handling
 
-* Error handling is used to prevent the application from breaking when
-something unexpected happens.
+- Error handling means detecting when something goes wrong in an application and deciding what the application should do about it.
+- Errors can happen because of invalid user input, failed API requests, unavailable services, unexpected data, programming mistakes, or external systems failing.
+- Error handling is not only about preventing the application from crashing.
+- It is also about:
+  - giving useful feedback to the user
+  - keeping the application in a safe state
+  - logging useful information for debugging
+  - deciding whether the operation can be retried
+  - stopping invalid data from moving further into the application
+  - separating technical error details from messages shown to users
 
-* **Error** when they are **uncaught** break the flow of the program.
+In a job application application, errors can happen at different stages:
 
-Main concepts:
--   `try`
--   `catch`
--   `finally`
--   `throw`
--   Custom errors
+```
+User fills application
+        ↓
+Validate application
+        ↓
+Upload resume
+        ↓
+Send API request
+        ↓
+Backend processes request
+        ↓
+Database stores application
+        ↓
+Email notification
+        ↓
+Return response
+        ↓
+Show result to user
+```
 
-## try
+Any of these steps can fail, so error handling should be considered throughout the complete flow.
 
-* `try` contains code that may produce an error.
+## Error Object
 
-* In a real application, this is useful around operations such as API calls, JSON parsing, file operations, or database operations.
+JavaScript provides the Error object to represent an error.
 
-## catch
+```js
+const error = new Error("Application submission failed");
 
-* `catch` handles the error when something fails.
+console.log(error.name);
+console.log(error.message);
+console.log(error.stack);
+```
 
-* The error object normally gives useful information such as:
+- `error.name` gives the type of error → `Error`
+- `error.message` gives the explanation of the error → `Application submission failed`
+- `error.stack` gives information about where the error happened and the function call path that led to it. The stack is mainly useful when debugging.
 
-``` js
-error.message
-error.name
-error.stack
+In an application, the error object can contain much more useful information than just a message.
+
+```js
+const error = new Error("Resume upload failed");
+
+console.error(error);
+```
+
+Usually, developers log the complete error internally while showing a simpler message to the user.
+
+**Developer:**
+```
+Resume upload failed
+TypeError...
+stack trace...
+```
+
+**User:**
+```
+Unable to upload your resume. Please try again.
+```
+
+## Common JavaScript Error Types
+
+**Error** is the general error type.
+```js
+throw new Error("Application submission failed");
+```
+
+**TypeError** usually happens when an operation is performed on a value of an unexpected type.
+```js
+const applicant = null;
+
+console.log(applicant.name);
+```
+
+**ReferenceError** happens when JavaScript tries to access a variable that does not exist.
+```js
+console.log(applicationData);
+```
+
+**SyntaxError** happens when JavaScript syntax is invalid.
+```js
+const application = {
+    name: "Gowtham"
+```
+
+**RangeError** happens when a value is outside an allowed range.
+```js
+const numbers = new Array(-1);
+```
+
+I don't need to memorize every error type. I mainly need to understand what kind of problem caused the error and how to investigate it.
+
+
+## throw
+
+`throw` is used when I want to deliberately create an error. This is useful when my application detects invalid data or a condition that should stop the current operation.
+
+```js
+function validateApplication(application) {
+
+    if (!application.email) {
+        throw new Error("Email is required");
+    }
+
+    if (!application.resume) {
+        throw new Error("Resume is required");
+    }
+
+    return true;
+}
+```
+
+If email is missing, this line executes:
+```js
+throw new Error("Email is required");
+```
+
+The function stops immediately. Code after the throw inside that execution path will not run.
+
+```js
+function validateApplication(application) {
+
+    if (!application.email) {
+        throw new Error("Email is required");
+    }
+
+    console.log("Validation completed");
+}
+```
+
+If email is missing, `"Validation completed"` will not execute.
+
+## try and catch
+
+- `try` contains code that may produce an error.
+- `catch` handles the error if an error occurs inside the try block.
+
+```js
+try {
+
+    validateApplication(application);
+
+} catch (error) {
+
+    console.error(error);
+}
+```
+
+The basic flow is:
+```
+try
+ ↓
+execute code
+ ↓
+error?
+ ├── no → continue normally
+ └── yes
+       ↓
+     catch
+       ↓
+   handle error
+```
+
+`try...catch` does not prevent an error from happening. It gives me a place where I can handle the error.
+
+### catch Error Object
+
+```js
+try {
+
+    validateApplication(application);
+
+} catch (error) {
+
+    console.log(error.name);
+    console.log(error.message);
+    console.log(error.stack);
+}
+```
+
+- `error.name` tells me the error type.
+- `error.message` tells me what happened.
+- `error.stack` helps me find where the error originated.
+
+In real application code, I should usually log the error with enough context.
+
+```js
+try {
+
+    await submitApplication(application);
+
+} catch (error) {
+
+    console.error(
+        "Job application submission failed:",
+        error
+    );
+}
 ```
 
 ## finally
 
-* `finally` runs whether the operation succeeds or fails.
+`finally` runs whether the operation succeeds or fails. It is useful for cleanup operations.
 
-* A common use is cleanup, such as hiding a loading indicator after an API
-request.
+```js
+try {
 
-## throw
+    await submitApplication(application);
 
-* `throw` is used when our application detects an invalid condition and
-wants to stop the current operation with an error.
+} catch (error) {
 
-* For example, an API may return a response successfully, but the
-application may still consider it invalid because required data is
-missing.
+    console.error(error);
 
-## Custom errors
+} finally {
 
-* Custom errors are useful when a larger application needs to distinguish
-between different types of failures.
+    setLoading(false);
+}
+```
 
-For example:
--   validation error
--   authentication error
--   authorization error
--   network error
+For example, when a user submits a job application:
+
+```
+User clicks Submit
+       ↓
+Loading starts
+       ↓
+API request
+       ↓
+ ┌─────┴─────┐
+Success      Error
+   ↓           ↓
+Success      Show error
+   └─────┬─────┘
+         ↓
+   Stop loading
+```
+
+`finally` is useful because I don't want the loading state to remain active when an error happens.
+
+
+## Error Propagation
+
+An error can travel through multiple function calls until it reaches a catch.
+
+```js
+function validateApplication(application) {
+
+    if (!application.email) {
+        throw new Error("Email is required");
+    }
+}
+
+function createApplication(application) {
+
+    validateApplication(application);
+
+    return application;
+}
+
+function submitApplication(application) {
+
+    return createApplication(application);
+}
+
+try {
+
+    submitApplication({
+        name: "Gowtham"
+    });
+
+} catch (error) {
+
+    console.log(error.message);
+}
+```
+
+The error flow is:
+```
+submitApplication()
+        ↓
+createApplication()
+        ↓
+validateApplication()
+        ↓
+throw Error
+        ↓
+validateApplication stops
+        ↓
+createApplication stops
+        ↓
+submitApplication stops
+        ↓
+catch receives error
+```
+
+This is called error propagation. I don't always need to catch an error exactly where it occurs. I can allow the error to move upward to a layer that knows how to handle it.
+
+
+## Call Stack and Errors
+
+JavaScript keeps track of function calls using the call stack. When an error is thrown, the current execution stops and JavaScript looks for a suitable catch. This connects error handling directly with the call stack concept.
+
+```
+submitApplication()
+        ↓
+createApplication()
+        ↓
+validateApplication()
+        ↓
+throw Error
+        ↓
+JavaScript searches upward
+        ↓
+catch
+```
+
+If no suitable catch handles the error, the error can become an uncaught error.
+
+
+## Don't Catch Errors Without a Purpose
+
+I should not use `try...catch` everywhere just because an operation might fail.
+
+**Bad example:**
+```js
+try {
+
+    const total = price * quantity;
+
+} catch (error) {
+
+    console.log("Something went wrong");
+}
+```
+
+There is no useful error-handling strategy here. Catching an error only to hide it can make debugging harder.
+
+**Bad:**
+```js
+try {
+
+    submitApplication();
+
+} catch (error) {
+
+    console.log("Something happened");
+}
+```
+
+This loses useful information. A better approach is to log the actual error and handle it appropriately.
+
+```js
+try {
+
+    await submitApplication();
+
+} catch (error) {
+
+    console.error(
+        "Application submission failed:",
+        error
+    );
+
+    showError(
+        "Unable to submit your application. Please try again."
+    );
+}
+```
+
+## Validation Errors
+
+Validation errors happen when the user provides data that does not satisfy the application's rules. These errors are expected and should normally be handled differently from unexpected system failures.
+
+```js
+function validateApplication(application) {
+
+    if (!application.name) {
+        throw new Error("Name is required");
+    }
+
+    if (!application.email) {
+        throw new Error("Email is required");
+    }
+
+    if (!application.resume) {
+        throw new Error("Resume is required");
+    }
+}
+```
+
+The user can correct these errors. The application should tell the user what needs to be corrected.
+```
+Email is required
+Resume is required
+```
+
+## Custom Errors
+
+Generic Error objects are sometimes not enough for larger applications. I can create custom error classes to represent different types of errors.
+
+```js
+class ValidationError extends Error {
+
+    constructor(message) {
+
+        super(message);
+
+        this.name = "ValidationError";
+    }
+}
+```
+
+Now I can throw a specific validation error.
+
+```js
+function validateEmail(email) {
+
+    if (!email.includes("@")) {
+
+        throw new ValidationError(
+            "Invalid email address"
+        );
+    }
+}
+```
+
+I can create other error types when the application needs them.
+
+```js
+class AuthenticationError extends Error {
+
+    constructor(message) {
+
+        super(message);
+
+        this.name = "AuthenticationError";
+    }
+}
+
+class AuthorizationError extends Error {
+
+    constructor(message) {
+
+        super(message);
+
+        this.name = "AuthorizationError";
+    }
+}
+
+class NotFoundError extends Error {
+
+    constructor(message) {
+
+        super(message);
+
+        this.name = "NotFoundError";
+    }
+}
+```
+
+This allows the application to distinguish between different problems:
+- ValidationError
+- AuthenticationError
+- AuthorizationError
+- NotFoundError
+- DatabaseError
+- ExternalServiceError
+
+## instanceof
+
+`instanceof` checks whether an object belongs to a particular class or constructor.
+
+```js
+const error = new ValidationError("Invalid email");
+
+console.log(error instanceof ValidationError);
+```
+`true`
+
+A custom error also belongs to the Error hierarchy.
+```js
+console.log(error instanceof Error);
+```
+`true`
+
+This allows me to handle different errors differently.
+
+```js
+try {
+
+    validateApplication(application);
+
+} catch (error) {
+
+    if (error instanceof ValidationError) {
+
+        showError(error.message);
+
+    } else {
+
+        showError(
+            "Something went wrong. Please try again."
+        );
+    }
+}
+```
+
+## Re-throwing Errors
+
+Sometimes a function catches an error only to log additional information and then sends the error back to the caller. This is called re-throwing.
+
+```js
+async function saveApplication(application) {
+
+    try {
+
+        return await database.save(application);
+
+    } catch (error) {
+
+        console.error(
+            "Database save failed:",
+            error
+        );
+
+        throw error;
+    }
+}
+```
+
+`throw error` is important here. Without it, the caller may not know that the database operation failed.
+
+```
+database
+   ↓
+error
+   ↓
+saveApplication()
+   ↓
+log error
+   ↓
+throw error
+   ↓
+caller handles it
+```
+
+## Synchronous Error Handling
+
+Synchronous code runs immediately. Errors from synchronous code can be handled with normal `try...catch`.
+
+```js
+try {
+
+    const result = calculateApplicationScore();
+
+} catch (error) {
+
+    console.error(error);
+}
+```
+
+## Asynchronous Error Handling
+
+Modern applications perform many asynchronous operations:
+- API requests
+- database operations
+- file uploads
+- authentication requests
+- email services
+- external APIs
+
+With async/await, `try...catch` can be used naturally.
+
+```js
+async function loadApplications() {
+
+    try {
+
+        const response = await fetch(
+            "/api/applications"
+        );
+
+        const data = await response.json();
+
+        return data;
+
+    } catch (error) {
+
+        console.error(
+            "Failed to load applications:",
+            error
+        );
+    }
+}
+```
+
+## Promise Error Handling
+
+Promise chains can handle errors using `.catch()`.
+
+```js
+fetch("/api/applications")
+    .then(response => response.json())
+    .then(applications => {
+
+        console.log(applications);
+
+    })
+    .catch(error => {
+
+        console.error(
+            "Failed to load applications:",
+            error
+        );
+    });
+```
+
+The same operation using async/await:
+
+```js
+async function loadApplications() {
+
+    try {
+
+        const response = await fetch(
+            "/api/applications"
+        );
+
+        const applications = await response.json();
+
+        return applications;
+
+    } catch (error) {
+
+        console.error(
+            "Failed to load applications:",
+            error
+        );
+    }
+}
+```
+
+When working with modern JavaScript applications, I should be comfortable handling errors with async/await.
+
+## fetch and HTTP Errors
+
+One important point about `fetch()` is that an HTTP error such as 400, 404, or 500 does not automatically cause `fetch()` to throw an error. `fetch()` mainly rejects when the request itself fails, such as a network failure.
+
+```js
+const response = await fetch("/api/applications");
+```
+
+If the server responds with `500 Internal Server Error`, the promise can still resolve with a Response object. Therefore I should check `response.ok`.
+
+```js
+if (!response.ok) {
+
+    throw new Error(
+        `Request failed with status ${response.status}`
+    );
+}
+```
+
+A proper API function can look like:
+
+```js
+async function loadApplications() {
+
+    try {
+
+        const response = await fetch(
+            "/api/applications"
+        );
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Request failed with status ${response.status}`
+            );
+        }
+
+        const applications =
+            await response.json();
+
+        return applications;
+
+    } catch (error) {
+
+        console.error(
+            "Failed to load applications:",
+            error
+        );
+
+        throw error;
+    }
+}
+```
+
+The important difference is:
+```
+Network failure
+      ↓
+fetch rejects
+      ↓
+catch
+
+HTTP 500
+      ↓
+fetch may resolve
+      ↓
+response.ok === false
+      ↓
+I decide to throw an error
+```
+
+## HTTP Status and Error Handling
+
+Different HTTP errors can represent different problems.
+- 400 → invalid request
+- 401 → authentication required
+- 403 → user does not have permission
+- 404 → resource not found
+- 409 → conflict
+- 422 → validation problem
+- 429 → too many requests
+- 500 → server error
+- 503 → service unavailable
+
+I should not treat every status code exactly the same. The exact handling depends on the application's requirements.
+
+**Example:**
+```js
+if (response.status === 401) {
+
+    throw new AuthenticationError(
+        "Authentication required"
+    );
+}
+
+if (response.status === 403) {
+
+    throw new AuthorizationError(
+        "You don't have permission"
+    );
+}
+
+if (response.status === 404) {
+
+    throw new NotFoundError(
+        "Application not found"
+    );
+}
+```
+
+## User Errors vs Developer Errors
+
+The technical error shown to a developer and the message shown to a user should not always be the same.
+
+**Bad:**
+```js
+catch (error) {
+
+    document.querySelector("#error").textContent =
+        error.stack;
+}
+```
+
+Stack traces and internal system information should not normally be displayed to users.
+
+**Better:**
+```js
+catch (error) {
+
+    console.error(error);
+
+    showError(
+        "We couldn't submit your application. Please try again."
+    );
+}
+```
+
+- Developer gets detailed information.
+- User gets a safe and useful message.
+
+```
+Developer
+    ↓
+technical error
+stack
+request information
+debugging information
+
+User
+    ↓
+simple explanation
+possible action
+```
+
+## API Boundary Error Handling
+
+The frontend and backend communicate through an API. The API boundary should be treated carefully because the response may fail, contain unexpected data, or return an error status.
+
+```js
+async function submitApplication(application) {
+
+    try {
+
+        const response = await fetch(
+            "/api/applications",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(application)
+            }
+        );
+
+        if (!response.ok) {
+
+            if (response.status === 400) {
+
+                throw new ValidationError(
+                    "Application data is invalid"
+                );
+            }
+
+            if (response.status === 401) {
+
+                throw new AuthenticationError(
+                    "Authentication required"
+                );
+            }
+
+            throw new Error(
+                `Server error: ${response.status}`
+            );
+        }
+
+        return await response.json();
+
+    } catch (error) {
+
+        console.error(
+            "Application API failed:",
+            error
+        );
+
+        throw error;
+    }
+}
+```
+
+The API function handles technical communication. The UI layer decides what the user should see.
+
+```js
+async function handleSubmit(application) {
+
+    setLoading(true);
+
+    try {
+
+        await submitApplication(application);
+
+        showSuccess(
+            "Application submitted successfully."
+        );
+
+    } catch (error) {
+
+        if (error instanceof ValidationError) {
+
+            showError(error.message);
+
+        } else if (
+            error instanceof AuthenticationError
+        ) {
+
+            showError(
+                "Please log in before submitting."
+            );
+
+        } else {
+
+            showError(
+                "Unable to submit your application. Please try again."
+            );
+        }
+
+    } finally {
+
+        setLoading(false);
+    }
+}
+```
+
+This creates a clean separation:
+```
+UI
+ ↓
+API/service function
+ ↓
+backend
+ ↓
+database
+```
+
+Lower layers can provide technical error information. Higher layers decide how that error should affect the user interface.
+
+## JSON.parse Errors
+
+`JSON.parse()` converts JSON text into a JavaScript value. If the JSON is invalid, it throws a `SyntaxError`.
+
+```js
+try {
+
+    const data = JSON.parse(serverData);
+
+} catch (error) {
+
+    console.error(
+        "Invalid JSON received:",
+        error
+    );
+}
+```
+
+This matters when handling external or stored JSON data.
+
+## Fallback Handling
+
+Not every error means the entire application must stop. Sometimes the application can provide fallback behavior.
+
+**Example:**
+```js
+async function loadProfile() {
+
+    try {
+
+        const response = await fetch(
+            "/api/profile"
+        );
+
+        if (!response.ok) {
+            throw new Error("Profile request failed");
+        }
+
+        return await response.json();
+
+    } catch (error) {
+
+        console.error(error);
+
+        return {
+            name: "Guest",
+            profileLoaded: false
+        };
+    }
+}
+```
+
+The application can continue with limited functionality instead of completely failing.
+
+## Retry Handling
+
+Some failures are temporary. A network request may fail because of a temporary connection problem. An external service may temporarily be unavailable.
+
+```
+API request
+    ↓
+temporary failure
+    ↓
+retry
+    ↓
+success
+```
+
+I should not retry every error. For example:
+- Network timeout → may retry
+- 503 → may retry
+- 400 → usually don't retry
+- 401 → authentication handling
+- 403 → permission handling
+- 404 → usually don't retry
+
+Retry logic should consider the type of error and the operation being performed. Repeating a request that changes data can sometimes create duplicate operations, so retry behavior must be designed carefully.
+
+
+## Loading State and finally
+
+UI operations often have loading states.
+
+```js
+async function handleSubmit(application) {
+
+    setLoading(true);
+
+    try {
+
+        await submitApplication(application);
+
+        showSuccess("Application submitted");
+
+    } catch (error) {
+
+        console.error(error);
+
+        showError(
+            "Unable to submit your application."
+        );
+
+    } finally {
+
+        setLoading(false);
+    }
+}
+```
+
+Without `finally`, I may forget to stop the loading state in one of the error paths. `finally` is useful for cleanup that must happen regardless of success or failure.
+
+
+## Global Error Handling
+
+Sometimes an error is not handled anywhere in the application. A browser application can listen for global errors.
+
+```js
+window.addEventListener(
+    "error",
+    event => {
+
+        console.error(
+            "Unhandled error:",
+            event.error
+        );
+    }
+);
+```
+
+Promise rejections that are not handled can also be detected.
+
+```js
+window.addEventListener(
+    "unhandledrejection",
+    event => {
+
+        console.error(
+            "Unhandled promise rejection:",
+            event.reason
+        );
+    }
+);
+```
+
+These are a final safety net. They should not replace proper error handling around operations where I already know how to respond.
+
+
+## Error Logging
+
+Logging helps developers understand what happened when something fails. A useful log should contain enough context to investigate the problem.
+
+```js
+console.error(
+    "Application submission failed",
+    {
+        applicationId,
+        error: error.message
+    }
+);
+```
+
+In larger applications, errors are usually sent to a monitoring/logging system. The important information can include:
+- error type
+- error message
+- stack trace
+- operation being performed
+- request information
+- relevant non-sensitive identifiers
+- time of occurrence
+
+I should never log sensitive information unnecessarily. Examples of information I should be careful about:
+- passwords
+- authentication tokens
+- private keys
+- credit card information
+- sensitive personal information
+
+## Expected Errors vs Unexpected Errors
+
+This is one of the most important concepts.
+
+An **expected error** is something the application knows can happen.
+
+**Example:**
+- Email is missing
+- Resume is missing
+- Invalid file type
+- User is not authenticated
+- User doesn't have permission
+
+The application can provide a meaningful response.
+
+```js
+if (!email) {
+
+    throw new ValidationError(
+        "Email is required"
+    );
+}
+```
+
+An **unexpected error** is something the application did not expect.
+
+**Example:**
+- Database suddenly unavailable
+- Unexpected server response
+- Programming bug
+- Unexpected null value
+- External service failure
+
+These should usually be:
+- logged
+- handled safely
+- shown to the user with a general message
+- investigated by the developer
+
+
+## Complete Job Application Error Handling Example
+
+A job application submission can contain several layers of error handling.
+
+```js
+class ValidationError extends Error {
+
+    constructor(message) {
+
+        super(message);
+
+        this.name = "ValidationError";
+    }
+}
+
+class AuthenticationError extends Error {
+
+    constructor(message) {
+
+        super(message);
+
+        this.name = "AuthenticationError";
+    }
+}
+
+function validateApplication(application) {
+
+    if (!application.name) {
+
+        throw new ValidationError(
+            "Applicant name is required"
+        );
+    }
+
+    if (!application.email) {
+
+        throw new ValidationError(
+            "Email is required"
+        );
+    }
+
+    if (!application.resume) {
+
+        throw new ValidationError(
+            "Resume is required"
+        );
+    }
+}
+
+async function submitApplication(application) {
+
+    try {
+
+        validateApplication(application);
+
+        const response = await fetch(
+            "/api/applications",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(application)
+            }
+        );
+
+        if (response.status === 401) {
+
+            throw new AuthenticationError(
+                "Authentication required"
+            );
+        }
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Application request failed: ${response.status}`
+            );
+        }
+
+        const result = await response.json();
+
+        return result;
+
+    } catch (error) {
+
+        console.error(
+            "Job application submission failed:",
+            error
+        );
+
+        throw error;
+    }
+}
+
+async function handleSubmit(application) {
+
+    setLoading(true);
+
+    try {
+
+        const result =
+            await submitApplication(application);
+
+        showSuccess(
+            "Application submitted successfully."
+        );
+
+        return result;
+
+    } catch (error) {
+
+        if (error instanceof ValidationError) {
+
+            showError(error.message);
+
+        } else if (
+            error instanceof AuthenticationError
+        ) {
+
+            showError(
+                "Please log in before submitting your application."
+            );
+
+        } else {
+
+            showError(
+                "We couldn't submit your application. Please try again."
+            );
+        }
+
+    } finally {
+
+        setLoading(false);
+    }
+}
+```
+
+The complete flow is:
+```
+User clicks Submit
+        ↓
+handleSubmit()
+        ↓
+set loading = true
+        ↓
+submitApplication()
+        ↓
+validateApplication()
+        ↓
+invalid?
+ ┌──────┴───────┐
+yes             no
+ ↓               ↓
+throw           fetch API
+ ↓               ↓
+catch            HTTP response
+                 ↓
+            response.ok?
+             ┌───┴────┐
+            no        yes
+             ↓         ↓
+          throw      parse JSON
+             ↓         ↓
+             └────┬────┘
+                  ↓
+              handleSubmit
+                  ↓
+          ┌───────┼─────────┐
+          ↓       ↓         ↓
+     validation  auth    unexpected
+          ↓       ↓         ↓
+       message  login     general message
+                  ↓
+               finally
+                  ↓
+          set loading = false
+```
+
+## Error Handling Mental Model
+
+When I see an operation that can fail, I should think:
+```
+Can this operation fail?
+        ↓
+What kind of failure can happen?
+        ↓
+Can the user fix it?
+        ↓
+Can the application recover?
+        ↓
+Should I retry?
+        ↓
+Should I throw the error?
+        ↓
+Which layer should handle it?
+        ↓
+What should be logged?
+        ↓
+What should the user see?
+```
+## Important Mistakes to Avoid
+
+- Don't use `try...catch` everywhere without a reason.
+- Don't silently ignore errors.
+
+**Bad:**
+```js
+try {
+
+    submitApplication();
+
+} catch (error) {
+
+}
+```
+
+- Don't replace useful errors with meaningless messages.
+
+**Bad:**
+```js
+catch (error) {
+
+    throw new Error("Something went wrong");
+}
+```
+
+- Don't expose stack traces or internal system details to users.
+- Don't assume `fetch()` throws for HTTP 400, 404, or 500. Check `response.ok` or handle status codes when appropriate.
+- Don't catch an error and forget to re-throw it when the caller still needs to know about the failure.
+- Don't retry every error automatically.
+- Don't log passwords, tokens, or other sensitive information.
+- Don't treat expected validation errors and unexpected system failures exactly the same.
+- Don't let the UI layer contain all API, validation, and business logic in one huge function.
+
+
+## Main Things I Need to Remember
+
+- `throw` creates an error and stops the current execution path.
+- `try` contains code that may fail.
+- `catch` handles an error.
+- `finally` runs whether the operation succeeds or fails.
+- Errors can propagate through multiple function calls.
+- Error contains useful information such as name, message, and stack.
+- Custom error classes allow different errors to be handled differently.
+- `instanceof` can identify custom error types.
+- Errors can be re-thrown after logging or adding context.
+- async/await errors can be handled using try...catch.
+- Promise chains can use `.catch()`.
+- `fetch()` does not automatically reject just because the server returns 400 or 500.
+- `response.ok` should be checked when appropriate.
+- Validation errors are different from unexpected system errors.
+- Technical error details are for developers; user messages should be simple and safe.
+- `finally` is useful for cleanup such as stopping loading indicators.
+- Global error handlers are a final safety net, not a replacement for proper local handling.
+- Good error handling means deciding how the application should recover, stop, retry, log, or communicate the failure.
 
 
 # 14. Events
@@ -7959,4 +9298,2143 @@ Remove unused state reference
 selectedApplication = null
 ```
 
+# Web APIs
+
+* Web APIs are features provided by the browser that allow my JavaScript code to communicate with the browser, page, device and browser-managed resources.
+* JavaScript itself gives me things like variables, functions, objects, arrays and promises.
+* The browser gives me additional APIs like DOM, Canvas, Geolocation, Storage, Notifications, Fetch, History and Media APIs.
+* I use Web APIs when my JavaScript needs to interact with something outside normal JavaScript language operations.
+* Example: JavaScript knows how to store an object in memory, but it does not automatically know how to change an HTML button. The browser's DOM API gives JavaScript that ability.
+* Another important point is that Web APIs are environment features. The same JavaScript language can run in a browser or Node.js, but the available APIs are different.
+
+## How Web APIs and JavaScript work together
+
+* When I call something like `document.querySelector()` or `localStorage.getItem()`, JavaScript is accessing an object provided by the browser.
+* For asynchronous browser operations, the browser can perform work outside the normal JavaScript call stack.
+* When that work is ready, the result is made available through the event loop and JavaScript can continue executing the callback or promise continuation.
+* This is why JavaScript can start an asynchronous operation without freezing the entire page.
+
+## Real application example
+
+* In my job application system:
+  * DOM API reads applicant form fields.
+  * Events detect when the user clicks `Add Education` or submits the form.
+  * Web Storage can save a non-sensitive draft.
+  * Fetch can send the application to the backend.
+  * Notifications can tell the user that an important operation completed.
+  * Canvas can display analytics.
+  * Geolocation could be used only if the application genuinely needs location.
+* These are not separate JavaScript languages. They are browser capabilities that my JavaScript uses.
+
+# DOM API
+
+* DOM means Document Object Model.
+* When the browser loads HTML, it creates an object representation of the document.
+* JavaScript can use this representation to find elements, change them, create new elements and remove elements.
+* I use DOM when the UI has to change based on user actions or application data.
+
+## Selecting elements
+
+* `getElementById()` finds an element by its id.
+* `querySelector()` returns the first element matching a CSS selector.
+* `querySelectorAll()` returns all matching elements.
+* I normally prefer `querySelector()` and `querySelectorAll()` because they allow CSS-style selectors.
+
+```js
+const nameInput = document.querySelector("#applicantName");
+const educationFields = document.querySelectorAll(".education");
+```
+
+* Real application example:
+  * My applicant form contains a name input, education sections and internship sections.
+  * Instead of manually reading every value from hardcoded variables, I can select the relevant elements when I need their values.
+
+## Changing content
+
+* `textContent` changes the text inside an element.
+* I use it when the value should be treated as plain text.
+* `innerHTML` changes the HTML inside an element.
+* I should not put untrusted user input directly into `innerHTML` because it can create an XSS problem.
+
+```js
+const statusElement = document.querySelector(".status");
+
+statusElement.textContent = "Application submitted";
+```
+
+* Real application example:
+  * After an applicant submits the form, I can change a status element from `Draft` to `Submitted`.
+  * Since the status is plain text, `textContent` is the safer choice.
+
+## Changing styles and classes
+
+* I can change styles directly with `element.style`.
+* I can also use `classList.add()`, `classList.remove()`, `classList.toggle()` and `classList.contains()`.
+* For larger UI changes, using CSS classes is usually cleaner than putting many style values directly in JavaScript.
+
+```js
+statusElement.classList.add("approved");
+statusElement.classList.remove("pending");
+```
+
+* Real application example:
+  * The admin page can show an approved applicant with an `approved` CSS class and a rejected applicant with a `rejected` class.
+  * JavaScript decides the state and CSS decides how that state looks.
+
+## Creating elements
+
+* `document.createElement()` creates a new DOM element.
+* I can set its content, classes, attributes and event listeners and then insert it into the page.
+
+```js
+const skill = document.createElement("div");
+skill.classList.add("skill-item");
+skill.textContent = "JavaScript";
+
+document.querySelector("#skillsContainer").appendChild(skill);
+```
+
+* Real application example:
+  * My job application form allows the applicant to add many skills.
+  * I cannot know how many skills the user will enter before the page opens.
+  * JavaScript creates another skill field whenever the user clicks `Add Skill`.
+
+## Removing elements
+
+* I can remove an element using `element.remove()`.
+* Real application example:
+  * If an applicant added the wrong internship, clicking `Remove Internship` can remove only that internship section from the DOM.
+
+## Attributes
+
+* Attributes are values such as `id`, `class`, `src`, `href`, `data-id` and `disabled`.
+* `getAttribute()` reads an attribute.
+* `setAttribute()` changes or creates one.
+* `removeAttribute()` removes one.
+
+```js
+button.setAttribute("data-applicant-id", "42");
+```
+
+* Real application example:
+  * Each admin applicant card can have `data-applicant-id="42"`.
+  * When the admin clicks the card, JavaScript can identify which applicant was selected.
+
+## DOM events
+
+* The DOM works together with events.
+* `addEventListener()` tells the browser what function should run when a particular event occurs.
+
+```js
+addEducationBtn.addEventListener("click", addEducation);
+```
+
+* Real application example:
+  * When the user clicks `Add Education`, the browser creates a click event.
+  * The event listener runs `addEducation()`.
+  * The function creates another education block and inserts it into the DOM.
+
+## Event bubbling
+
+* An event normally starts at the element where it happened and then bubbles through its ancestors.
+* This allows event delegation.
+* Event delegation is useful when I have many dynamically created elements.
+
+```js
+skillsContainer.addEventListener("click", (event) => {
+    if (event.target.matches(".remove-skill")) {
+        event.target.parentElement.remove();
+    }
+});
+```
+
+* Real application example:
+  * My form may contain 20 skill remove buttons.
+  * Instead of adding 20 separate listeners, I can put one listener on the skills container.
+  * Because click events bubble, the container can identify which remove button was clicked.
+
+## DOM common mistakes
+
+* Selecting an element before it exists gives `null`.
+* Calling `.style`, `.value` or `.textContent` on `null` causes an error.
+* Repeatedly rebuilding a large DOM tree can hurt performance.
+* Using `innerHTML` with untrusted input can create security problems.
+* Mixing data logic and DOM logic everywhere makes a large application difficult to maintain.
+
+# Canvas API
+
+* Canvas is an HTML element that gives JavaScript a drawing area.
+* I use it when I need to draw graphics, charts, animations, images or custom visual content.
+* Normal HTML elements are better for forms, text, buttons and accessible page structure.
+* Canvas is better when I need direct drawing control.
+
+## How Canvas works
+
+* First I create a canvas element.
+
+```html
+<canvas id="expenseChart" width="700" height="350"></canvas>
+```
+
+* JavaScript gets the canvas element.
+* Then I request a rendering context.
+
+```js
+const canvas = document.querySelector("#expenseChart");
+const ctx = canvas.getContext("2d");
+```
+
+* The context provides drawing methods.
+
+```js
+ctx.fillRect(50, 50, 200, 100);
+```
+
+* The browser renders those drawing operations inside the canvas.
+
+## Real application example
+
+* In my expense approval application, the admin dashboard could show monthly expense totals.
+* Suppose the backend returns:
+
+```js
+const monthlyExpenses = [
+    { month: "Jan", amount: 42000 },
+    { month: "Feb", amount: 51000 },
+    { month: "Mar", amount: 47000 }
+];
+```
+
+* JavaScript can convert these values into bars or points on a Canvas chart.
+* The important part is that Canvas is useful for drawing the visual result from dynamic data.
+* I should not use Canvas just to display an ordinary table. A normal HTML table is more accessible and easier to inspect.
+
+## Canvas and user interaction
+
+* Canvas does not automatically create individual DOM elements for every shape.
+* If I draw 20 bars, the browser does not give me 20 separate HTML elements.
+* If I want click interaction, I need to calculate which part of the canvas the user clicked.
+* This is one reason ordinary HTML/SVG can be easier for interactive UI in some cases.
+
+# Geolocation API
+
+* Geolocation allows a website to request the user's geographic position.
+* The browser normally asks the user for permission.
+* I use it only when location provides an actual feature benefit.
+
+## How it works
+
+```js
+navigator.geolocation.getCurrentPosition(
+    (position) => {
+        console.log(position.coords.latitude);
+        console.log(position.coords.longitude);
+    },
+    (error) => {
+        console.error(error.message);
+    }
+);
+```
+
+* The browser requests a position from available location sources.
+* The user can allow or deny the request.
+* The result contains coordinates and related information such as accuracy.
+* The application should handle errors and permission denial.
+
+## Real application example
+
+* Imagine I build a delivery management application.
+* The delivery person opens the application and allows location access.
+* The browser gives latitude and longitude.
+* The application sends that information to the backend.
+* The backend can associate the delivery worker's latest location with the active delivery.
+* The customer-facing page can then display the delivery status/location.
+
+## Important security and privacy point
+
+* Location is sensitive.
+* I should not request it simply because the browser allows it.
+* I should explain why the application needs it.
+* I should handle denied permissions gracefully.
+
+# Web Storage
+
+* Web Storage gives me `localStorage` and `sessionStorage`.
+* Both store key-value pairs in the browser.
+* The values are strings.
+
+## localStorage
+
+* `localStorage` normally stays after the browser is closed and reopened.
+* It remains until the application or user removes it.
+
+```js
+localStorage.setItem("theme", "dark");
+
+const theme = localStorage.getItem("theme");
+```
+
+## sessionStorage
+
+* `sessionStorage` is associated with the browser tab/session.
+* It is useful when the data should not normally survive closing the tab.
+
+```js
+sessionStorage.setItem("currentStep", "2");
+```
+
+## Objects and arrays
+
+* Storage stores strings, not JavaScript objects directly.
+* I can use JSON conversion.
+
+```js
+const draft = {
+    name: "Gowtham",
+    age: 21,
+    skills: ["JavaScript", "Node.js"]
+};
+
+localStorage.setItem("applicationDraft", JSON.stringify(draft));
+
+const savedDraft = JSON.parse(
+    localStorage.getItem("applicationDraft")
+);
+```
+
+## Real application example
+
+* In my job application form, the user may fill 15 fields and accidentally refresh the page.
+* I can save non-sensitive draft values to localStorage.
+* When the page opens again, I can read the saved draft and refill the fields.
+* This improves the user experience because the user does not lose all progress.
+
+## What I should not store
+
+* I should not treat localStorage as a secure database.
+* I should not store passwords there.
+* I should be very careful with authentication tokens because JavaScript can access localStorage and XSS can expose them.
+* Large amounts of structured data are better handled with IndexedDB or a backend database.
+
+# Notifications API
+
+* Notifications allow a website to show system-level notifications.
+* They are different from simply changing a message inside the webpage.
+* Permission is required.
+
+## How it works
+
+```js
+const permission = await Notification.requestPermission();
+
+if (permission === "granted") {
+    new Notification("Application Updated", {
+        body: "Your application status has changed."
+    });
+}
+```
+
+* The browser asks for permission.
+* If permission is granted, JavaScript can request a notification.
+* The browser controls how and where the notification appears.
+
+## Real application example
+
+* In an applicant portal, an applicant submits a job application.
+* Later the application status changes from `Under Review` to `Interview`.
+* If notifications are appropriate and permission was granted, the user can receive a notification saying the application status changed.
+* Notifications should be used for useful events, not every small UI action.
+
+# 35. Debugging
+
+* Debugging is the process of finding why my code behaves differently from what I expected.
+* The goal is not just to remove the error message.
+* The goal is to find the root cause.
+
+## My debugging process
+
+* First reproduce the problem.
+* Read the exact error.
+* Find the line where the failure happens.
+* Inspect the values at that point.
+* Trace backwards to understand why the value became wrong.
+* Fix the actual cause.
+* Test the original case again.
+* Test related cases.
+
+## Real application example
+
+* I previously had an error:
+
+```text
+Cannot read properties of null (reading 'style')
+```
+
+* This means I was trying to access `.style` on `null`.
+* The important question is not "How do I stop the error?"
+* The important question is "Why did my DOM selector return null?"
+* Possible causes:
+  * The id is wrong.
+  * The element does not exist.
+  * The script runs before the HTML element exists.
+  * The element was removed.
+* I should inspect the selector and DOM instead of randomly adding conditions.
+
+## Console methods
+
+* `console.log()` is general debugging output.
+* `console.error()` is useful for error information.
+* `console.warn()` is useful for warnings.
+* `console.table()` is excellent for arrays of objects.
+* `console.dir()` helps inspect object structures.
+* `console.time()` and `console.timeEnd()` measure elapsed time.
+
+```js
+console.table(applications);
+console.log("Selected applicant:", selectedApplicant);
+```
+
+* Real application example:
+  * If my admin page receives 50 applicants from an API, `console.table(applications)` lets me quickly inspect id, name, status and score instead of printing an unreadable object.
+
+## Breakpoints
+
+* A breakpoint pauses execution at a specific line.
+* This is better than adding `console.log()` everywhere when I need to understand the exact execution flow.
+* In DevTools I can inspect:
+  * Local variables.
+  * Function parameters.
+  * Call stack.
+  * Current execution line.
+  * Object properties.
+* I can step over a line, step into a function or step out of a function.
+
+## Real breakpoint example
+
+* Suppose clicking `Approve` changes the wrong applicant.
+* I put a breakpoint inside the approval function.
+* I inspect `applicant.id`.
+* I inspect `applicant.status`.
+* I step through the code.
+* If the wrong id is already present before the API call, my frontend selection logic is wrong.
+* If the id is correct but the server changes another applicant, I know the problem is later in the system.
+
+## DevTools
+
+* Elements -> inspect HTML and CSS.
+* Console -> JavaScript errors and output.
+* Sources -> JavaScript debugging.
+* Network -> requests, responses, status codes, headers and timing.
+* Application -> storage, cookies and service workers.
+* Performance -> runtime and rendering performance.
+
+## Network debugging example
+
+* Suppose my admin application page shows an empty list.
+* I open Network.
+* I check whether `GET /api/applications` was sent.
+* I check the HTTP status.
+* `200` means the request reached the server successfully, but I still need to inspect the response.
+* `401` can indicate authentication problems.
+* `404` can indicate a wrong route.
+* `500` means the server reported an internal error.
+* This separates frontend rendering problems from backend/network problems.
+
+## Watch expressions
+
+* A watch expression lets me monitor an expression while the debugger is paused.
+* Example:
+
+```js
+applications.length
+filteredApplications.length
+selectedApplicant.status
+```
+
+* Real application example:
+  * If my applicant search returns too few records, I can watch `applications.length` and `filteredApplications.length`.
+  * While stepping through the filter code, I can see exactly where the count changes incorrectly.
+
+# 36. Performance Optimization
+
+* Performance optimization means reducing unnecessary work so the application responds smoothly.
+* I should not optimize randomly.
+* First I should identify the expensive operation using measurement and DevTools.
+* Then I optimize the actual bottleneck.
+
+## Debounce
+
+* Debounce waits until rapid repeated activity stops before running the function.
+* It is useful when I only care about the final action after the user pauses.
+
+## Real applicant search example
+
+```js
+function debounce(callback, delay) {
+    let timer;
+
+    return (...args) => {
+        clearTimeout(timer);
+
+        timer = setTimeout(() => {
+            callback(...args);
+        }, delay);
+    };
+}
+
+const searchApplicants = debounce((event) => {
+    const search = event.target.value.trim();
+
+    fetch(`/api/applications?search=${encodeURIComponent(search)}`);
+}, 300);
+
+searchInput.addEventListener("input", searchApplicants);
+```
+
+* If the user types `Gowtham`, the input event fires multiple times.
+* Without debounce, I could send requests for `G`, `Go`, `Gow`, `Gowt`, `Gowth`, `Gowtha`, `Gowtham`.
+* With debounce, every new keystroke resets the timer.
+* Only after the user stops typing for 300ms does the search function run.
+* This reduces unnecessary requests and processing.
+
+## Throttle
+
+* Throttle limits a function so it runs at a controlled rate while the event continues.
+
+```js
+function throttle(callback, delay) {
+    let waiting = false;
+
+    return (...args) => {
+        if (waiting) return;
+
+        callback(...args);
+        waiting = true;
+
+        setTimeout(() => {
+            waiting = false;
+        }, delay);
+    };
+}
+```
+
+* Real application example:
+  * An admin page can have a scroll listener that checks whether more applicants should be loaded.
+  * Scroll events can fire very frequently.
+  * Throttling prevents the check from running hundreds of times per second.
+
+## Debounce vs throttle
+
+* Debounce -> wait until the rapid activity stops.
+* Throttle -> allow execution at controlled intervals while activity continues.
+* Search input -> debounce is usually useful.
+* Continuous scroll handling -> throttle can be useful.
+
+## Lazy loading
+
+* Lazy loading means loading something only when it is needed.
+* Example:
+  * A list has 500 applicants.
+  * Each applicant has a large resume preview.
+  * Loading all 500 previews immediately wastes bandwidth.
+  * I can load a resume preview only when the admin opens that applicant.
+* Images can also use browser-supported lazy loading.
+
+```html
+<img src="resume-preview.jpg" loading="lazy">
+```
+
+* The goal is to reduce the initial amount of work.
+
+## Async loading
+
+* Resources can sometimes be loaded without blocking other work.
+* For scripts:
+  * `async` downloads in parallel and executes as soon as ready.
+  * `defer` downloads in parallel but waits until HTML parsing is complete and preserves order among deferred scripts.
+* Real application example:
+  * If my main JavaScript file depends on another script, using `async` for both without considering execution order can create a race condition.
+  * `defer` is often more appropriate for scripts that should run after the HTML is parsed.
+
+## Web Workers
+
+* A Web Worker runs JavaScript in a separate worker thread.
+* The main browser thread handles UI work.
+* Heavy CPU calculations on the main thread can make the page freeze.
+* A worker can perform those calculations separately.
+
+```js
+const worker = new Worker("analytics-worker.js");
+
+worker.postMessage(largeApplicantDataset);
+
+worker.onmessage = (event) => {
+    console.log(event.data);
+};
+```
+
+* The worker cannot directly manipulate the DOM.
+* It communicates through messages.
+* Real application example:
+  * An analytics page receives 100,000 expense records.
+  * Calculating complex statistics directly on the main thread could make the interface unresponsive.
+  * A worker can process the records and send the result back.
+* I should not create a Web Worker for every normal calculation. It adds complexity and communication overhead.
+
+# 37. Unit Testing
+
+* Unit testing means testing small pieces of application logic separately.
+* A unit can be a function or a small module.
+* The purpose is to automatically verify expected behavior.
+
+## Basic test structure
+
+* Arrange -> prepare input.
+* Act -> call the function.
+* Assert -> verify the result.
+
+## Real applicant validation example
+
+```js
+function validateAge(age) {
+    return age >= 18 && age <= 100;
+}
+```
+
+* Tests should cover normal and boundary cases.
+
+```js
+expect(validateAge(25)).toBe(true);
+expect(validateAge(18)).toBe(true);
+expect(validateAge(17)).toBe(false);
+expect(validateAge(100)).toBe(true);
+expect(validateAge(101)).toBe(false);
+```
+
+* This is better than testing only `25`.
+* Boundary values often reveal mistakes.
+
+## Jest
+
+* Jest is a JavaScript testing framework.
+* It provides test runners, assertions and mocking features.
+
+```js
+test("age 17 should be rejected", () => {
+    expect(validateAge(17)).toBe(false);
+});
+```
+
+* Real application example:
+  * Before changing applicant validation rules, I can run the tests.
+  * If a change breaks the age rules, the test tells me immediately.
+
+## Mocha
+
+* Mocha is another JavaScript test framework.
+* It provides a structure for organizing and running tests.
+* It is commonly combined with assertion and mocking libraries.
+
+```js
+describe("validateAge", () => {
+    it("rejects age below 18", () => {
+        // assertion
+    });
+});
+```
+
+* Mocha and Jest solve similar testing needs but have different ecosystems and APIs.
+* A project normally chooses a consistent testing setup.
+
+## Chai
+
+* Chai is an assertion library.
+* It can be used with Mocha.
+
+```js
+expect(validateAge(17)).to.equal(false);
+```
+
+* Jest already includes an assertion system, so I would not add Chai to a Jest project without a reason.
+
+## Mocking
+
+* Mocking replaces a real dependency with a controlled fake.
+* Real application example:
+  * `approveApplication()` may call an email service.
+  * I do not want a unit test to actually send an email.
+  * I mock the email service.
+  * Then I test whether the function attempted to send the correct email.
+
+* Mocking keeps the unit test focused on the function being tested.
+
+# 38. Security
+
+* Security means protecting application data, users and functionality from misuse.
+* Client-side JavaScript cannot be treated as trusted because users control their browser.
+* Important validation and authorization must also happen on the server.
+
+## XSS
+
+* XSS means Cross-Site Scripting.
+* It happens when attacker-controlled content becomes executable HTML or JavaScript in another user's browser.
+* Example dangerous pattern:
+
+```js
+result.innerHTML = applicant.name;
+```
+
+* If `applicant.name` contains malicious HTML, the browser may interpret it as markup.
+* Safer for plain text:
+
+```js
+result.textContent = applicant.name;
+```
+
+* Real application example:
+  * An applicant enters a name.
+  * The admin page displays the name.
+  * I treat the name as untrusted data.
+  * I safely render it as text rather than assuming it is safe HTML.
+
+## CSRF
+
+* CSRF means Cross-Site Request Forgery.
+* The attacker tries to make an authenticated user's browser perform an unwanted state-changing request.
+* This matters especially for applications that authenticate with cookies.
+* Common defenses include CSRF tokens and appropriate cookie settings such as `SameSite`.
+* Real application example:
+  * An admin is logged into an expense approval system.
+  * An attacker should not be able to trick that browser into approving an expense without the admin intentionally doing it.
+* The exact defense depends on the authentication architecture.
+
+## Input validation
+
+* Validation checks whether data follows the application's expected rules.
+* Example:
+
+```js
+function validateApplicantAge(age) {
+    return Number.isInteger(age) &&
+           age >= 18 &&
+           age <= 100;
+}
+```
+
+* Real application example:
+  * My form accepts age from 18 to 100.
+  * Browser validation gives immediate feedback.
+  * The backend must repeat the validation because a user can bypass my frontend completely.
+
+## Sanitization
+
+* Sanitization means cleaning or transforming input so it can be safely used in a particular context.
+* Validation asks "Is this value acceptable?"
+* Sanitization asks "How can I safely handle this value for this context?"
+* They are related but not identical.
+
+## Content Security Policy
+
+* CSP is a browser security policy delivered mainly through HTTP response headers.
+* It tells the browser which resources are allowed.
+* A CSP can restrict script sources, image sources, styles and other resources.
+* Real application example:
+  * My application can define trusted script sources and reduce the ability of injected scripts to execute.
+* CSP is an additional security layer, not a replacement for safe coding and input handling.
+
+# 39. Tooling
+
+## npm
+
+* npm is a package manager and project tool for JavaScript.
+* It installs dependencies.
+* It manages project metadata in `package.json`.
+* It can run scripts.
+
+```json
+{
+    "scripts": {
+        "dev": "node server.js",
+        "test": "jest"
+    }
+}
+```
+
+* Real application example:
+  * My Node.js project can use `npm install express` to install Express.
+  * `npm run dev` can start the development server.
+  * `npm test` can run automated tests.
+
+## package.json
+
+* `package.json` describes the project and its dependencies/scripts.
+* `dependencies` contain packages needed by the application.
+* `devDependencies` contain packages mainly needed during development.
+* The lock file records resolved dependency versions.
+
+## Yarn
+
+* Yarn is another JavaScript package manager.
+* It performs many of the same package-management tasks as npm.
+* I should avoid mixing package managers casually in the same project because their lock files can represent different dependency resolutions.
+
+## ESLint
+
+* ESLint checks JavaScript code for configured problems.
+* Example problems:
+  * Unused variables.
+  * Certain dangerous patterns.
+  * Incorrect coding patterns.
+* Real application example:
+  * If I declare `const applicantCount` and never use it, ESLint can identify it before I waste time looking for the issue later.
+
+## Prettier
+
+* Prettier formats code automatically.
+* It handles indentation, spacing, line wrapping and other formatting.
+* It does not primarily decide whether my business logic is correct.
+* Real application example:
+  * In a team project, everyone can save JavaScript in the same formatting style without manually arguing about spaces and line breaks.
+
+## Bundlers
+
+* A bundler processes modules and application assets so they can be delivered efficiently.
+* Modern frontend tools can also perform code splitting, asset handling, transformations and optimization.
+* Vite is a development/build tool commonly used with modern frontend applications.
+* Real application example:
+  * My Vue or React application may have dozens of imported modules.
+  * The build process prepares the application for browser delivery instead of me manually combining every file.
+
+# 40. JavaScript in the Browser
+
+* Browser JavaScript runs inside a browser environment.
+* The browser provides APIs that Node.js does not provide by default.
+* Examples are DOM, localStorage, Notifications, Geolocation and browser history.
+
+## DOM
+
+* JavaScript can inspect and change HTML through the DOM.
+* Real application example:
+  * Add/remove education fields in my application form.
+  * Update application status in the admin dashboard.
+  * Display API results in a table.
+
+## Events
+
+* Events represent things happening in the browser.
+* Examples:
+  * `click`
+  * `input`
+  * `submit`
+  * `change`
+  * `keydown`
+  * `scroll`
+* I register listeners to respond to these events.
+
+```js
+form.addEventListener("submit", submitApplication);
+```
+
+* Real application example:
+  * When the applicant submits the form, the submit event runs validation, collects data and sends it to the backend.
+
+## Rendering
+
+* Rendering is how the browser converts HTML/CSS and visual changes into what I see.
+* A JavaScript change can cause style recalculation, layout and painting.
+* If I repeatedly make expensive DOM changes, the browser may have more rendering work.
+* Real application example:
+  * Updating a 5,000-row table one row at a time can be expensive.
+  * I can reduce unnecessary DOM work by creating the needed content efficiently.
+
+## Storage
+
+* Browser applications can store data using localStorage, sessionStorage, IndexedDB and cookies, depending on the requirement.
+* Each has different behavior and security characteristics.
+* Real application example:
+  * Small non-sensitive form preferences -> localStorage.
+  * Larger structured client-side data -> IndexedDB.
+  * Server-managed authentication/session state -> often cookies depending on architecture.
+
+## History API
+
+* The History API lets JavaScript change browser history and URLs without necessarily performing a full page reload.
+* `pushState()` adds a history entry.
+* `replaceState()` changes the current history entry.
+* `popstate` fires when the active history entry changes through browser navigation.
+
+```js
+history.pushState(
+    { applicantId: 42 },
+    "",
+    "/applications/42"
+);
+```
+
+* Real application example:
+  * In an admin SPA, clicking an applicant can change the URL to `/applications/42` and display the details without reloading the entire page.
+
+## Media API
+
+* Browser media APIs allow applications to work with audio, video, cameras and microphones.
+* `getUserMedia()` can request camera or microphone access.
+* Real application example:
+  * A video interview platform can request camera and microphone permission and stream the media to the application.
+* Permissions and privacy are important.
+
+# 41. JavaScript in Node.js
+
+* Node.js lets me run JavaScript outside the browser.
+* It is commonly used for APIs, backend services, command-line tools and server-side applications.
+* Node.js provides APIs that are different from browser APIs.
+
+## Modules
+
+* Modules let me split code into separate files.
+* With ES modules:
+
+```js
+export function calculateTotal(amount) {
+    return amount;
+}
+```
+
+```js
+import { calculateTotal } from "./expense.js";
+```
+
+* Real application example:
+  * My Express backend can have:
+    * routes
+    * controllers
+    * services
+    * models
+    * utilities
+  * Each module has a focused responsibility.
+
+## Filesystem
+
+* Node provides filesystem APIs.
+* I can read and write files.
+
+```js
+import { readFile } from "node:fs/promises";
+
+const data = await readFile("./data.json", "utf8");
+```
+
+* Real application example:
+  * A backend might temporarily process uploaded documents or read configuration files.
+  * File paths from users must never be blindly trusted.
+
+## HTTP
+
+* Node can create HTTP servers and handle HTTP requests.
+* Express provides a higher-level framework over Node's HTTP functionality.
+
+```js
+app.get("/applications", async (req, res) => {
+    res.json(applications);
+});
+```
+
+* Real application example:
+  * My job application frontend can call `GET /applications`.
+  * Node/Express receives the request.
+  * The backend reads application data.
+  * It returns JSON.
+  * The browser receives the response and updates the DOM.
+
+## npm packages
+
+* Node projects can install external packages.
+* Examples include Express, Mongoose and testing tools.
+* Real application example:
+  * My college management backend can use Express for routing and Mongoose for MongoDB interaction.
+* Third-party packages should be reviewed because they become part of the application's dependency chain.
+
+## process object
+
+* Node provides the global `process` object.
+* It gives access to environment variables, command-line arguments and process information.
+
+```js
+const port = process.env.PORT || 3000;
+```
+
+* Real application example:
+  * I can keep the MongoDB connection string in an environment variable instead of hardcoding it in the source code.
+* Secrets should not be committed to Git.
+
+# 42. WebSockets
+
+* WebSockets create a persistent two-way communication channel between the browser and server.
+* Normal HTTP commonly follows a request -> response pattern.
+* WebSocket allows the server to send data to the client when an event occurs without waiting for a new request from the client.
+
+## Why I use WebSockets
+
+* Useful for:
+  * Chat.
+  * Live notifications.
+  * Live dashboards.
+  * Collaborative editing.
+  * Real-time status.
+  * Live tracking.
+* It is unnecessary for normal pages where occasional HTTP requests are enough.
+
+## How WebSocket works
+
+* The browser initially contacts the server.
+* A WebSocket handshake establishes the connection.
+* After the connection is established, both sides can send messages.
+* The connection remains open until it is closed.
+
+## Real application example
+
+* Imagine my expense approval system has an admin dashboard.
+* Admin A approves an expense.
+* Without WebSocket:
+  * Admin B's browser may need to request the latest data again.
+  * Polling every few seconds can create unnecessary requests.
+* With WebSocket:
+  * Server processes the approval.
+  * Server emits an event.
+  * Admin B's connected browser receives the event.
+  * JavaScript updates the status immediately.
+
+## Important things to handle
+
+* Connection failure.
+* Reconnection.
+* Authentication/authorization.
+* Message validation.
+* Server resource usage.
+* Proper connection cleanup.
+
+## Socket.IO
+
+* Socket.IO is a library that provides event-based real-time communication and features such as reconnection handling.
+* It is not simply the same thing as the native WebSocket API.
+* It provides its own client/server protocol and can use different transports.
+
+## Real Socket.IO example
+
+* Server:
+
+```js
+io.emit("applicationUpdated", {
+    id: 42,
+    status: "Approved"
+});
+```
+
+* Client:
+
+```js
+socket.on("applicationUpdated", (application) => {
+    updateApplicationRow(application);
+});
+```
+
+* Real application flow:
+  * Admin approves application 42.
+  * Backend updates database.
+  * Backend emits `applicationUpdated`.
+  * Connected admin browsers receive it.
+  * Frontend updates the matching row.
+
+# 43. Service Workers & PWA
+
+* A Service Worker is a special browser-managed JavaScript file that can work separately from the webpage.
+* It can intercept certain network requests and work with browser caches.
+* PWAs use browser capabilities to provide a more app-like experience.
+* Service Workers normally require a secure context such as HTTPS, while localhost is treated specially for development.
+
+## Service Worker registration
+
+```js
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js");
+}
+```
+
+* The browser downloads and registers the Service Worker.
+* The Service Worker has its own lifecycle.
+* It can install, activate and handle fetch events.
+
+## Offline caching
+
+* A Service Worker can cache important application resources.
+* When the network is unavailable, the Service Worker can return cached resources.
+
+```js
+self.addEventListener("fetch", (event) => {
+    event.respondWith(
+        caches.match(event.request).then((cachedResponse) => {
+            return cachedResponse || fetch(event.request);
+        })
+    );
+});
+```
+
+* Real application example:
+  * A field employee uses an inventory application in an area with unstable internet.
+  * The application shell and previously needed assets are cached.
+  * The user can still open the application when temporarily offline.
+* Caching does not mean every piece of application data is automatically available offline.
+
+## Background Sync
+
+* Background Sync can allow deferred work to be retried when connectivity becomes available, where supported.
+* Real application example:
+  * A field worker fills a report while offline.
+  * The application stores the pending operation locally.
+  * When network connectivity returns, the application can attempt to send the pending report.
+* The UI should clearly say `Pending sync` rather than showing `Submitted` before the server actually receives it.
+
+## Installable PWA
+
+* A PWA can be installed from the browser and launched more like an application.
+* A Web App Manifest describes information such as:
+  * application name
+  * icons
+  * start URL
+  * display mode
+* HTTPS and browser-specific installability requirements are important.
+
+## Real PWA example
+
+* Imagine I create an employee task management application.
+* The employee opens it in the browser.
+* The app can:
+  * cache the application shell
+  * work with selected data while offline
+  * synchronize pending changes later
+  * provide an installable experience
+* From the employee's point of view, it can feel more like an installed application even though it is still a web application.
+
+# How these topics connect in a real application
+
+* A real application does not use these technologies separately.
+* Example: my job application/admin system could work like this:
+
+```text
+User
+  |
+  v
+Browser
+  |
+  +--> DOM + Events
+  |      |
+  |      +--> Form input
+  |      +--> Add Education
+  |      +--> Add Skills
+  |      +--> Submit
+  |
+  +--> Web Storage
+  |      |
+  |      +--> Save non-sensitive draft
+  |
+  +--> Fetch / HTTP
+  |      |
+  |      v
+  |   Node.js / Express
+  |      |
+  |      +--> Validation
+  |      +--> Business logic
+  |      +--> Database
+  |
+  +--> WebSocket
+  |      |
+  |      +--> Live admin status update
+  |
+  +--> Notifications
+  |      |
+  |      +--> Important status notification
+  |
+  +--> DevTools
+  |      |
+  |      +--> Debug errors
+  |      +--> Inspect network
+  |      +--> Measure performance
+  |
+  +--> Security
+         |
+         +--> Validate input
+         +--> Prevent XSS
+         +--> Protect state-changing requests
+```
+
+# Notes
+
+* JavaScript language -> gives me the programming language itself.
+* Browser Web APIs -> let my JavaScript communicate with browser/device capabilities.
+* DOM -> controls the page structure.
+* Events -> tell my JavaScript that something happened.
+* Storage -> keeps selected client-side data.
+* Canvas -> draws custom graphics.
+* Geolocation -> gets location with permission.
+* Notifications -> communicates important events outside the page UI.
+* DevTools -> helps me understand what the application is doing.
+* Performance -> reduces unnecessary work.
+* Unit testing -> automatically checks expected behavior.
+* Security -> protects users and application data.
+* npm/ESLint/Prettier/bundlers -> help manage the codebase.
+* Browser JavaScript -> handles user-facing application behavior.
+* Node.js -> handles server-side JavaScript.
+* WebSockets -> provide real-time two-way communication.
+* Service Workers/PWA -> add offline, caching and app-like browser capabilities.
+
+# Key Points
+
+* Browser JavaScript is not the same environment as Node.js.
+* `document`, `window`, `localStorage`, `navigator.geolocation` and Notifications are browser-related APIs.
+* `fs`, `process`, Node's HTTP APIs and many server-side modules belong to Node.js.
+* I should understand which environment my code is running in before assuming an API exists.
+* Client-side validation is for user experience and early feedback.
+* Server-side validation is required for trust and security.
+* Performance optimization should be based on actual measurement.
+* Security should be considered while designing the feature, not added only after an attack happens.
+* Testing should focus on expected behavior and important edge cases.
+* Real application development is about connecting these concepts together rather than using each API in isolation.
+
+# 45. Design Patterns
+
+* Design patterns are common ways of organizing code to solve problems that appear repeatedly in software development.
+* A design pattern is not a ready-made piece of code that I copy everywhere.
+* It is more like a proven structure or approach that helps me decide how different parts of my application should communicate.
+* I use patterns when the application becomes large enough that simple functions and files are no longer enough to keep responsibilities clear.
+* I should not force a design pattern into a small application just to say that I used one.
+* The main goal is easier maintenance, testing, extension and understanding.
+
+# Singleton
+
+* Singleton means I keep one shared instance of a particular object/service during the application's lifetime.
+* I use it when creating multiple instances would be unnecessary or could create conflicting state.
+* The important idea is not simply "one object exists" but "the application accesses one shared instance."
+
+## How it works
+
+* The class or module controls how the instance is created.
+* When the application asks for the service again, it receives the same instance instead of creating another one.
+
+```js
+class AppConfig {
+    constructor() {
+        if (AppConfig.instance) {
+            return AppConfig.instance;
+        }
+
+        this.apiBaseUrl = "/api";
+        this.environment = "development";
+
+        AppConfig.instance = this;
+    }
+}
+
+const config1 = new AppConfig();
+const config2 = new AppConfig();
+
+console.log(config1 === config2); // true
+```
+
+* In JavaScript, modules themselves are often enough to provide singleton-like behavior because an imported module is normally evaluated once and its exported state can be shared.
+
+## Real application example
+
+* In my admin application, I may have one application configuration object containing:
+  * API base URL.
+  * Environment information.
+  * Feature configuration.
+* I do not need every component to create a separate configuration object.
+* Instead, I can export one configuration module and reuse it.
+
+```js
+// config.js
+
+const config = {
+    apiBaseUrl: "/api",
+    environment: "development"
+};
+
+export default config;
+```
+
+```js
+import config from "./config.js";
+
+console.log(config.apiBaseUrl);
+```
+
+* Every part of the application imports the same configuration module.
+
+## When I should use it
+
+* Shared application configuration.
+* A single logging service.
+* A carefully designed connection manager.
+* A shared cache manager where one shared instance is actually required.
+
+## When I should not use it
+
+* I should not make every service a Singleton just because it is convenient.
+* Global shared state can make testing harder.
+* If multiple independent instances are useful, Singleton is the wrong choice.
+
+# Factory Pattern
+
+* Factory means I create objects through a separate function or class instead of directly deciding the exact object everywhere.
+* I use it when the application needs to create different types of related objects depending on some input.
+
+## How it works
+
+* The calling code gives the factory some information.
+* The factory decides which object should be created.
+* The calling code does not need to know all the object creation details.
+
+```js
+class EmailNotification {
+    send(message) {
+        console.log("Email:", message);
+    }
+}
+
+class SmsNotification {
+    send(message) {
+        console.log("SMS:", message);
+    }
+}
+
+function createNotification(type) {
+    if (type === "email") {
+        return new EmailNotification();
+    }
+
+    if (type === "sms") {
+        return new SmsNotification();
+    }
+
+    throw new Error("Unsupported notification type");
+}
+```
+
+## Real application example
+
+* In my job application system, different events may require different notification methods.
+* For example:
+  * Application submitted -> email.
+  * Interview reminder -> email or SMS.
+  * Important admin alert -> another notification mechanism.
+* Instead of putting `new EmailNotification()` and `new SmsNotification()` all over my application, I can use a factory.
+
+```js
+const notification = createNotification("email");
+
+notification.send("Your application was submitted.");
+```
+
+* Later, if I add `PushNotification`, the creation decision stays mainly inside the factory instead of being duplicated throughout the application.
+
+## When I should use it
+
+* When I have multiple related object types.
+* When object creation has conditions.
+* When the calling code should not care about the exact class being created.
+
+## When I should not use it
+
+* If there is only one simple object and no creation complexity, a factory adds unnecessary code.
+
+# Observer Pattern
+
+* Observer means one object publishes a change/event and multiple interested objects can react to it.
+* The publisher does not need to know every detail of what each subscriber will do.
+* I use it when one event can affect multiple parts of an application.
+
+## How it works
+
+```js
+class EventEmitter {
+    constructor() {
+        this.listeners = {};
+    }
+
+    on(event, callback) {
+        if (!this.listeners[event]) {
+            this.listeners[event] = [];
+        }
+
+        this.listeners[event].push(callback);
+    }
+
+    emit(event, data) {
+        const callbacks = this.listeners[event] || [];
+
+        callbacks.forEach(callback => callback(data));
+    }
+}
+```
+
+* One part of the application emits an event.
+* Other parts subscribe to that event.
+* When the event happens, all subscribers are notified.
+
+## Real application example
+
+* In my expense approval system, when an expense is approved:
+  * The dashboard may need to update.
+  * An audit log may need to be created.
+  * A notification may need to be sent.
+  * Analytics may need to update.
+* Instead of making the approval function directly control every part, it can publish an `expenseApproved` event.
+
+```js
+events.emit("expenseApproved", {
+    expenseId: 42,
+    amount: 15000
+});
+```
+
+* Different listeners can respond:
+
+```js
+events.on("expenseApproved", updateDashboard);
+events.on("expenseApproved", createAuditLog);
+events.on("expenseApproved", sendNotification);
+```
+
+* This reduces direct coupling between the approval logic and every side effect.
+
+## Browser connection
+
+* DOM events follow a similar event-driven idea.
+* For example:
+
+```js
+button.addEventListener("click", handleClick);
+```
+
+* The browser is effectively notifying the registered listener that an event occurred.
+
+## Important point
+
+* I should clean up listeners when they are no longer needed in long-running applications.
+* Otherwise, unused listeners can keep references alive and cause memory or behavior problems.
+
+# Module Pattern
+
+* Module means separating code into independent units where each module has a focused responsibility.
+* A module can keep some internal details private and expose only what other parts need.
+* Modern JavaScript uses ES modules with `export` and `import`.
+
+## How it works
+
+```js
+// applicantValidator.js
+
+function validateAge(age) {
+    return age >= 18 && age <= 100;
+}
+
+export function validateApplicant(applicant) {
+    return validateAge(applicant.age);
+}
+```
+
+```js
+import { validateApplicant } from "./applicantValidator.js";
+```
+
+* `validateAge()` does not need to be exported because it is an internal implementation detail.
+* `validateApplicant()` is the public function other modules need.
+
+## Real application example
+
+* My job application project can be divided into:
+  * `form.js` -> handles form interaction.
+  * `validation.js` -> validates applicant data.
+  * `api.js` -> communicates with backend.
+  * `ui.js` -> updates the interface.
+  * `storage.js` -> handles draft storage.
+* This is easier to understand than putting everything into one `app.js`.
+
+## Why modules are important
+
+* Reduce global variables.
+* Separate responsibilities.
+* Make code reusable.
+* Make testing easier.
+* Make dependencies visible through imports.
+* Make a large application easier to navigate.
+
+## Common mistake
+
+* A module should not become a dumping ground for unrelated functions.
+* If one file contains validation, API calls, DOM rendering, authentication and database logic, I have technically used a module but still have poor organization.
+
+# MVC
+
+* MVC means Model, View and Controller.
+* It separates application responsibilities into three major parts.
+
+## Model
+
+* Model represents application data and business-related operations.
+* In a backend application, models often communicate with the database.
+
+## View
+
+* View is what the user sees.
+* In a traditional server-rendered application, this can be HTML templates.
+* In a frontend application, the UI framework can represent the view layer.
+
+## Controller
+
+* Controller receives an action/request and coordinates what should happen.
+* It connects the request to the appropriate application logic and response.
+
+## Real application example
+
+* In my college management backend:
+
+```text
+POST /students
+        |
+        v
+Student Controller
+        |
+        v
+Student Service / Business Logic
+        |
+        v
+Student Model
+        |
+        v
+MongoDB
+        |
+        v
+Controller returns response
+```
+
+* The frontend is responsible for displaying the returned data.
+* The controller should not contain every piece of business logic.
+* The model should not become responsible for the whole application.
+
+## Why MVC is useful
+
+* It separates responsibilities.
+* Changes to the UI do not necessarily require changing database code.
+* Database logic does not need to be mixed with HTTP response logic.
+* Testing becomes easier because responsibilities are separated.
+
+# Strategy Pattern
+
+* Strategy means I define multiple ways of performing an operation and choose the required strategy at runtime.
+* I use it when one piece of business logic can be performed using different algorithms or rules.
+
+## How it works
+
+```js
+const approvalStrategies = {
+    normal: expense => expense.amount < 10000,
+
+    manager: expense => expense.amount < 50000,
+
+    executive: expense => expense.amount >= 50000
+};
+
+function checkApproval(expense, strategy) {
+    return strategy(expense);
+}
+```
+
+* The main function does not need to contain every algorithm.
+* I pass the strategy I want.
+
+```js
+checkApproval(expense, approvalStrategies.manager);
+```
+
+## Real application example
+
+* My expense approval application can have different approval rules depending on:
+  * Expense amount.
+  * Employee role.
+  * Department.
+  * Expense category.
+* Instead of writing one huge `if/else` block, I can separate different approval strategies.
+
+```js
+const strategies = {
+    accounts: expense => expense.amount <= 10000,
+
+    manager: expense =>
+        expense.amount > 10000 &&
+        expense.amount <= 50000,
+
+    md: expense =>
+        expense.amount > 50000
+};
+```
+
+* The workflow can select the correct strategy based on the current approval stage.
+
+## When Strategy is useful
+
+* Different calculation methods.
+* Different pricing rules.
+* Different validation rules.
+* Different payment methods.
+* Different approval rules.
+* Different notification behavior.
+
+## Common mistake
+
+* If I have only one algorithm, creating a Strategy structure can add unnecessary complexity.
+* Strategy becomes useful when the application genuinely has interchangeable behaviors.
+
+# How these Design Patterns differ
+
+* Singleton -> controls shared instance creation.
+* Factory -> controls object creation.
+* Observer -> handles one-to-many event communication.
+* Module -> separates code and controls what is exposed.
+* MVC -> separates application responsibilities into model, view and controller.
+* Strategy -> allows interchangeable algorithms or behaviors.
+
+# Real application combination
+
+* These patterns can work together.
+* Example from an expense approval application:
+
+```text
+Controller
+   |
+   v
+Service
+   |
+   +--> Strategy
+   |      |
+   |      +--> Amount approval rule
+   |      +--> Department approval rule
+   |
+   +--> Factory
+   |      |
+   |      +--> Email notification
+   |      +--> SMS notification
+   |
+   +--> Observer
+          |
+          +--> Audit log
+          +--> Dashboard update
+          +--> Notification
+```
+
+* Modules organize each part into separate files.
+* MVC provides the larger application structure.
+* Strategy handles interchangeable business rules.
+* Factory handles object creation.
+* Observer handles events.
+* Singleton can provide a genuinely shared service when needed.
+
+# 46. Code Organization
+
+* Code organization means deciding how I divide code, files, folders and responsibilities so the project remains understandable as it grows.
+* Good organization is not about having many folders.
+* It is about knowing where a particular responsibility belongs.
+* If I have to search through ten unrelated files to find one small piece of logic, the organization is probably not helping me.
+
+# MVC in Code Organization
+
+* MVC can be used as one way to organize application responsibilities.
+* A common backend structure can look like:
+
+```text
+server/
+    controllers/
+        applicationController.js
+
+    models/
+        applicationModel.js
+
+    routes/
+        applicationRoutes.js
+
+    services/
+        applicationService.js
+
+    middleware/
+        authMiddleware.js
+
+    utils/
+        validation.js
+
+    config/
+        database.js
+
+    app.js
+    server.js
+```
+
+## What each folder does
+
+* `routes/`
+  * Defines API endpoints.
+  * Example: `GET /applications`.
+
+* `controllers/`
+  * Receives the request.
+  * Reads parameters/body.
+  * Calls the required service.
+  * Sends the HTTP response.
+
+* `services/`
+  * Contains business logic.
+  * Example: determine whether an application can move from `Pending` to `Approved`.
+
+* `models/`
+  * Represents database structures and database-related operations.
+
+* `middleware/`
+  * Handles cross-cutting request processing.
+  * Example: authentication, authorization, request logging.
+
+* `utils/`
+  * Contains small reusable utilities that do not belong to one specific business feature.
+
+* `config/`
+  * Contains application configuration and setup.
+
+## Real application example
+
+* Suppose my API receives:
+
+```http
+POST /applications/42/approve
+```
+
+* The flow can be:
+
+```text
+Route
+  |
+  v
+Controller
+  |
+  v
+Service
+  |
+  v
+Model / Database
+  |
+  v
+Service result
+  |
+  v
+Controller
+  |
+  v
+HTTP response
+```
+
+* The route should not contain database queries.
+* The controller should not contain a 100-line approval algorithm.
+* The model should not send HTTP responses.
+
+# MVVM
+
+* MVVM means Model, View and ViewModel.
+* It is commonly associated with UI applications where the ViewModel connects UI state with application data/logic.
+
+## Model
+
+* Model represents the application's data and domain state.
+
+## View
+
+* View is the UI the user interacts with.
+
+## ViewModel
+
+* ViewModel prepares and manages the state the View needs.
+* It acts as a bridge between the View and Model.
+
+## Real application example
+
+* In an applicant admin page, the View contains:
+  * Search input.
+  * Status filter.
+  * Applicant table.
+  * Applicant details panel.
+
+* The ViewModel-like layer can contain:
+  * `applications`
+  * `filteredApplications`
+  * `selectedApplicant`
+  * `searchText`
+  * `statusFilter`
+  * functions for loading/filtering/selecting applications.
+
+* The View does not need to know how the API request is implemented.
+* It receives the state it needs and displays it.
+
+## Framework connection
+
+* Modern frontend frameworks can encourage patterns that look similar to MVVM, even if they do not explicitly call the architecture "MVVM."
+* Vue's reactive state and component structure can be organized in an MVVM-like way.
+* The important thing is understanding the separation between UI, state and application logic rather than memorizing the label.
+
+# Folder Structure
+
+* Folder structure should make it easy to find code.
+* There is no single folder structure that is correct for every application.
+* A small project can use a simple structure.
+* A large application usually benefits from organizing around features or responsibilities.
+
+## Simple frontend structure
+
+```text
+src/
+    components/
+    pages/
+    services/
+    utils/
+    assets/
+    styles/
+    app.js
+```
+
+* This can work for a smaller frontend.
+
+## Feature-based structure
+
+* When the application becomes large, organizing by feature can be easier.
+
+```text
+src/
+    features/
+        applications/
+            components/
+            services/
+            validation/
+            applicationApi.js
+            applicationState.js
+
+        authentication/
+            components/
+            services/
+            authApi.js
+
+        expenses/
+            components/
+            services/
+            expenseApi.js
+
+    shared/
+        components/
+        utils/
+        constants/
+```
+
+## Why feature-based organization can help
+
+* All code related to one business feature stays close together.
+* If I need to modify the application feature, I know where to look.
+* It reduces the problem where one giant `components` folder contains 100 unrelated components.
+
+## Real application example
+
+* My job application system can have:
+
+```text
+src/
+    features/
+        applicant/
+            components/
+                ApplicantForm.js
+                EducationFields.js
+                InternshipFields.js
+                SkillFields.js
+
+            services/
+                applicantApi.js
+
+            validation/
+                applicantValidation.js
+
+            applicantState.js
+
+        admin/
+            components/
+                ApplicantTable.js
+                ApplicantDetails.js
+                ApplicantFilters.js
+
+            services/
+                adminApi.js
+```
+
+* The applicant feature contains applicant-related code.
+* The admin feature contains admin-related code.
+* Shared utilities can remain outside both.
+
+# Clean Code Practices
+
+* Clean code means code that is understandable, predictable and easy to change.
+* Clean code does not mean making every function tiny or using complicated architecture.
+* The main goal is reducing unnecessary mental effort for the developer reading the code.
+
+## Use meaningful names
+
+* Bad:
+
+```js
+const x = 10;
+const y = 20;
+```
+
+* Better:
+
+```js
+const minimumAge = 18;
+const maximumAge = 100;
+```
+
+* The second version tells me what the values mean without needing another explanation.
+
+## Keep functions focused
+
+* A function should have a clear responsibility.
+* Bad:
+
+```js
+function submitApplication() {
+    // validate fields
+    // create HTML
+    // save localStorage
+    // send API request
+    // show notification
+    // update admin table
+}
+```
+
+* This function is doing too many unrelated things.
+* Better:
+
+```js
+validateApplication();
+saveDraft();
+submitApplicationToApi();
+showSuccessMessage();
+```
+
+* Each function has a clearer responsibility.
+
+## Avoid duplicate logic
+
+* If the same validation logic appears in five places, changing the rule means changing five places.
+* I should centralize reusable logic.
+
+```js
+function isValidAge(age) {
+    return age >= 18 && age <= 100;
+}
+```
+
+* Then the relevant parts of the application can reuse it.
+
+## Avoid giant if/else chains
+
+* Large conditional blocks can become difficult to maintain.
+* Sometimes Strategy or a configuration object is cleaner.
+
+```js
+const handlers = {
+    pending: handlePending,
+    approved: handleApproved,
+    rejected: handleRejected
+};
+
+handlers[application.status]?.(application);
+```
+
+* I should still use normal `if/else` when it is clearer. A design pattern is not automatically better.
+
+## Keep business logic away from UI logic
+
+* UI code should deal with displaying information and handling user interaction.
+* Business logic should decide what the application is allowed to do.
+* Example:
+  * UI -> user clicked `Approve`.
+  * Service -> check whether this application can be approved.
+  * API -> send approval request.
+  * Database -> persist the new status.
+
+## Handle errors at the correct layer
+
+* A low-level function should provide useful error information.
+* A UI layer can decide how to communicate that error to the user.
+* I should not show raw database errors directly to users.
+
+## Avoid magic numbers
+
+* Bad:
+
+```js
+if (age >= 18) {
+}
+```
+
+* Better when the value has business meaning:
+
+```js
+const MINIMUM_APPLICANT_AGE = 18;
+
+if (age >= MINIMUM_APPLICANT_AGE) {
+}
+```
+
+* This makes the rule easier to understand and change.
+
+## Keep dependencies clear
+
+* A module should make it clear what it depends on through imports or parameters.
+* Hidden global dependencies make testing and debugging harder.
+
+## Comments should explain why
+
+* I should not comment obvious code.
+
+```js
+// increment applicant count by 1
+applicantCount++;
+```
+
+* This does not add much value.
+* A useful comment explains a non-obvious reason:
+
+```js
+// Keep the draft for 24 hours so applicants can continue
+// if they accidentally close the browser.
+```
+
+## Avoid premature abstraction
+
+* I should not create a generic framework for something that happens only once.
+* First understand the repeated pattern.
+* If the same behavior genuinely appears in multiple places, then extract it.
+
+## Keep files manageable
+
+* A file with 2,000 lines containing unrelated logic is difficult to maintain.
+* Splitting by responsibility or feature can make the code easier to navigate.
+* But creating 50 tiny files for 50 tiny functions can also make a project harder to follow.
+* The goal is useful separation, not maximum separation.
+
+# Real Project Organization Example
+
+* For my job application system, I could organize the JavaScript like this:
+
+```text
+src/
+    features/
+        applicant/
+            applicantForm.js
+            applicantValidation.js
+            applicantStorage.js
+            applicantApi.js
+            applicantUi.js
+
+        admin/
+            adminApi.js
+            adminFilters.js
+            adminUi.js
+            adminState.js
+
+    shared/
+        notification.js
+        debounce.js
+        formatters.js
+
+    config/
+        api.js
+
+    app.js
+```
+
+## How responsibilities are separated
+
+* `applicantForm.js`
+  * Reads form-related DOM elements.
+  * Handles Add Education, Add Skill and Add Internship.
+
+* `applicantValidation.js`
+  * Validates age, phone, education, CGPA and required fields.
+
+* `applicantStorage.js`
+  * Saves and restores non-sensitive draft data.
+
+* `applicantApi.js`
+  * Sends applicant data to the backend.
+
+* `applicantUi.js`
+  * Displays success/error messages and updates applicant-related UI.
+
+* `adminApi.js`
+  * Gets application data from the backend.
+
+* `adminFilters.js`
+  * Handles search and status filtering logic.
+
+* `adminState.js`
+  * Stores the current application data and selected applicant state.
+
+* `adminUi.js`
+  * Displays the application table and details.
+
+* `debounce.js`
+  * Provides reusable debounce behavior.
+
+* `notification.js`
+  * Handles application notifications.
+
+* `app.js`
+  * Starts the application and connects the major pieces.
+
+# How Design Patterns and Code Organization work together
+
+* Design patterns solve recurring design problems.
+* Code organization decides where those responsibilities live in the project.
+* They are related but not the same thing.
+
+## Example
+
+* I can have a Strategy pattern for expense approval rules:
+
+```text
+services/
+    expenseApprovalService.js
+
+strategies/
+    managerApproval.js
+    mdApproval.js
+    accountsApproval.js
+```
+
+* I can have an Observer-style event system:
+
+```text
+events/
+    applicationEvents.js
+```
+
+* I can have Factory logic:
+
+```text
+factories/
+    notificationFactory.js
+```
+
+* Modules connect these pieces through imports.
 

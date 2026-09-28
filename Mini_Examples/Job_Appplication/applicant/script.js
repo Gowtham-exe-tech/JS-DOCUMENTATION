@@ -11,19 +11,20 @@ const  addInternshipBtn = document.getElementById("addInternshipBtn");
 const internshipContainer = document.getElementById("internshipContainer");
 const  internshipTemplate = document.getElementById("internshipTemplate");
 
-function addEducation() {
-    const education = educationTemplate.content.cloneNode(true);
+function add(event,template) {
+    console.log(template,'tempate')
+    const education = template.content.cloneNode(true);
     const educationItem = education.querySelector(".education-item");
     const removeBtn = education.querySelector(".remove");
 
     removeBtn.addEventListener("click", function(){
         educationItem.remove();
     });
-
     educationContainer.appendChild(education);
 }
-addEducationBtn.addEventListener("click", addEducation);
-addEducation();// for inital display when loaded
+console.log(addEducationBtn)
+addEducationBtn.addEventListener("click", add.bind(null,educationTemplate).call());
+// add(educationTemplate);// for inital display when loaded
 
 
 function addskills(){
