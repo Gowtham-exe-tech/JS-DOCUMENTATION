@@ -11,5 +11,6 @@ socket.on("typing", n => { document.querySelector("#typing").textContent = n + "
 document.querySelector("#joinBtn").addEventListener("click", () => socket.emit("join", { name: document.querySelector("#name").value || "Guest", room: "general" }));
 document.querySelector("#send").addEventListener("click", () => { const i = document.querySelector("#msg"); if (!i.value.trim()) return; socket.emit("chat", i.value); i.value = ""; });
 document.querySelector("#msg").addEventListener("input", () => socket.emit("typing"));
-document.querySelector("#msg").addEventListener("keydown", e => { if (e.key === "Enter") document.querySelector("#send").click(); });
+
 // plain websocket for comparison (no rooms, no auto reconnect): const ws = new WebSocket("ws://localhost:3000"); ws.onmessage = e => console.log(e.data); ws.send("hi");
+document.querySelector("#msg").addEventListener("keydown", e => { if (e.key === "Enter") document.querySelector("#send").click(); });

@@ -1,27 +1,30 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Memory Management Demo</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<h1>Memory Management</h1>
-<div class="box">
-<button id="mapBtn">Add + remove 500 elements (Map, leaks)</button>
-<button id="weakBtn">Add + remove 500 elements (WeakMap, safe)</button>
-<button id="heapBtn">Show heap size</button>
-<p>Map size: <b id="mapSize">0</b> | Heap: <b id="heapInfo">click button (Chrome only)</b></p>
-</div>
-<div class="box">
-<button id="startBtn">Start polling</button>
-<button id="stopBtn">Stop polling</button>
-<button id="closureBtn">Create closure leak</button>
-<button id="clearBtn">Clear closures</button>
-<button id="weakRefBtn">WeakRef demo</button>
-<span id="pollInfo"></span>
-</div>
-<pre id="log"></pre>
-<script src="script.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Memory Management Demo</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>Memory Management</h1>
+    <div class="box">
+      <button id="mapBtn">Add + remove 500 elements (Map, leaks)</button>
+      <button id="weakBtn">Add + remove 500 elements (WeakMap, safe)</button>
+      <button id="heapBtn">Show heap size</button>
+      <p>
+        Map size: <b id="mapSize">0</b> | Heap:
+        <b id="heapInfo">click button (Chrome only)</b>
+      </p>
+    </div>
+    <div class="box">
+      <button id="startBtn">Start polling</button>
+      <button id="stopBtn">Stop polling</button>
+      <button id="closureBtn">Create closure leak</button>
+      <button id="clearBtn">Clear closures</button>
+      <button id="weakRefBtn">WeakRef demo</button>
+      <span id="pollInfo"></span>
+    </div>
+    <pre id="log"></pre>
+    <script src="script.js"></script>
+  </body>
 </html>

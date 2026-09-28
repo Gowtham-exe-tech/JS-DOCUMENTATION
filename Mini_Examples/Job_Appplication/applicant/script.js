@@ -11,47 +11,29 @@ const  addInternshipBtn = document.getElementById("addInternshipBtn");
 const internshipContainer = document.getElementById("internshipContainer");
 const  internshipTemplate = document.getElementById("internshipTemplate");
 
-function add(event,template) {
-    console.log(template,'tempate')
-    const education = template.content.cloneNode(true);
-    const educationItem = education.querySelector(".education-item");
-    const removeBtn = education.querySelector(".remove");
+function addItem(template, container, itemClass) {
+    const item = template.content.cloneNode(true);
+    const itemElement = item.querySelector(`.${itemClass}`);
+    const removeBtn = item.querySelector(".remove");
 
-    removeBtn.addEventListener("click", function(){
-        educationItem.remove();
+    removeBtn.addEventListener("click", function() {
+        itemElement.remove();
     });
-    educationContainer.appendChild(education);
+
+    container.appendChild(item);
 }
-console.log(addEducationBtn)
-addEducationBtn.addEventListener("click", add.bind(null,educationTemplate).call());
-// add(educationTemplate);// for inital display when loaded
 
+addEducationBtn.addEventListener("click", function() {
+    addItem(educationTemplate, educationContainer, "education-item");
+});
 
-function addskills(){
-    const skill = skillsTemplate.content.cloneNode(true);
-    const skillItem = skill.querySelector(".skill-item");
-    const removeBtn = skill.querySelector(".remove");
+addInternshipBtn.addEventListener("click", function() {
+    addItem(internshipTemplate, internshipContainer, "internship-item");
+});
 
-    removeBtn.addEventListener("click", function(){
-        skillItem.remove();
-    });
-    skillsContainer.appendChild(skill);
-}
-addSkillBtn.addEventListener("click",addskills);
-addskills();
-
-function addintern(){
-    const intern = internshipTemplate.content.cloneNode(true);
-    const internItem = intern.querySelector(".internship-item");
-    const removeBtn = intern.querySelector(".remove");
-
-    removeBtn.addEventListener("click", function(){
-        internItem.remove();
-    });
-    internshipContainer.appendChild(intern);
-}
-addInternshipBtn.addEventListener("click",addintern);
-addintern();
+addSkillBtn.addEventListener("click", function() {
+    addItem(skillsTemplate, skillsContainer, "skill-item");
+});
 
 // Vacency details Updating
 

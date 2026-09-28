@@ -7073,469 +7073,589 @@ console.log(employee.name);
 
 Modules use `export` to make values available from a file and `import` to use those values in another file.
 
+
 # Modules
 
-- Named exports are used when a file needs to export multiple values.
+* When the project becomes big, writing everything in one `app.js` file becomes a mess. Modules let me split the code into small files, and each file has one job (API calls, helper functions, constants, UI code).
+* Variables inside a module are private to that file (not global). Other files can use them only if the module exports them.
+* Named exports are used when a file needs to export multiple values.
 
 ```js
-// calculation.js
-export const taxRate = 0.18;
+// utils/formatDate.js
+export const STATUSES = ["Applied", "Shortlisted", "Interview", "Rejected", "Hired"];
 
-export function calculateTax(amount) {
-    return amount * taxRate;
+export function formatDate(dateString) {
+    return new Date(dateString).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+    });
 }
 ```
 
 ```js
-// app.js
-import { calculateTax, taxRate } from "./calculation.js";
+// admin/admin.js
+import { STATUSES, formatDate } from "../utils/formatDate.js";
 
-console.log(calculateTax(2500));
-console.log(taxRate);
+console.log(STATUSES);
+console.log(formatDate("2025-06-12T10:30:00Z"));
 ```
 
-The imported name normally matches the exported name.
-
-- A default export is used when a module has one main value or functionality. The importing file can give it any name.
+* The imported name must match the exported name (inside `{ }`). If there is a name clash, I can rename it with `as`.
 
 ```js
-// api.js
-export default function getExpenses() {
-    return ["Travel", "Food", "Office"];
+import { formatDate as showDate } from "../utils/formatDate.js";
+```
+
+* A default export is used when the file has one main thing. The importing file can give it any name. A file can have only one default export but many named exports.
+
+```js
+// api/applicationApi.js
+export default async function getApplications(filters) {
+    const params = new URLSearchParams(filters);
+    const response = await fetch(`/api/applications?${params}`);
+
+    if (!response.ok) {
+        throw new Error("Failed to load applications");
+    }
+
+    return response.json();
+}
+
+export async function deleteApplication(id) {
+    const response = await fetch(`/api/applications/${id}`, { method: "DELETE" });
+
+    if (!response.ok) {
+        throw new Error("Failed to delete application");
+    }
 }
 ```
 
 ```js
-// app.js
-import getExpenses from "./api.js";
+// admin/admin.js
+import getApplications, { deleteApplication } from "../api/applicationApi.js";
 
-console.log(getExpenses());
+const data = await getApplications({ status: "Applied" });
 ```
 
-A file can have one default export, while it can have multiple named exports.
-
-- In the browser, modules can be loaded using `type="module"`.
+* Here `getApplications` is the default import (no braces, any name works) and `deleteApplication` is a named import (braces, exact name).
+* In the browser, modules are loaded using `type="module"`.
 
 ```html
-<script type="module" src="./app.js"></script>
+<script type="module" src="./admin/admin.js"></script>
 ```
 
-This allows `import` and `export` to work between JavaScript files.
-
-- In a real project, applications usually contain many modules such as API logic, components, utilities, and configuration. A module bundler/build tool processes these files and prepares the application for development and production.
+* Things I noticed about `type="module"`:
+  * It works like `defer`, so the script runs after the HTML is parsed.
+  * It needs a server (Live Server, Vite, etc). Opening the file directly with `file://` gives a CORS error.
+  * A module is executed only once even if many files import it.
+* In a real project the folder structure looks something like this:
 
 ```text
 src/
 ├── api/
-│   └── expenseApi.js
+│   ├── request.js
+│   ├── applicationApi.js
+│   └── jobApi.js
 ├── components/
-│   └── ExpenseList.js
+│   ├── ApplicationForm.js
+│   ├── ApplicationTable.js
+│   └── FilterBar.js
 ├── utils/
-│   └── formatCurrency.js
-└── app.js
+│   ├── formatDate.js
+│   ├── validators.js
+│   └── storage.js
+├── pages/
+│   ├── apply.js
+│   └── admin.js
+└── constants.js
 ```
 
-Webpack and Vite are tools used in JavaScript projects for development and building. Vite provides a fast development server and production build process. Webpack is a more configurable bundler that can process modules and assets.
-
-# JSON
-
-- JSON means JavaScript Object Notation. It is a text format commonly used for sending and storing structured data. APIs commonly send JSON between frontend and backend.
-
-```json
-{
-    "id": 101,
-    "name": "Gowtham",
-    "role": "Developer"
-}
-```
-
-JSON looks similar to a JavaScript object, but JSON is text data and follows stricter syntax.
-
-- `JSON.parse()` converts a JSON string into a JavaScript value.
+* Webpack and Vite are build tools. During development they give a dev server with auto reload. For production they combine all modules into a few small files, minify them, and add hash names for caching.
+* Vite is faster to set up. Webpack is more configurable. Since my project has two pages (apply and admin), Vite needs both entries in the config:
 
 ```js
-const response = '{"id":101,"name":"Gowtham","role":"Developer"}';
+// vite.config.js
+import { defineConfig } from "vite";
 
-const employee = JSON.parse(response);
-
-console.log(employee.name);
-```
-
-This is commonly used when JSON data is received from an API.
-
-- `JSON.stringify()` converts a JavaScript value into a JSON string.
-
-```js
-const employee = {
-    id: 101,
-    name: "Gowtham",
-    role: "Developer"
-};
-
-const jsonData = JSON.stringify(employee);
-
-console.log(jsonData);
-```
-
-This is commonly used when sending data to an API or storing structured data as text.
-
-- JSON can be used with APIs to send data from frontend to backend and receive data back.
-
-```js
-const employee = {
-    name: "Gowtham",
-    role: "Developer"
-};
-
-fetch("/api/employees", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify(employee)
+export default defineConfig({
+    build: {
+        rollupOptions: {
+            input: {
+                apply: "apply.html",
+                admin: "admin.html"
+            }
+        }
+    }
 });
 ```
 
-The JavaScript object is converted to JSON text before being sent.
-
-- A shallow copy copies only the first level of an object. Nested objects are still referenced from the original object.
+* `npm run dev` starts the dev server and `npm run build` creates the production `dist/` folder.
+* Dynamic `import()` can load a module only when needed. For example the admin page can load the "export to Excel" code only when the button is clicked, so the first page load is faster.
 
 ```js
-const employee = {
+document.querySelector("#exportBtn").addEventListener("click", async () => {
+    const { exportToExcel } = await import("../utils/exportExcel.js");
+    exportToExcel(applications);
+});
+```
+
+# JSON
+
+* JSON means JavaScript Object Notation. It is text format used to send and store structured data. The frontend and backend of the job portal talk to each other using JSON.
+* JSON looks like a JS object but it is only text and the rules are stricter: keys must be in double quotes, no comments, no trailing commas, no functions.
+* This is what the admin API may send back for the applications list:
+
+```json
+{
+    "total": 42,
+    "page": 1,
+    "applications": [
+        {
+            "id": 501,
+            "name": "Gowtham",
+            "email": "gowtham@example.com",
+            "position": "Frontend Developer",
+            "experience": 1,
+            "skills": ["JavaScript", "React"],
+            "status": "Applied",
+            "appliedOn": "2025-06-12T10:30:00Z"
+        }
+    ]
+}
+```
+
+* `JSON.parse()` converts a JSON string into a JS value. Normally `response.json()` does this for me when using fetch, but `JSON.parse()` is needed when reading text from other places like `localStorage`.
+
+```js
+const text = '{"id":501,"name":"Gowtham","status":"Applied"}';
+
+const application = JSON.parse(text);
+
+console.log(application.status);
+```
+
+* If the text is not valid JSON, `JSON.parse()` throws an error, so in real code I wrap it in `try...catch` when the data comes from outside (like storage).
+
+```js
+try {
+    JSON.parse("{name: 'Gowtham'}");
+} catch (error) {
+    console.error("Invalid JSON:", error.message);
+}
+```
+
+* `JSON.stringify()` converts a JS value into a JSON string. It is used when sending the application form data to the backend.
+
+```js
+const application = {
     name: "Gowtham",
-    department: {
-        name: "Development"
+    email: "gowtham@example.com",
+    position: "Frontend Developer",
+    experience: 1,
+    skills: ["JavaScript", "React"]
+};
+
+const jsonData = JSON.stringify(application);
+
+fetch("/api/applications", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: jsonData
+});
+```
+
+* The `Content-Type: application/json` header tells the backend that the body is JSON, so it can parse it.
+* Shallow copy copies only the first level. Nested objects are still shared with the original.
+* Example from the admin page: when HR clicks "Edit" on an application, I want to keep a copy in the edit popup, so the original table data does not change until HR clicks Save.
+
+```js
+const application = {
+    id: 501,
+    name: "Gowtham",
+    address: {
+        city: "Erode"
     }
 };
 
-const copy = { ...employee };
+const editCopy = { ...application };
 
-copy.name = "Arun";
-copy.department.name = "Testing";
+editCopy.name = "Arun";
+editCopy.address.city = "Chennai";
 
-console.log(employee.name);
-console.log(employee.department.name);
+console.log(application.name);
+console.log(application.address.city);
 ```
 
-The top-level `name` is independent, but `department` is still shared.
-
-- A deep copy creates an independent copy of nested data. For simple JSON-compatible data, `JSON.stringify()` followed by `JSON.parse()` can be used.
+* `name` stays "Gowtham" but `city` becomes "Chennai" in the original too, because `address` is still the same object. This bug can silently change table data.
+* Deep copy fixes this. For simple JSON data I can use `JSON.parse(JSON.stringify())`.
 
 ```js
-const employee = {
-    name: "Gowtham",
-    department: {
-        name: "Development"
-    }
-};
+const editCopy = JSON.parse(JSON.stringify(application));
 
-const copy = JSON.parse(JSON.stringify(employee));
+editCopy.address.city = "Chennai";
 
-copy.department.name = "Testing";
-
-console.log(employee.department.name);
-console.log(copy.department.name);
+console.log(application.address.city);
 ```
 
-This works for common JSON-compatible data, but it is not suitable for values such as functions, `undefined`, `BigInt`, `Date`, `Map`, and `Set`.
+* `structuredClone(application)` is the newer built-in way and it handles `Date`, `Map` and `Set` also.
+* Limitations of JSON copy and JSON in general:
+  * `Date` becomes a string. That is why `appliedOn` comes as `"2025-06-12T10:30:00Z"` and I need `new Date(appliedOn)` to use it as a date.
+  * `undefined` and functions are removed. `BigInt` throws an error. `Map` and `Set` become empty objects.
 
 # Storage
 
-* Browser storage is used when frontend applications need to keep small amounts of data in the user's browser.
-* The main options are `localStorage`, `sessionStorage`, and cookies.
-* `localStorage` keeps data even after the browser is closed, so it can be used for things like theme preference, language preference, or simple non-sensitive application settings.
-* `sessionStorage` keeps data only for the current browser tab/session, so it can be useful for temporary form data or temporary UI state.
-* Cookies are small pieces of data that are automatically sent with requests to matching domains, so they are commonly used for server-related sessions and authentication.
-* `localStorage` and `sessionStorage` store values as strings, so objects and arrays need to be converted with `JSON.stringify()` before storing them.
-* `JSON.parse()` is used when reading stored JSON back into a JavaScript object.
-* Do not store passwords, secret API keys, or other sensitive information in `localStorage` because JavaScript running on the page can access it.
+* Browser storage is for small amounts of data that should stay in the user's browser. In the job portal I use it only for UI convenience, not for real application data. Real applications are saved in the database through the backend.
+* `localStorage` keeps data even after closing the browser. I use it in the admin page to remember HR's last filter, sort and page size, so they don't need to select everything again every day.
+* Both storages save only strings, so objects need `JSON.stringify()` before saving and `JSON.parse()` after reading.
 
 ```js
-const user = {
-    name: "Gowtham",
-    role: "Developer"
-};
+// utils/storage.js
+export function savePreferences(preferences) {
+    localStorage.setItem("adminPreferences", JSON.stringify(preferences));
+}
 
-localStorage.setItem("user", JSON.stringify(user));
+export function loadPreferences() {
+    const defaults = { status: "", position: "", sortBy: "appliedOn", order: "desc", pageSize: 20 };
 
-const storedUser = JSON.parse(localStorage.getItem("user"));
-
-console.log(storedUser.name);
+    try {
+        const saved = JSON.parse(localStorage.getItem("adminPreferences"));
+        return { ...defaults, ...saved };
+    } catch {
+        return defaults;
+    }
+}
 ```
 
-* In a real expense application, `localStorage` could remember the user's selected dashboard view or theme, while actual expense records should normally come from the backend/database.
-* `localStorage.setItem()` stores a value, `getItem()` reads it, `removeItem()` removes one item, and `clear()` removes all items for that storage area.
+* `getItem()` returns `null` when the key does not exist, and the saved value can also be corrupted, so I use `try...catch` and default values.
+* Using it on the admin page:
+
+```js
+import { savePreferences, loadPreferences } from "../utils/storage.js";
+
+const filters = loadPreferences();
+
+document.querySelector("#statusFilter").addEventListener("change", (event) => {
+    filters.status = event.target.value;
+    savePreferences(filters);
+    loadApplications();
+});
+```
+
+* `sessionStorage` keeps data only for the current tab. It is cleared when the tab is closed. I use it in the application form to save a draft, so if the candidate refreshes the page by mistake, the typed data does not go away.
+
+```js
+const form = document.querySelector("#applicationForm");
+
+form.addEventListener("input", () => {
+    const draft = {
+        name: form.name.value,
+        position: form.position.value,
+        experience: form.experience.value
+    };
+
+    sessionStorage.setItem("applicationDraft", JSON.stringify(draft));
+});
+
+const draft = JSON.parse(sessionStorage.getItem("applicationDraft"));
+
+if (draft) {
+    form.name.value = draft.name;
+    form.position.value = draft.position;
+    form.experience.value = draft.experience;
+}
+```
+
+* After the form is submitted successfully, the draft should be removed.
+
+```js
+sessionStorage.removeItem("applicationDraft");
+```
+
+* Cookies are small data that the browser automatically sends to the same domain with every request. In the job portal, the admin login session is stored in a cookie set by the backend.
+* Important cookie flags:
+  * `HttpOnly` means JavaScript cannot read the cookie, so XSS attacks cannot steal it.
+  * `Secure` means the cookie is sent only over HTTPS.
+  * `SameSite` helps to reduce CSRF attacks.
+* To send cookies with `fetch()` to the backend, I need `credentials: "include"` (or `"same-origin"` if same domain).
+
+```js
+fetch("/api/applications", { credentials: "include" });
+```
+
+* Things I should NOT store in `localStorage`: passwords, auth tokens (if XSS happens the script can read it), and applicants' personal data like phone number, email and resume details. Any script running on the page can read `localStorage`.
+* Methods to remember:
+  * `setItem(key, value)` saves, `getItem(key)` reads, `removeItem(key)` deletes one item, `clear()` deletes everything in that storage.
+* Quick difference for my notes:
+  * `localStorage` → stays until removed, same browser (used for admin filter preferences and theme).
+  * `sessionStorage` → only for that tab (used for form draft).
+  * Cookie → sent to server automatically (used for login session).
 
 # Fetch / AJAX
 
-* Frontend applications often need to communicate with a backend server without reloading the whole page.
-* AJAX means making asynchronous requests from the browser to a server and updating the page with the result.
-* `fetch()` is the modern browser API commonly used for HTTP requests.
-* A frontend can use `fetch()` to request employee data, submit an expense, update an approval status, or delete a record through backend APIs.
-* `fetch()` returns a Promise because the server response does not arrive immediately.
-* The response body usually needs to be converted from JSON text into a JavaScript value using `response.json()`.
+* AJAX means the browser sends a request to the server in the background and updates only a part of the page, without reloading the whole page. In the admin page, when HR changes a filter, only the table changes.
+* `fetch()` is the modern API for this. It returns a Promise because the server does not reply immediately.
+* Basic GET request to load the applications:
 
 ```js
-fetch("/api/expenses")
-    .then(response => response.json())
-    .then(expenses => {
-        console.log(expenses);
+fetch("/api/applications")
+    .then((response) => response.json())
+    .then((data) => {
+        console.log(data.applications);
     })
-    .catch(error => {
+    .catch((error) => {
         console.error(error);
     });
 ```
 
-* In a real expense approval application, the connection is usually frontend → fetch → backend API → database → backend response → frontend.
-* `fetch()` does not automatically reject the Promise for HTTP errors like `404` or `500`, so checking `response.ok` is important.
+* `fetch()` does not reject the Promise for `404` or `500`. It rejects only for network failures. So I must check `response.ok` myself.
+* In a real project, I don't want to repeat this checking in every function, so I create one reusable helper.
 
 ```js
-fetch("/api/expenses")
-    .then(response => {
-        if (!response.ok) {
-            throw new Error("Failed to fetch expenses");
-        }
-
-        return response.json();
-    })
-    .then(expenses => {
-        console.log(expenses);
-    })
-    .catch(error => {
-        console.error(error.message);
+// api/request.js
+export async function request(path, { headers, ...options } = {}) {
+    const response = await fetch(`/api${path}`, {
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...headers },
+        ...options
     });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+        throw new Error(data?.message || `Request failed with status ${response.status}`);
+    }
+
+    return data;
+}
 ```
 
-* `method` is used to specify the HTTP method such as `GET`, `POST`, `PUT`, `PATCH`, or `DELETE`.
-* `headers` tell the backend what kind of data is being sent.
-* `body` contains the data sent to the backend, and JSON request bodies normally use `JSON.stringify()`.
+* This helper adds the cookie credentials, sets the JSON header, reads the JSON, and throws a proper error when the status is not OK (like 400 validation error from the backend).
+* Submitting the job application form (POST). `method` is the HTTP method, `headers` describe the data, `body` is the data.
 
 ```js
-const expense = {
-    employee: "Gowtham",
-    amount: 2500,
-    category: "Travel"
-};
+import { request } from "../api/request.js";
 
-fetch("/api/expenses", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify(expense)
+async function submitApplication(application) {
+    return request("/applications", {
+        method: "POST",
+        body: JSON.stringify(application)
+    });
+}
+```
+
+* Using it in the form submit event, with loading state and error message:
+
+```js
+form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const application = {
+        name: form.name.value.trim(),
+        email: form.email.value.trim(),
+        position: form.position.value,
+        experience: Number(form.experience.value)
+    };
+
+    submitButton.disabled = true;
+
+    try {
+        await submitApplication(application);
+        messageBox.textContent = "Application submitted successfully";
+        sessionStorage.removeItem("applicationDraft");
+        form.reset();
+    } catch (error) {
+        messageBox.textContent = error.message;
+    } finally {
+        submitButton.disabled = false;
+    }
 });
 ```
 
-* `XMLHttpRequest` is the older API used for AJAX requests, and you may still see it in older JavaScript applications.
-* `fetch()` is generally preferred in modern JavaScript because its Promise-based design works naturally with `.then()` and `async/await`.
+* Disabling the button in `try` and enabling it in `finally` stops the candidate from clicking submit twice and creating duplicate applications.
+* Resume upload needs `FormData` and not JSON, because a file is binary data.
+
+```js
+const formData = new FormData();
+
+formData.append("resume", resumeInput.files[0]);
+formData.append("applicationId", 501);
+
+fetch("/api/applications/501/resume", {
+    method: "POST",
+    credentials: "include",
+    body: formData
+});
+```
+
+* Here I should NOT set `Content-Type` manually. The browser sets `multipart/form-data` with the correct boundary automatically. If I set it myself, the upload breaks. (So this one does not use my `request()` helper, since it forces the JSON header.)
+* Loading the admin table with filters, sorting and pagination. The filter values go in the URL as query parameters. `URLSearchParams` builds it properly and encodes special characters.
+
+```js
+export function getApplications(filters) {
+    const params = new URLSearchParams();
+
+    Object.entries(filters).forEach(([key, value]) => {
+        if (value) {
+            params.append(key, value);
+        }
+    });
+
+    return request(`/applications?${params}`);
+}
+
+// example result: /api/applications?status=Applied&sortBy=experience&order=desc&page=1
+```
+
+* Filtering, sorting and pagination should be done in the backend/database, not in the frontend. If there are 10,000 applications, the frontend should not download everything and filter in JavaScript. It should ask the backend only for the required page.
+* Updating status (PATCH) and deleting (DELETE):
+
+```js
+export function updateStatus(id, status) {
+    return request(`/applications/${id}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status })
+    });
+}
+
+export function deleteApplication(id) {
+    return request(`/applications/${id}`, { method: "DELETE" });
+}
+```
+
+* `PUT` replaces the whole record, `PATCH` changes only some fields. Status update only changes one field, so `PATCH` fits better.
+* Search box problem: if the user types "gowtham" quickly, many requests are sent, and an older slow request may return after the new one and show wrong data. Two fixes: debounce (wait until typing stops) and `AbortController` (cancel the old request).
+
+```js
+let controller = null;
+
+async function searchApplications(text) {
+    if (controller) {
+        controller.abort();
+    }
+
+    controller = new AbortController();
+
+    try {
+        const data = await request(`/applications?search=${encodeURIComponent(text)}`, { signal: controller.signal });
+        renderTable(data.applications);
+    } catch (error) {
+        if (error.name !== "AbortError") {
+            showError(error.message);
+        }
+    }
+}
+```
+
+* `XMLHttpRequest` is the older AJAX API. I may see it in old projects. `fetch()` is preferred now because it works with Promises and `async/await`.
+* Full connection in my project: table filter change → `fetch()` with query params → backend API checks the cookie/login → database query → JSON response → `renderTable()` updates the page.
 
 # Promises
 
-* A Promise is a JavaScript object that represents the eventual result of an asynchronous operation. Instead of waiting for the operation to finish and blocking the rest of the program, JavaScript can continue executing other code and handle the result when it becomes available.
-
-* Promises are mainly used when an operation does not finish immediately, such as fetching data from a backend API, reading a file in Node.js, querying a database, waiting for a timer, or performing some other asynchronous operation.
-
-* The main problem Promises solve is handling asynchronous results in a clean and predictable way. Older JavaScript commonly used callbacks:
+* A Promise is an object that represents a result which will come in the future. JavaScript does not wait and block everything. It continues running other code and handles the result when it is ready.
+* In the job portal, Promises are used for: submitting the form, loading the applications, uploading the resume, updating the status, waiting for a timer, etc.
+* Before Promises, callbacks were used, and when one async task depends on another, code became nested (callback hell).
 
 ```js
-getUser(function(user) {
-    getOrders(user.id, function(orders) {
-        getPayment(orders, function(payment) {
-            console.log(payment);
+getApplication(501, function(application) {
+    getJob(application.jobId, function(job) {
+        getRecruiter(job.recruiterId, function(recruiter) {
+            console.log(recruiter.name);
         });
     });
 });
 ```
 
-* When many asynchronous operations depend on each other, callbacks can become deeply nested. This is commonly called callback hell. Promises provide a way to represent each asynchronous operation as a value that can be handled later.
-
-* A Promise has three states:
-
-  * `pending` means the operation has not finished yet.
-  * `fulfilled` means the operation completed successfully.
-  * `rejected` means the operation failed.
-
-* A Promise starts in the `pending` state. It can later move to either `fulfilled` or `rejected`. Once it becomes fulfilled or rejected, it is settled and cannot change to another state.
-
-* You can create a Promise using the `Promise` constructor:
+* Promise has three states:
+  * `pending` means work is still going on.
+  * `fulfilled` means it completed successfully.
+  * `rejected` means it failed.
+* It starts as `pending` and moves to either `fulfilled` or `rejected`. Once it is settled it cannot change again.
+* A Promise can be created using the `Promise` constructor. `resolve()` marks it successful with the result, `reject()` marks it failed with the reason.
 
 ```js
-const promise = new Promise((resolve, reject) => {
-    // asynchronous operation
+const uploadPromise = new Promise((resolve, reject) => {
+    const fileSizeMB = 3;
 
-    if (success) {
-        resolve(result);
+    if (fileSizeMB <= 5) {
+        resolve("Resume uploaded");
     } else {
-        reject(error);
+        reject("File is too large, maximum 5 MB");
     }
 });
 ```
 
-* `resolve()` means the asynchronous operation was successful and provides the result of that operation.
-
-* `reject()` means the asynchronous operation failed and provides the reason for the failure.
-
-* `resolve()` and `reject()` do not mean "return from the Promise". They settle the Promise. The actual result is received later using methods such as `.then()` or `await`.
-
-* For example:
+* `resolve()` and `reject()` don't "return" the value. They settle the Promise, and the value is received later using `.then()`, `.catch()` or `await`.
+* `uploadPromise` is not the final data. It is only an object representing a future result.
+* `.then()` handles success, `.catch()` handles failure, `.finally()` runs always.
 
 ```js
-const paymentPromise = new Promise((resolve, reject) => {
-    const paymentSuccessful = true;
-
-    if (paymentSuccessful) {
-        resolve("Payment completed");
-    } else {
-        reject("Payment failed");
-    }
-});
-```
-
-* The Promise itself is not the final data. `paymentPromise` is an object representing a future result.
-
-* `.then()` is used to handle a fulfilled Promise:
-
-```js
-paymentPromise.then((message) => {
-    console.log(message);
-});
-```
-
-* If the Promise resolves with `"Payment completed"`, the value is received by the callback passed to `.then()`.
-
-* `.catch()` is used to handle rejection:
-
-```js
-paymentPromise.catch((error) => {
-    console.log(error);
-});
-```
-
-* `.finally()` runs after the Promise is settled, regardless of whether it was fulfilled or rejected:
-
-```js
-paymentPromise
+uploadPromise
     .then((message) => {
         console.log(message);
     })
     .catch((error) => {
-        console.log(error);
+        console.error(error);
     })
     .finally(() => {
-        console.log("Payment request finished");
+        console.log("Upload request finished");
     });
 ```
 
-* `finally()` is useful for cleanup operations such as hiding a loading spinner, closing a connection, or resetting UI state.
-
-* In a real expense management application, the frontend may send an expense request to the backend:
+* `finally()` is good for cleanup, like hiding the loading spinner in the admin table.
 
 ```js
-fetch("/api/expenses/501")
+showSpinner();
+
+getApplications(filters)
+    .then((data) => renderTable(data.applications))
+    .catch((error) => showError(error.message))
+    .finally(() => hideSpinner());
+```
+
+* Without `finally`, the spinner would keep running forever if the request failed.
+* `fetch()` immediately returns a Promise (of the response). When the server replies, it becomes fulfilled. `response.json()` also returns a Promise because reading the body is async. That is why there are two `.then()`.
+
+```js
+fetch("/api/applications/501")
     .then((response) => response.json())
-    .then((expense) => {
-        console.log(expense);
+    .then((application) => {
+        console.log(application.name);
+    });
+```
+
+* Chaining works because `.then()` returns a new Promise. If a `.then()` returns a normal value, the next `.then()` gets that value. If it returns a Promise, the next `.then()` waits for it.
+
+```js
+Promise.resolve(2)
+    .then((years) => years * 12)
+    .then((months) => {
+        console.log(months); // 24
+    });
+```
+
+* Real use: open one application, then load the job details for that application. The second request needs `jobId` from the first response, so they must run one after another.
+
+```js
+fetch("/api/applications/501")
+    .then((response) => response.json())
+    .then((application) => {
+        return fetch(`/api/jobs/${application.jobId}`);
+    })
+    .then((response) => response.json())
+    .then((job) => {
+        console.log(job.title);
     })
     .catch((error) => {
         console.error(error);
     });
 ```
 
-* `fetch()` returns a Promise. The HTTP request does not immediately return the final response object as normal synchronous code would. Instead, `fetch()` immediately gives JavaScript a Promise representing the future HTTP response.
-
-* When the server responds, that Promise becomes fulfilled and the first `.then()` receives the response.
-
-* `response.json()` also returns a Promise because converting the response body into JavaScript data is asynchronous.
-
-* That is why two `.then()` calls are commonly used:
+* If I forget to `return` the inner `fetch()`, the next `.then()` receives `undefined` and does not wait. This was an easy mistake to make.
+* Error handling: `throw` inside `.then()` makes that step rejected, and the next `.catch()` handles it.
 
 ```js
-fetch("/api/expenses/501")
-    .then((response) => response.json())
-    .then((expense) => {
-        console.log(expense.amount);
-    });
-```
-
-* The first `.then()` receives the HTTP response.
-
-* `response.json()` starts reading and parsing the response body and returns another Promise.
-
-* The second `.then()` waits for that Promise and receives the actual JavaScript object.
-
-* Promise chaining works because `.then()` itself returns a new Promise.
-
-```js
-fetch("/api/expenses/501")
-    .then((response) => response.json())
-    .then((expense) => {
-        return fetch(`/api/employees/${expense.employeeId}`);
-    })
-    .then((response) => response.json())
-    .then((employee) => {
-        console.log(employee.name);
-    })
-    .catch((error) => {
-        console.error(error);
-    });
-```
-
-* Returning a Promise from `.then()` causes the next `.then()` to wait for that Promise.
-
-* This is one of the most important concepts in Promise chaining. The chain does not simply execute every callback immediately. Each step waits for the value or Promise returned by the previous step.
-
-* If a `.then()` returns a normal value, the next `.then()` receives that value:
-
-```js
-Promise.resolve(100)
-    .then((amount) => {
-        return amount * 2;
-    })
-    .then((result) => {
-        console.log(result); // 200
-    });
-```
-
-* If a `.then()` returns another Promise, the next `.then()` waits for that Promise:
-
-```js
-Promise.resolve(100)
-    .then((amount) => {
-        return Promise.resolve(amount * 2);
-    })
-    .then((result) => {
-        console.log(result); // 200
-    });
-```
-
-* This behavior allows multiple asynchronous operations to be connected together without deeply nested callbacks.
-
-* Errors inside a Promise chain can be handled using `.catch()`:
-
-```js
-fetch("/api/expenses/501")
-    .then((response) => response.json())
-    .then((expense) => {
-        if (expense.amount > 100000) {
-            throw new Error("Expense amount is too high");
-        }
-
-        return expense;
-    })
-    .then((expense) => {
-        console.log("Valid expense:", expense);
-    })
-    .catch((error) => {
-        console.error(error.message);
-    });
-```
-
-* `throw` inside a `.then()` causes the returned Promise from that `.then()` to become rejected, so the error can be handled by a later `.catch()`.
-
-* A very important point is that `fetch()` does not automatically reject its Promise for HTTP errors such as `404` or `500`. It generally rejects for network-level failures. Therefore, application code commonly checks `response.ok`:
-
-```js
-fetch("/api/expenses/501")
+fetch("/api/applications/501")
     .then((response) => {
         if (!response.ok) {
             throw new Error(`HTTP error: ${response.status}`);
@@ -7543,62 +7663,98 @@ fetch("/api/expenses/501")
 
         return response.json();
     })
-    .then((expense) => {
-        console.log(expense);
+    .then((application) => {
+        if (application.status === "Hired") {
+            throw new Error("Hired applications cannot be edited");
+        }
+
+        console.log("Editable:", application);
     })
     .catch((error) => {
-        console.error(error);
+        console.error(error.message);
     });
 ```
 
-* This distinction is important in real applications because receiving an HTTP response does not necessarily mean the API operation was successful.
-
-* Promises are especially useful when multiple asynchronous operations are independent and can run at the same time.
-
-```js
-const employeesPromise = fetch("/api/employees");
-const expensesPromise = fetch("/api/expenses");
-const departmentsPromise = fetch("/api/departments");
-```
-
-* If these requests do not depend on one another, there is no reason to wait for the first request before starting the second.
-
-* `Promise.all()` is used when multiple Promises need to run together and the application needs all of their results:
+* One `.catch()` at the end can handle errors from any step above it in the chain.
+* When requests are independent, do not wait for one before starting another. The admin dashboard needs applications, jobs and statistics, and none of them depends on the other.
+* `Promise.all()` starts all together and gives all results. It fails if even one Promise fails.
 
 ```js
-const [employeesResponse, expensesResponse, departmentsResponse] =
-    await Promise.all([
-        fetch("/api/employees"),
-        fetch("/api/expenses"),
-        fetch("/api/departments")
+async function loadDashboard() {
+    const [applications, jobs, stats] = await Promise.all([
+        request("/applications?page=1"),
+        request("/jobs"),
+        request("/applications/stats")
     ]);
+
+    renderTable(applications.applications);
+    fillJobFilter(jobs);
+    showStats(stats);
+}
 ```
 
-* `Promise.all()` fulfills only when all supplied Promises fulfill.
-
-* If even one Promise rejects, `Promise.all()` rejects.
-
-* This makes `Promise.all()` useful for dashboard pages where several independent API requests are required before displaying the complete page.
-
-* `Promise.allSettled()` is useful when every operation should be allowed to finish even if some fail:
+* If these three ran one after another, the total time would be the sum of all three. With `Promise.all()` it is roughly the time of the slowest one.
+* `Promise.allSettled()` waits for all and tells the status of each one, even if some failed. Useful when the page can still show partial data, for example if the stats API fails but the table should still load.
 
 ```js
 const results = await Promise.allSettled([
-    fetch("/api/employees"),
-    fetch("/api/expenses"),
-    fetch("/api/departments")
+    request("/applications"),
+    request("/jobs"),
+    request("/applications/stats")
 ]);
+
+results.forEach((result) => {
+    if (result.status === "fulfilled") {
+        console.log("Success:", result.value);
+    } else {
+        console.error("Failed:", result.reason.message);
+    }
+});
 ```
 
-* Unlike `Promise.all()`, `Promise.allSettled()` gives the final status of every operation.
+* `Promise.race()` settles as soon as the first Promise settles (success or failure). I can use it to add a timeout to a slow request.
 
-* `Promise.race()` settles when the first Promise settles. It can be useful when implementing a timeout or choosing whichever asynchronous operation finishes first.
+```js
+function timeout(ms) {
+    return new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("Request timed out")), ms);
+    });
+}
 
-* `Promise.any()` fulfills when the first Promise fulfills. It ignores rejected Promises unless all supplied Promises reject.
+const data = await Promise.race([request("/applications"), timeout(5000)]);
+```
 
-* Promises do not make asynchronous operations themselves faster. They provide a structured way to represent and handle operations that already happen asynchronously.
+* `Promise.any()` fulfills with the first successful Promise and ignores failures unless all fail. Example: try the main API server and a backup server, use whichever answers successfully first.
+* A small helper that returns a Promise: `wait()`, which can be used for retrying a failed request.
 
-* A Promise also does not automatically create a new thread. JavaScript's asynchronous behavior depends on the runtime environment, such as browser APIs or Node.js APIs, together with the event loop.
+```js
+function wait(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function retry(task, attempts = 3) {
+    for (let i = 1; i <= attempts; i++) {
+        try {
+            return await task();
+        } catch (error) {
+            if (i === attempts) {
+                throw error;
+            }
+
+            await wait(1000 * i);
+        }
+    }
+}
+
+const data = await retry(() => request("/applications"));
+```
+
+* `async/await` is just a cleaner way to write Promises. An `async` function always returns a Promise, and `await` pauses that function (not the whole page) until the Promise is settled. Errors are handled with `try...catch`, which is what I used in the form submit code above.
+* Points I want to remember:
+  * A Promise does not make the operation faster. It only gives a clean way to handle something that is already asynchronous.
+  * A Promise does not create a new thread. The async work is done by browser APIs (or Node.js APIs), and the event loop brings the result back to JavaScript.
+  * `.then()` callbacks are microtasks, so they run before `setTimeout` callbacks.
+
 
 # async and await
 
@@ -11437,4 +11593,5036 @@ factories/
 ```
 
 * Modules connect these pieces through imports.
+
+# Design Patterns
+
+Design patterns are common ways of structuring code when the same type of software problem appears repeatedly.
+
+A design pattern is not a library and it is not something I should force into every feature.
+
+The important question is:
+
+```text
+What problem am I solving?
+        |
+        v
+What responsibilities exist?
+        |
+        v
+Are some responsibilities changing independently?
+        |
+        v
+Would a known pattern make the code easier to maintain?
+```
+
+In a real application, I should understand the problem first and then choose a pattern.
+
+## Singleton
+
+* Singleton means the application maintains one shared instance of a particular object.
+
+* The main idea is:
+
+```text
+Application
+    |
+    +---- Module A ----+
+    |                  |
+    +---- Module B ----+----> Same shared instance
+    |                  |
+    +---- Module C ----+
+```
+
+* A real example is application configuration.
+
+```js
+class AppConfig {
+    static instance;
+
+    constructor() {
+        if (AppConfig.instance) {
+            return AppConfig.instance;
+        }
+
+        this.apiUrl = "https://api.example.com";
+        this.timeout = 5000;
+
+        AppConfig.instance = this;
+    }
+}
+
+const config1 = new AppConfig();
+const config2 = new AppConfig();
+
+console.log(config1 === config2);
+```
+
+* Both references point to the same instance.
+
+* In an application, I might have:
+
+```text
+API configuration
+Database configuration
+Logger
+Cache manager
+Application settings
+```
+
+* If every module creates its own configuration manager, different parts of the application could end up using different configuration values.
+
+* A shared instance avoids that.
+
+## Real application example
+
+* Suppose my frontend has:
+
+```text
+applicationService.js
+userService.js
+notificationService.js
+analyticsService.js
+```
+
+* All of them need the API base URL.
+
+* Instead of:
+
+```js
+const apiUrl = "...";
+```
+
+* being duplicated everywhere, configuration can be centralized.
+
+```js
+class Config {
+    static instance;
+
+    constructor() {
+        if (Config.instance) {
+            return Config.instance;
+        }
+
+        this.apiBaseUrl = "/api";
+        this.requestTimeout = 10000;
+
+        Config.instance = this;
+    }
+}
+
+export const config = new Config();
+```
+
+* Other modules can use:
+
+```js
+import { config } from "./config.js";
+
+fetch(`${config.apiBaseUrl}/applications`);
+```
+
+* The important benefit is centralized configuration.
+
+## When Singleton becomes a problem
+
+* Singleton can easily become global mutable state.
+
+* If many unrelated modules can modify the same object:
+
+```js
+config.timeout = 999999;
+```
+
+* debugging becomes difficult because any module could have changed it.
+
+* Therefore I should not make every shared object a Singleton.
+
+* If normal module exports already provide the shared behavior I need, I don't need to create a complicated Singleton class.
+
+## Factory Pattern
+
+* Factory is useful when creating an object requires a decision.
+
+* Instead of every caller deciding how to construct the object, the factory handles creation.
+
+```text
+Caller
+   |
+   v
+Factory
+   |
+   +---- Email notification
+   |
+   +---- SMS notification
+   |
+   +---- Push notification
+```
+
+## Real application example
+
+* Suppose my application supports different notification methods.
+
+```js
+function createNotification(type) {
+    if (type === "email") {
+        return {
+            send(message) {
+                console.log("Email:", message);
+            }
+        };
+    }
+
+    if (type === "sms") {
+        return {
+            send(message) {
+                console.log("SMS:", message);
+            }
+        };
+    }
+
+    if (type === "push") {
+        return {
+            send(message) {
+                console.log("Push:", message);
+            }
+        };
+    }
+
+    throw new Error("Unsupported notification type");
+}
+```
+
+* Now the application can do:
+
+```js
+const notification = createNotification("email");
+
+notification.send(
+    "Your application has been received"
+);
+```
+
+* The caller does not need to know how the email implementation was created.
+
+## Why this helps
+
+Without a factory:
+
+```js
+if (type === "email") {
+    // create email object
+}
+
+if (type === "sms") {
+    // create SMS object
+}
+
+if (type === "push") {
+    // create push object
+}
+```
+
+* This decision may become duplicated across controllers, services, and background jobs.
+
+* With a factory:
+
+```text
+All creation logic
+       |
+       v
+Notification Factory
+```
+
+* Adding another notification implementation becomes more controlled.
+
+## Real application connection
+
+* A job application system could have:
+
+```text
+Notification
+    |
+    +-- EmailNotification
+    +-- SMSNotification
+    +-- PushNotification
+```
+
+* A workflow engine could similarly create different step handlers:
+
+```text
+Step Factory
+    |
+    +-- TaskStep
+    +-- ApprovalStep
+    +-- NotificationStep
+```
+
+* This is much closer to how the pattern appears in actual software.
+
+## Strategy Pattern
+
+* Strategy is used when the same operation can be performed using different algorithms or rules.
+
+```text
+                  Payment
+                     |
+          +----------+----------+
+          |          |          |
+         Card       UPI       Wallet
+```
+
+* The caller chooses a strategy without changing the main workflow.
+
+## Real application example - application filtering
+
+* Imagine an admin can filter applicants using different strategies.
+
+```text
+Filter
+ |
+ +-- By skills
+ |
+ +-- By experience
+ |
+ +-- By CGPA
+ |
+ +-- By status
+```
+
+* Instead of writing one huge function:
+
+```js
+function filterApplications(
+    applications,
+    type,
+    value
+) {
+    // huge if/else
+}
+```
+
+* I can separate strategies.
+
+```js
+const filterStrategies = {
+    status(applications, value) {
+        return applications.filter(
+            application =>
+                application.status === value
+        );
+    },
+
+    skill(applications, value) {
+        return applications.filter(
+            application =>
+                application.skills.includes(value)
+        );
+    },
+
+    cgpa(applications, value) {
+        return applications.filter(
+            application =>
+                application.education.some(
+                    education =>
+                        education.cgpa >= value
+                )
+        );
+    }
+};
+```
+
+* Then:
+
+```js
+function filterApplications(
+    applications,
+    strategy,
+    value
+) {
+    const filter = filterStrategies[strategy];
+
+    if (!filter) {
+        throw new Error(
+            "Unsupported filter strategy"
+        );
+    }
+
+    return filter(applications, value);
+}
+```
+
+* Now the filtering mechanism can change without changing the caller.
+
+## Real application connection
+
+Strategy is useful for:
+
+* Payment methods.
+
+* Pricing rules.
+
+* Authentication methods.
+
+* Filtering.
+
+* Sorting.
+
+* File processing.
+
+* Notification methods.
+
+* Validation rules.
+
+* Approval rules.
+
+* The important idea is:
+
+```text
+Same job
+   |
+Different ways to perform it
+   |
+Strategy
+```
+
+## Observer Pattern
+
+* Observer allows one object to notify multiple interested parts when something happens.
+
+```text
+             Application Submitted
+                     |
+        +------------+------------+
+        |            |            |
+        v            v            v
+     Email        Analytics      Audit
+```
+
+* The application event happens once.
+
+* Multiple listeners respond.
+
+## JavaScript example
+
+```js
+class EventEmitter {
+    constructor() {
+        this.listeners = {};
+    }
+
+    on(event, callback) {
+        if (!this.listeners[event]) {
+            this.listeners[event] = [];
+        }
+
+        this.listeners[event].push(callback);
+    }
+
+    emit(event, data) {
+        const callbacks =
+            this.listeners[event] || [];
+
+        for (const callback of callbacks) {
+            callback(data);
+        }
+    }
+}
+```
+
+* Usage:
+
+```js
+const events = new EventEmitter();
+
+events.on(
+    "applicationSubmitted",
+    application => {
+        console.log("Send confirmation email");
+    }
+);
+
+events.on(
+    "applicationSubmitted",
+    application => {
+        console.log("Create audit log");
+    }
+);
+
+events.emit(
+    "applicationSubmitted",
+    application
+);
+```
+
+* Both listeners react to the same event.
+
+## Real application example
+
+* When a job application is submitted:
+
+```text
+Application submitted
+        |
+        v
+   Event emitted
+        |
+        +---- Send confirmation email
+        |
+        +---- Update application count
+        |
+        +---- Create audit record
+        |
+        +---- Notify admin
+```
+
+* The application submission logic doesn't need to contain all those unrelated operations.
+
+* This reduces coupling.
+
+## Important production consideration
+
+* In a small application, an in-memory event emitter is enough.
+
+* In a distributed system:
+
+```text
+Server 1
+Server 2
+Server 3
+```
+
+* may need a shared event/message system.
+
+* Otherwise an event emitted inside Server 1 is not automatically known by Server 2.
+
+* This is where message brokers and event-driven architecture become relevant.
+
+## Module Pattern
+
+* The Module Pattern groups related data and functions together and controls what other parts of the application can access.
+
+* Modern JavaScript already provides modules using:
+
+```js
+export
+import
+```
+
+## Real application example
+
+Instead of putting everything inside:
+
+```text
+app.js
+```
+
+I can separate:
+
+```text
+applicationService.js
+applicationValidator.js
+applicationApi.js
+applicationFormatter.js
+```
+
+Example:
+
+```js
+const applications = [];
+
+function addApplication(application) {
+    applications.push(application);
+}
+
+function getApplications() {
+    return [...applications];
+}
+
+export {
+    addApplication,
+    getApplications
+};
+```
+
+* Internal data is not directly exposed.
+
+* Other modules use the public functions.
+
+```js
+import {
+    addApplication,
+    getApplications
+} from "./applicationStore.js";
+```
+
+## Why this matters
+
+* Without modules:
+
+```text
+Everything
+    |
+    v
+Global variables
+    |
+    v
+Name collisions
+    |
+    v
+Hard to understand dependencies
+```
+
+* With modules:
+
+```text
+Application Service
+        |
+        +-- imports validator
+        +-- imports repository
+        +-- exports service methods
+```
+
+* Modules are one of the most important foundations of maintainable JavaScript applications.
+
+## MVC
+
+* MVC means:
+
+```text
+Model
+View
+Controller
+```
+
+* Each part has a different responsibility.
+
+```text
+Browser
+   |
+   v
+Controller
+   |
+   v
+Model
+   |
+   v
+Database
+```
+
+* The response eventually goes back toward the View.
+
+## Model
+
+* Model represents application data and often database interaction.
+
+Example:
+
+```js
+const applicationSchema = {
+    name: String,
+    email: String,
+    status: String
+};
+```
+
+* With MongoDB/Mongoose, this could become a model representing the application collection.
+
+## Controller
+
+* Controller handles the HTTP request.
+
+```js
+async function createApplication(req, res) {
+    try {
+        const application =
+            await applicationService.create(
+                req.body
+            );
+
+        res.status(201).json(application);
+    } catch (error) {
+        res.status(500).json({
+            message: "Unable to create application"
+        });
+    }
+}
+```
+
+* The controller should not contain every business rule.
+
+## View
+
+* In a Vue application, the frontend UI acts as the View.
+
+```text
+ApplicationForm.vue
+ApplicationList.vue
+ApplicationDetails.vue
+```
+
+* The frontend sends requests to the backend and displays the returned data.
+
+## Real application flow
+
+```text
+User submits application
+        |
+        v
+Vue form
+        |
+        v
+POST /applications
+        |
+        v
+Express route
+        |
+        v
+Controller
+        |
+        v
+Service
+        |
+        v
+Model / Repository
+        |
+        v
+MongoDB
+        |
+        v
+Response
+        |
+        v
+Vue UI
+```
+
+* This separation makes the system easier to understand.
+
+## MVVM
+
+* MVVM means:
+
+```text
+Model
+View
+ViewModel
+```
+
+```text
+Model
+  |
+  v
+ViewModel
+  |
+  v
+View
+```
+
+* MVVM is particularly useful for frontend applications where UI state and user interactions are complex.
+
+## Real application example
+
+* Imagine a job application form.
+
+```text
+Applicant Form
+ |
+ +-- name
+ +-- age
+ +-- education
+ +-- skills
+ +-- internships
+ +-- resume
+```
+
+* The UI needs state:
+
+```js
+const form = {
+    name: "",
+    age: null,
+    skills: [],
+    education: [],
+    internships: []
+};
+```
+
+* The ViewModel-like layer handles:
+
+```text
+form state
+validation state
+loading state
+error state
+submission state
+```
+
+* The View displays that state.
+
+* Vue's reactive system makes this style natural.
+
+## MVVM becomes useful when
+
+* The UI has a lot of state.
+
+* Multiple components depend on shared state.
+
+* User interactions change the UI dynamically.
+
+* Validation and loading states are complex.
+
+## Adapter Pattern
+
+* Adapter converts one interface into another interface expected by the application.
+
+```text
+External API
+     |
+     v
+ Adapter
+     |
+     v
+Application format
+```
+
+## Real application example
+
+* Suppose an external API returns:
+
+```js
+{
+    user_id: 101,
+    full_name: "Gowtham",
+    email_address: "gowtham@example.com"
+}
+```
+
+* My application expects:
+
+```js
+{
+    id: 101,
+    name: "Gowtham",
+    email: "gowtham@example.com"
+}
+```
+
+* Instead of changing the entire application:
+
+```js
+function adaptUser(apiUser) {
+    return {
+        id: apiUser.user_id,
+        name: apiUser.full_name,
+        email: apiUser.email_address
+    };
+}
+```
+
+* Now:
+
+```js
+const user = adaptUser(apiResponse);
+
+console.log(user.name);
+```
+
+* The rest of my application does not need to know how the external API is structured.
+
+## Real production-style use
+
+* Third-party payment API.
+
+* External authentication provider.
+
+* Different cloud storage providers.
+
+* Multiple email providers.
+
+* Legacy APIs.
+
+* Database migration layers.
+
+* The adapter protects the rest of the application from external API changes.
+
+## Decorator Pattern
+
+* Decorator adds behavior to an existing function without changing its original implementation.
+
+## Real application example
+
+Suppose:
+
+```js
+async function getApplications() {
+    return database.findApplications();
+}
+```
+
+* I want logging.
+
+```js
+function withLogging(fn) {
+    return async (...args) => {
+        console.log("Request started");
+
+        const result = await fn(...args);
+
+        console.log("Request completed");
+
+        return result;
+    };
+}
+```
+
+* Now:
+
+```js
+const getApplicationsWithLogging =
+    withLogging(getApplications);
+```
+
+* I didn't modify `getApplications`.
+
+* I wrapped it with additional behavior.
+
+## Real uses
+
+* Logging.
+
+* Performance measurement.
+
+* Caching.
+
+* Authorization.
+
+* Retry behavior.
+
+* Metrics.
+
+* Validation.
+
+* The important idea is:
+
+```text
+Original behavior
+       +
+Additional behavior
+       =
+Wrapped behavior
+```
+
+## Command Pattern
+
+* Command represents an action as a separate object or function.
+
+```text
+Action
+ |
+ v
+Command
+ |
+ v
+Execute
+```
+
+## Real application example
+
+* Admin actions:
+
+```text
+Approve Application
+Reject Application
+Cancel Application
+Retry Workflow
+```
+
+* Instead of directly mixing the logic into UI code:
+
+```js
+const approveApplication = {
+    execute(application) {
+        application.status = "Approved";
+    }
+};
+```
+
+* The UI only requests the action.
+
+```js
+approveApplication.execute(application);
+```
+
+* This becomes more useful when actions need:
+
+* Undo.
+
+* Logging.
+
+* History.
+
+* Queuing.
+
+* Retry.
+
+* Delayed execution.
+
+## Workflow engine example
+
+```text
+Admin clicks Retry
+       |
+       v
+RetryWorkflowCommand
+       |
+       v
+Execute workflow retry
+       |
+       +--> Audit log
+       +--> Update status
+       +--> Queue job
+```
+
+* The command represents the action independently from the UI.
+
+## Dependency Injection
+
+* Dependency Injection means giving an object or function the dependencies it needs instead of creating those dependencies internally.
+
+Bad:
+
+```js
+class ApplicationService {
+    constructor() {
+        this.database = new MongoDatabase();
+    }
+}
+```
+
+* The service is tightly coupled to MongoDatabase.
+
+Better:
+
+```js
+class ApplicationService {
+    constructor(database) {
+        this.database = database;
+    }
+}
+```
+
+* Now:
+
+```js
+const database = new MongoDatabase();
+
+const service =
+    new ApplicationService(database);
+```
+
+## Why this matters for testing
+
+* I can provide a fake database:
+
+```js
+const fakeDatabase = {
+    async save(application) {
+        return {
+            ...application,
+            id: 101
+        };
+    }
+};
+```
+
+* Then:
+
+```js
+const service =
+    new ApplicationService(fakeDatabase);
+```
+
+* The service can be tested without connecting to the real database.
+
+## Real application architecture
+
+```text
+Controller
+    |
+    v
+ApplicationService
+    |
+    v
+ApplicationRepository
+    |
+    v
+Database
+```
+
+* Each dependency can be injected.
+
+* This reduces tight coupling.
+
+## Repository Pattern
+
+* Repository separates database access from business logic.
+
+Instead of:
+
+```js
+async function approveApplication(id) {
+    const application =
+        await Application.findById(id);
+
+    application.status = "Approved";
+
+    await application.save();
+}
+```
+
+* I can have:
+
+```js
+class ApplicationRepository {
+    async findById(id) {
+        return Application.findById(id);
+    }
+
+    async updateStatus(id, status) {
+        return Application.findByIdAndUpdate(
+            id,
+            { status },
+            { new: true }
+        );
+    }
+}
+```
+
+* The service then handles the business rule:
+
+```js
+async function approveApplication(id) {
+    const application =
+        await repository.findById(id);
+
+    if (!application) {
+        throw new Error(
+            "Application not found"
+        );
+    }
+
+    if (application.status === "Rejected") {
+        throw new Error(
+            "Rejected applications cannot be approved"
+        );
+    }
+
+    return repository.updateStatus(
+        id,
+        "Approved"
+    );
+}
+```
+
+* Now:
+
+```text
+Controller
+    |
+Service -> business rules
+    |
+Repository -> database operations
+```
+
+* This is a very useful structure for backend applications.
+
+## Service Layer
+
+* The service layer contains business logic.
+
+* Example:
+
+```text
+POST /applications/:id/approve
+```
+
+* Controller:
+
+```js
+async function approve(req, res) {
+    const result =
+        await applicationService.approve(
+            req.params.id
+        );
+
+    res.json(result);
+}
+```
+
+* Service:
+
+```js
+async function approve(id) {
+    const application =
+        await repository.findById(id);
+
+    if (!application) {
+        throw new Error("Application not found");
+    }
+
+    if (application.status !== "Pending") {
+        throw new Error(
+            "Only pending applications can be approved"
+        );
+    }
+
+    return repository.updateStatus(
+        id,
+        "Approved"
+    );
+}
+```
+
+* The service owns the business rule.
+
+* This is important because the same business operation might later be triggered by:
+
+```text
+Admin API
+Background job
+CLI
+Workflow engine
+Scheduled task
+```
+
+* I don't want the business rule duplicated in every entry point.
+
+## Facade Pattern
+
+* Facade provides a simpler interface over a complicated subsystem.
+
+```text
+             Complex subsystem
+          /        |        \
+     Database   Email      Storage
+          \        |        /
+               Facade
+                  |
+                  v
+             Simple API
+```
+
+## Real application example
+
+* Submitting an application may require:
+
+```text
+Validate
+Save
+Upload resume
+Create audit log
+Send email
+Notify admin
+```
+
+* Instead of the controller knowing every operation:
+
+```js
+await validate();
+await save();
+await upload();
+await audit();
+await sendEmail();
+await notifyAdmin();
+```
+
+* I can expose:
+
+```js
+await applicationService.submit(data);
+```
+
+* The service/facade coordinates the complicated process.
+
+# Code Organization
+
+Code organization means deciding where code belongs, who is responsible for it, and how different parts communicate.
+
+The goal is not to create the largest folder structure.
+
+The goal is to make it obvious:
+
+```text
+Where is this logic?
+Who owns this responsibility?
+What does this module depend on?
+Can I change one part without breaking unrelated parts?
+```
+
+## Separation of Concerns
+
+* Different responsibilities should not be unnecessarily mixed together.
+
+Bad:
+
+```js
+app.post("/applications", async (req, res) => {
+    // validate request
+    // check duplicate email
+    // upload resume
+    // save database record
+    // send email
+    // create audit log
+    // calculate analytics
+    // return response
+});
+```
+
+* This route has too many responsibilities.
+
+Better:
+
+```text
+Route
+  |
+Controller
+  |
+Service
+  |
+Repository
+```
+
+* Each layer has a clearer responsibility.
+
+## Route
+
+* Route defines which HTTP endpoint exists.
+
+```js
+router.post(
+    "/applications",
+    applicationController.create
+);
+```
+
+* The route should not contain business logic.
+
+* It answers:
+
+```text
+Which URL?
+Which HTTP method?
+Which controller?
+```
+
+## Controller
+
+* Controller handles HTTP-specific concerns.
+
+```js
+async function create(req, res) {
+    const application =
+        await applicationService.create(
+            req.body
+        );
+
+    res.status(201).json(application);
+}
+```
+
+* Controller should handle things such as:
+
+* Request parameters.
+
+* Request body.
+
+* Authentication context.
+
+* HTTP status.
+
+* HTTP response.
+
+* It should not become a giant business-logic file.
+
+## Service
+
+* Service contains business rules.
+
+```js
+async function create(data) {
+    const exists =
+        await repository.findByEmail(data.email);
+
+    if (exists) {
+        throw new Error(
+            "Application already exists"
+        );
+    }
+
+    const application =
+        await repository.create(data);
+
+    await notificationService.sendConfirmation(
+        application
+    );
+
+    return application;
+}
+```
+
+* This is where the application decides what should happen.
+
+## Repository
+
+* Repository handles persistence.
+
+```js
+async function create(data) {
+    return Application.create(data);
+}
+
+async function findByEmail(email) {
+    return Application.findOne({ email });
+}
+```
+
+* The service does not need to know the exact database query.
+
+## Model
+
+* Model defines how persistent data is represented.
+
+For MongoDB/Mongoose:
+
+```js
+const applicationSchema = new Schema({
+    name: String,
+    email: String,
+    status: String
+});
+```
+
+* The model describes the database structure and may contain database-level behavior.
+
+## Middleware
+
+* Middleware runs between the incoming request and the final controller.
+
+```text
+Request
+   |
+Authentication
+   |
+Validation
+   |
+Logging
+   |
+Controller
+```
+
+Example:
+
+```js
+function requireAdmin(req, res, next) {
+    if (!req.user) {
+        return res
+            .status(401)
+            .json({
+                message: "Authentication required"
+            });
+    }
+
+    if (req.user.role !== "admin") {
+        return res
+            .status(403)
+            .json({
+                message: "Admin access required"
+            });
+    }
+
+    next();
+}
+```
+
+* Middleware is useful for behavior shared across multiple routes.
+
+## Validation Layer
+
+* Validation checks whether incoming data satisfies the required structure.
+
+```text
+name -> required
+email -> valid email
+age -> 18-100
+skills -> array
+resume -> allowed file type
+```
+
+* Validation should happen before business operations.
+
+* Example:
+
+```js
+function validateApplication(data) {
+    if (!data.name) {
+        throw new Error("Name is required");
+    }
+
+    if (data.age < 18 || data.age > 100) {
+        throw new Error(
+            "Age must be between 18 and 100"
+        );
+    }
+}
+```
+
+* For larger applications, dedicated validation libraries are often preferable.
+
+## Utility Functions
+
+* Utilities should contain genuinely reusable generic operations.
+
+Good:
+
+```text
+dateFormatter.js
+pagination.js
+fileExtension.js
+```
+
+Bad:
+
+```text
+helper.js
+common.js
+misc.js
+```
+
+* A file named `utils.js` containing 50 unrelated functions usually indicates poor organization.
+
+## Frontend Code Organization
+
+A Vue/React-style application can be organized like:
+
+```text
+src/
+├── components/
+├── pages/
+├── services/
+├── stores/
+├── hooks/
+├── utils/
+├── validators/
+├── router/
+├── assets/
+└── main.js
+```
+
+## Components
+
+* Reusable UI pieces.
+
+```text
+ApplicationCard
+ApplicationTable
+ApplicationForm
+StatusBadge
+SearchInput
+```
+
+## Pages
+
+* Complete screens.
+
+```text
+ApplicationListPage
+ApplicationDetailsPage
+AdminDashboardPage
+LoginPage
+```
+
+## Services
+
+* API communication.
+
+```js
+export async function getApplications() {
+    const response =
+        await fetch("/api/applications");
+
+    return response.json();
+}
+```
+
+* The component does not need to know how the API request is constructed.
+
+## State Management
+
+* Shared state should be separated from local component state when appropriate.
+
+Example:
+
+```text
+Authentication state
+Current user
+Selected application
+Notifications
+Global filters
+```
+
+* A central store can manage state used by many components.
+
+* But not every variable belongs in global state.
+
+* A form field used by one component should usually remain local.
+
+## Feature-Based Organization
+
+For a larger application, organizing everything only by technical type can become difficult.
+
+Instead of:
+
+```text
+components/
+services/
+controllers/
+models/
+```
+
+I can also organize around features.
+
+```text
+src/
+├── applications/
+│   ├── components/
+│   ├── services/
+│   ├── validators/
+│   └── pages/
+│
+├── authentication/
+│   ├── components/
+│   ├── services/
+│   └── pages/
+│
+├── notifications/
+│   ├── services/
+│   └── components/
+```
+
+* This becomes useful when the application becomes large.
+
+* All code related to one business feature stays closer together.
+
+## Layer-Based vs Feature-Based Organization
+
+Layer-based:
+
+```text
+controllers/
+services/
+repositories/
+models/
+```
+
+Feature-based:
+
+```text
+applications/
+authentication/
+notifications/
+workflows/
+```
+
+* Both approaches are valid.
+
+* A small project may be easier to understand with layers.
+
+* A large application can benefit from feature boundaries.
+
+* A hybrid approach is often practical:
+
+```text
+src/
+├── modules/
+│   ├── applications/
+│   │   ├── controller.js
+│   │   ├── service.js
+│   │   ├── repository.js
+│   │   └── model.js
+│   │
+│   ├── authentication/
+│   └── workflows/
+│
+├── middleware/
+├── config/
+└── utils/
+```
+
+## Dependency Direction
+
+* A healthy architecture should have predictable dependency direction.
+
+Example:
+
+```text
+Controller
+    |
+    v
+Service
+    |
+    v
+Repository
+    |
+    v
+Database
+```
+
+* The repository should not suddenly call the controller.
+
+* Otherwise responsibilities become tangled.
+
+Bad:
+
+```text
+Repository
+   |
+   v
+Controller
+   |
+   v
+Service
+   |
+   v
+Repository
+```
+
+* This creates circular dependencies and makes the system difficult to reason about.
+
+## Circular Dependencies
+
+* Circular dependency happens when:
+
+```text
+A -> B
+B -> A
+```
+
+* Example:
+
+```js
+// userService.js
+import { orderService } from "./orderService.js";
+
+// orderService.js
+import { userService } from "./userService.js";
+```
+
+* This can cause initialization problems and confusing behavior.
+
+* If two modules strongly depend on each other, it may indicate that some shared responsibility should be moved into a third module.
+
+```text
+A ----\
+       \
+        Shared Service
+       /
+B ----/
+```
+
+## Clean Code
+
+Clean code is code that another developer can understand and safely modify.
+
+It is not code that simply looks fancy.
+
+## Clear naming
+
+Bad:
+
+```js
+const d = 7;
+const x = getData();
+```
+
+Better:
+
+```js
+const applicationLimit = 7;
+const applications = getApplications();
+```
+
+* Names should communicate intent.
+
+## Small focused functions
+
+Bad:
+
+```js
+function processApplication() {
+    // 200 lines
+}
+```
+
+Better:
+
+```js
+validateApplication();
+checkDuplicate();
+saveApplication();
+sendConfirmation();
+createAuditLog();
+```
+
+* Each function should have a clear responsibility.
+
+## DRY
+
+* DRY means Don't Repeat Yourself.
+
+Bad:
+
+```js
+if (age < 18 || age > 100) {
+    // validation
+}
+```
+
+* repeated in multiple files.
+
+Better:
+
+```js
+function validateAge(age) {
+    return age >= 18 && age <= 100;
+}
+```
+
+* But DRY should not mean "extract every repeated line."
+
+* If abstraction makes the code harder to understand, the abstraction may not be worth it.
+
+## YAGNI
+
+* YAGNI means You Aren't Gonna Need It.
+
+* Don't build features just because they might be useful someday.
+
+Bad:
+
+```text
+Application
+ |
+ +-- Email
+ +-- SMS
+ +-- WhatsApp
+ +-- Telegram
+ +-- Slack
+ +-- Discord
+```
+
+* when the current requirement only needs email.
+
+* Start with the requirement that actually exists.
+
+## Early Returns
+
+Deep nesting:
+
+```js
+if (user) {
+    if (user.role === "admin") {
+        if (application) {
+            // logic
+        }
+    }
+}
+```
+
+Better:
+
+```js
+if (!user) {
+    return;
+}
+
+if (user.role !== "admin") {
+    return;
+}
+
+if (!application) {
+    return;
+}
+
+// actual logic
+```
+
+* This makes the main logic easier to read.
+
+## Pure Functions
+
+* A pure function:
+
+* Gives the same result for the same input.
+
+* Does not modify external state.
+
+```js
+function calculateApplicationScore(
+    cgpa,
+    experience
+) {
+    return cgpa * 10 + experience * 5;
+}
+```
+
+* This is easy to test.
+
+* Pure functions are especially useful for:
+
+* Calculations.
+
+* Formatting.
+
+* Validation.
+
+* Filtering.
+
+* Transforming API data.
+
+## Side Effects
+
+* A side effect changes something outside the function.
+
+Examples:
+
+```text
+Database write
+API request
+DOM update
+File upload
+LocalStorage update
+Email sending
+```
+
+* I should keep side effects controlled.
+
+Example:
+
+```text
+Pure business logic
+        |
+        v
+Database operation
+        |
+        v
+External side effect
+```
+
+* This makes the application easier to test.
+
+## Error Boundaries
+
+* Different layers should handle errors appropriately.
+
+```text
+Validation error
+    -> 400
+
+Authentication error
+    -> 401
+
+Authorization error
+    -> 403
+
+Resource not found
+    -> 404
+
+Conflict
+    -> 409
+
+Unexpected server error
+    -> 500
+```
+
+* The frontend should receive useful error information but not internal implementation details.
+
+## Environment Configuration
+
+* Configuration should not be hardcoded into application logic.
+
+Bad:
+
+```js
+const databaseUrl =
+    "mongodb://username:password@server";
+```
+
+Better:
+
+```js
+const databaseUrl =
+    process.env.DATABASE_URL;
+```
+
+* Environment-specific configuration belongs in environment/configuration management.
+
+```text
+.env
+.env.example
+config/
+```
+
+* Secrets should never be committed to Git.
+
+## Logging
+
+* Logging should provide enough information to understand what happened.
+
+Bad:
+
+```js
+console.log("error");
+```
+
+Better:
+
+```js
+console.error(
+    "Application creation failed",
+    {
+        applicationId,
+        error: error.message
+    }
+);
+```
+
+* In larger applications, structured logging systems are normally used.
+
+## Testing and Organization
+
+A well-organized application makes testing easier.
+
+Example:
+
+```text
+applicationService.js
+applicationService.test.js
+```
+
+* Service tests can provide fake repositories.
+
+```js
+const fakeRepository = {
+    async findByEmail() {
+        return null;
+    },
+
+    async create(data) {
+        return {
+            id: 101,
+            ...data
+        };
+    }
+};
+```
+
+* This is another reason dependency injection and separation of concerns matter.
+
+## Real Job Application System Architecture
+
+A complete application might look like:
+
+```text
+Frontend
+│
+├── pages/
+│   ├── LoginPage
+│   ├── ApplicationPage
+│   ├── AdminDashboard
+│   └── ApplicationDetails
+│
+├── components/
+│   ├── ApplicationForm
+│   ├── ApplicationTable
+│   ├── StatusBadge
+│   └── SearchInput
+│
+├── services/
+│   ├── applicationApi
+│   ├── authenticationApi
+│   └── notificationApi
+│
+└── stores/
+    ├── authStore
+    └── applicationStore
+
+
+Backend
+│
+├── routes/
+│   ├── applicationRoutes
+│   ├── authRoutes
+│   └── workflowRoutes
+│
+├── controllers/
+│   ├── applicationController
+│   ├── authController
+│   └── workflowController
+│
+├── services/
+│   ├── applicationService
+│   ├── authenticationService
+│   ├── notificationService
+│   └── workflowService
+│
+├── repositories/
+│   ├── applicationRepository
+│   └── userRepository
+│
+├── models/
+│   ├── Application
+│   └── User
+│
+├── validators/
+│   └── applicationValidator
+│
+├── middleware/
+│   ├── authentication
+│   └── authorization
+│
+├── config/
+│   └── database
+│
+└── utils/
+    ├── dateFormatter
+    └── pagination
+```
+
+## Real Example - Workflow Engine
+
+Suppose the workflow engine supports:
+- Task
+- Approval
+- Notification
+
+
+The architecture could be:
+
+```text
+Workflow Controller
+        |
+Workflow Service
+        |
+        +---- Step Factory
+        |       |
+        |       +---- Task Handler
+        |       +---- Approval Handler
+        |       +---- Notification Handler
+        |
+        +---- Rule Strategy
+        |
+        +---- Workflow Repository
+        |
+Database
+```
+
+* Factory decides which step handler to create.
+
+* Strategy handles different rule evaluation approaches.
+
+* Repository handles database access.
+
+* Service controls the workflow business logic.
+
+* Controller handles the HTTP request.
+
+* Observer/event handling can notify other systems when a workflow finishes.
+
+* Dependency Injection provides the required repository, services, and handlers.
+
+## Real Example - Expense Approval System
+
+Suppose an expense has different approval levels:
+
+```text
+Amount
+ |
+ +-- < 5,000
+ |      |
+ |    Manager
+ |
+ +-- 5,000 - 50,000
+ |      |
+ |    Manager
+ |      |
+ |    Accounts
+ |
+ +-- > 50,000
+        |
+      Manager
+        |
+      Accounts
+        |
+        MD
+```
+
+* This is business logic.
+
+* I should not put all of it inside the Express controller.
+
+Better:
+
+```text
+Controller
+    |
+Expense Service
+    |
+    +---- Approval Strategy
+    |
+    +---- Expense Repository
+    |
+    +---- Notification Service
+    |
+    +---- Audit Event
+```
+
+* The approval strategy can determine the required approval path.
+
+* The repository stores the expense.
+
+* The notification service sends messages.
+
+* The event system records or triggers other actions.
+
+
+# Data Structures
+
+Data structures are different ways of storing and organizing data so that the application can perform operations efficiently.
+
+In JavaScript, I already use arrays, objects, Map, Set, etc. without always thinking about them as data structures.
+
+The important part is understanding why one structure is better than another for a particular problem.
+
+For every feature, I should think about:
+
+* How much data can exist?
+* How will I access the data?
+* Will I search by ID?
+* Do I need uniqueness?
+* Does order matter?
+* Will I insert/remove frequently?
+* Do I need relationships between data?
+* Do I need the smallest/highest priority item quickly?
+* How much memory can I use?
+
+# Array
+
+* An array stores multiple values in an ordered collection.
+
+```js
+const applications = [
+    {
+        id: 101,
+        name: "Gowtham",
+        status: "Pending"
+    },
+    {
+        id: 102,
+        name: "Arun",
+        status: "Approved"
+    }
+];
+```
+
+* The important thing about an array is that the data has a position.
+
+```js
+applications[0];
+applications[1];
+```
+
+* In a job application admin system, an API might return:
+
+```js
+const applications = [
+    {
+        id: 101,
+        name: "Gowtham",
+        age: 21,
+        education: [
+            {
+                degree: "B.E",
+                institution: "Erode Sengunthar Engineering College",
+                cgpa: 8.2
+            }
+        ],
+        skills: [
+            "JavaScript",
+            "Node.js",
+            "Express",
+            "MongoDB"
+        ],
+        internships: [
+            {
+                company: "ABC Technologies",
+                role: "Full Stack Intern",
+                duration: "3 months"
+            }
+        ],
+        status: "Pending"
+    },
+    {
+        id: 102,
+        name: "Arun",
+        age: 22,
+        education: [],
+        skills: ["Python", "Django"],
+        internships: [],
+        status: "Approved"
+    }
+];
+```
+
+* This is a natural use case for an array because the frontend needs to display a collection of applications.
+
+* Common operations are:
+
+```js
+applications.push(newApplication);
+applications.pop();
+applications.map(application => application.name);
+applications.filter(application => application.status === "Pending");
+applications.find(application => application.id === 101);
+applications.some(application => application.status === "Rejected");
+applications.every(application => application.age >= 18);
+```
+
+* If I need to display all applications, an array is a natural choice.
+
+```js
+for (const application of applications) {
+    renderApplication(application);
+}
+```
+
+* Array lookup by index is fast.
+
+```js
+applications[500];
+```
+
+* But searching by an application ID is different.
+
+```js
+applications.find(application => application.id === 500);
+```
+
+* This may need to check many elements.
+
+* If there are 100,000 applications and I repeatedly search by ID, scanning the array every time is inefficient.
+
+* In that situation, I may create a Map.
+
+```js
+const applicationById = new Map();
+
+for (const application of applications) {
+    applicationById.set(application.id, application);
+}
+
+const application = applicationById.get(500);
+```
+
+* The array is still useful for ordered display.
+
+* The Map is useful for fast ID-based lookup.
+
+* This is an important production concept:
+
+```text
+Array -> good for collection/order/iteration
+
+Map -> good for lookup by key
+```
+
+* I should not replace every array with Map.
+
+* If the UI needs to render applications in their current order, an array is simple and readable.
+
+* Arrays are also useful for API responses because JSON naturally represents collections as arrays.
+
+## Array insertion and deletion
+
+* Adding at the end is straightforward.
+
+```js
+applications.push(application);
+```
+
+* Removing the last item:
+
+```js
+applications.pop();
+```
+
+* Adding at the beginning:
+
+```js
+applications.unshift(application);
+```
+
+* Removing from the beginning:
+
+```js
+applications.shift();
+```
+
+* `shift()` and `unshift()` can be expensive for large arrays because indexes of the remaining elements may need to change.
+
+* This matters when implementing something like a large queue.
+
+* For normal UI lists with hundreds of records, this usually isn't something I need to over-engineer.
+
+* For high-volume processing, I should choose a better structure.
+
+# Stack
+
+* A stack follows LIFO:
+
+```text
+Last In
+   |
+   v
+First Out
+```
+
+* The last item added is the first item removed.
+
+```js
+const stack = [];
+
+stack.push("Application 101");
+stack.push("Application 102");
+stack.push("Application 103");
+
+const latest = stack.pop();
+
+console.log(latest);
+```
+
+* `Application 103` is removed first.
+
+## Real application example
+
+* Imagine an admin reviews an application and changes several fields.
+
+```text
+Original application
+
+        |
+        v
+
+Change name
+
+        |
+        v
+
+Change skills
+
+        |
+        v
+
+Change status
+
+        |
+        v
+
+Change education
+```
+
+* If the admin presses Undo, the application should usually undo the most recent action first.
+
+* A stack can store these actions.
+
+```js
+const undoStack = [];
+
+undoStack.push({
+    type: "UPDATE_EDUCATION",
+    previousValue: oldEducation
+});
+
+undoStack.push({
+    type: "UPDATE_STATUS",
+    previousValue: "Pending"
+});
+
+undoStack.push({
+    type: "UPDATE_SKILLS",
+    previousValue: oldSkills
+});
+```
+
+* When the user presses Undo:
+
+```js
+const lastAction = undoStack.pop();
+```
+
+* The most recent action is retrieved first.
+
+* This is exactly where LIFO makes sense.
+
+## Browser history
+
+* Browser navigation also behaves like stack-based history.
+
+```text
+Page A
+  |
+Page B
+  |
+Page C
+  |
+Page D
+```
+
+* Going back means removing the most recent navigation state.
+
+## Function call stack
+
+* JavaScript itself uses a call stack.
+
+```js
+function submitApplication() {
+    validateApplication();
+}
+
+function validateApplication() {
+    validateEmail();
+}
+
+function validateEmail() {
+    console.log("checking email");
+}
+```
+
+* Calls are placed on the call stack.
+
+```text
+submitApplication()
+        |
+validateApplication()
+        |
+validateEmail()
+```
+
+* When `validateEmail()` finishes, it is removed first.
+
+* This is another example of LIFO.
+
+## Stack implementation
+
+```js
+class Stack {
+    constructor() {
+        this.items = [];
+    }
+
+    push(item) {
+        this.items.push(item);
+    }
+
+    pop() {
+        return this.items.pop();
+    }
+
+    peek() {
+        return this.items[this.items.length - 1];
+    }
+
+    isEmpty() {
+        return this.items.length === 0;
+    }
+}
+```
+
+* `peek()` allows me to see the latest item without removing it.
+
+* A stack is useful for:
+
+* Undo/redo.
+
+* Browser history.
+
+* Function calls.
+
+* Expression evaluation.
+
+* Backtracking.
+
+* DFS.
+
+* Parsing nested structures.
+
+# Queue
+
+* A queue follows FIFO:
+
+```text
+First In
+   |
+   v
+First Out
+```
+
+* The first item added is processed first.
+
+## Real application example
+
+* Imagine the job application system receives 10,000 applications during a placement drive.
+
+* Each application may require:
+
+```text
+Application received
+        |
+        +--> Store application
+        |
+        +--> Generate confirmation email
+        |
+        +--> Process resume
+        |
+        +--> Extract resume information
+        |
+        +--> Create admin notification
+```
+
+* Doing all these operations inside the user's HTTP request can make the request slow.
+
+* Instead, the application can put background work into a queue.
+
+```text
+User submits application
+        |
+        v
+API
+        |
+        +--> Save application
+        |
+        +--> Add email job
+        |
+        +--> Add resume processing job
+        |
+        +--> Add notification job
+        |
+        v
+Return response
+
+             Queue
+               |
+       +-------+-------+
+       |       |       |
+      Job1    Job2    Job3
+       |
+       v
+    Worker
+```
+
+* The queue controls which job gets processed next.
+
+```js
+const queue = [];
+
+queue.push({
+    type: "SEND_EMAIL",
+    applicationId: 101
+});
+
+queue.push({
+    type: "PROCESS_RESUME",
+    applicationId: 101
+});
+
+queue.push({
+    type: "SEND_NOTIFICATION",
+    applicationId: 101
+});
+```
+
+* A simple queue can be processed like:
+
+```js
+let front = 0;
+
+while (front < queue.length) {
+    const job = queue[front];
+
+    front++;
+
+    processJob(job);
+}
+```
+
+* This avoids repeatedly removing the first element with `shift()`.
+
+## Why a real application uses a queue service
+
+* An in-memory JavaScript array disappears when the server restarts.
+
+* Multiple server instances also cannot reliably share the same in-memory queue.
+
+* Real applications therefore use external queue systems or message brokers.
+
+* Examples include Redis-based job queues, RabbitMQ, Kafka, or cloud queue services.
+
+* The data structure idea remains the same.
+
+```text
+Producer
+   |
+   v
+Queue
+   |
+   +--> Worker 1
+   +--> Worker 2
+   +--> Worker 3
+```
+
+* This allows background work to be distributed among workers.
+
+## Queue use cases
+
+* Email processing.
+
+* Notifications.
+
+* Video processing.
+
+* Resume parsing.
+
+* Image processing.
+
+* Report generation.
+
+* Payment processing.
+
+* Order processing.
+
+* Background API jobs.
+
+* The important idea is:
+
+* A queue separates "request received now" from "work that can be processed later."
+
+# Priority Queue
+
+* A normal queue processes items based on arrival order.
+
+* A priority queue processes the most important item first.
+
+* Imagine the workflow engine receives:
+
+```text
+Normal task
+Critical task
+Low priority task
+High priority task
+```
+
+* A normal queue processes:
+
+```text
+Normal
+Critical
+Low
+High
+```
+
+* But a priority queue can process:
+
+```text
+Critical
+High
+Normal
+Low
+```
+
+* This is useful when every job does not have equal importance.
+
+```js
+const tasks = [
+    {
+        id: 1,
+        priority: 3,
+        name: "Generate report"
+    },
+    {
+        id: 2,
+        priority: 1,
+        name: "Payment verification"
+    },
+    {
+        id: 3,
+        priority: 2,
+        name: "Send email"
+    }
+];
+
+tasks.sort((a, b) => a.priority - b.priority);
+
+const nextTask = tasks.shift();
+```
+
+* This works for a small dataset.
+
+* For a huge stream of jobs, repeatedly sorting the entire collection is inefficient.
+
+* A heap is normally used to implement an efficient priority queue.
+
+# Linked List
+
+* A linked list stores data in nodes.
+
+* Each node contains the data and a reference to another node.
+
+```text
+Node A
+ value
+ next ------> Node B
+                |
+                v
+              Node C
+```
+
+```js
+class Node {
+    constructor(value) {
+        this.value = value;
+        this.next = null;
+    }
+}
+```
+
+* Creating a list:
+
+```js
+const first = new Node("Application 101");
+const second = new Node("Application 102");
+const third = new Node("Application 103");
+
+first.next = second;
+second.next = third;
+```
+
+```text
+Application 101
+       |
+       v
+Application 102
+       |
+       v
+Application 103
+       |
+      null
+```
+
+## Why linked lists exist
+
+* Arrays store elements by indexes.
+
+```text
+0 -> A
+1 -> B
+2 -> C
+3 -> D
+```
+
+* A linked list stores relationships through references.
+
+```text
+A -> B -> C -> D
+```
+
+* If I already have a reference to a node and need to insert another node after it, I can change references without shifting all later values.
+
+```text
+Before:
+
+A -> B -> C
+
+After inserting X:
+
+A -> B -> X -> C
+```
+
+* In an array, inserting in the middle can require elements after that position to move.
+
+## Doubly Linked List
+
+* A doubly linked list has both previous and next references.
+
+```text
+null <- A <-> B <-> C -> null
+```
+
+```js
+class Node {
+    constructor(value) {
+        this.value = value;
+        this.previous = null;
+        this.next = null;
+    }
+}
+```
+
+* This allows movement in both directions.
+
+## Real application connection
+
+* Linked lists are useful for understanding structures such as:
+
+* LRU caches.
+
+* Certain queue implementations.
+
+* Browser navigation models.
+
+* Memory-oriented structures.
+
+* Graph adjacency structures.
+
+* In normal frontend development, I will usually use arrays instead of manually implementing linked lists.
+
+* But understanding linked lists is important because it teaches references, nodes, insertion, deletion, and pointer manipulation.
+
+# Set
+
+* Set stores unique values.
+
+```js
+const skills = new Set();
+
+skills.add("JavaScript");
+skills.add("Node.js");
+skills.add("JavaScript");
+```
+
+* The second `"JavaScript"` is not added again.
+
+```js
+console.log(skills.size);
+```
+
+* The result is `2`.
+
+## Real application example
+
+* Suppose the job application form allows users to add skills.
+
+```text
+JavaScript
+React
+Node.js
+JavaScript
+React
+```
+
+* I don't want duplicate skills.
+
+```js
+const skills = new Set();
+
+skills.add("JavaScript");
+skills.add("React");
+skills.add("Node.js");
+skills.add("JavaScript");
+```
+
+* Before saving:
+
+```js
+const uniqueSkills = [...skills];
+```
+
+* Result:
+
+```js
+[
+    "JavaScript",
+    "React",
+    "Node.js"
+]
+```
+
+## Membership checking
+
+* Suppose an admin wants to check whether an applicant has a required skill.
+
+```js
+const skills = new Set([
+    "JavaScript",
+    "Node.js",
+    "MongoDB"
+]);
+
+if (skills.has("Node.js")) {
+    console.log("Required skill available");
+}
+```
+
+* This is a natural use of Set.
+
+## Large data example
+
+* Suppose 500,000 application records contain skills.
+
+* I need to find all unique skills used across the system.
+
+```js
+const allSkills = new Set();
+
+for (const application of applications) {
+    for (const skill of application.skills) {
+        allSkills.add(skill);
+    }
+}
+```
+
+* The Set automatically handles duplicates.
+
+* Without Set, I would repeatedly search an array before inserting.
+
+# Map
+
+* Map stores key-value pairs.
+
+```js
+const applications = new Map();
+
+applications.set(101, {
+    name: "Gowtham",
+    status: "Pending"
+});
+```
+
+* Retrieve:
+
+```js
+const application = applications.get(101);
+```
+
+## Real application problem
+
+* Suppose the admin page has 50,000 applications.
+
+* The UI receives:
+
+```js
+const applications = [...];
+```
+
+* Then the admin opens:
+
+```text
+/application/45892
+```
+
+* If I use:
+
+```js
+applications.find(application => application.id === 45892);
+```
+
+* I may need to scan a large portion of the array.
+
+* If I repeatedly perform this operation, I can create unnecessary work.
+
+* I can build an index:
+
+```js
+const applicationById = new Map();
+
+for (const application of applications) {
+    applicationById.set(application.id, application);
+}
+```
+
+* Now:
+
+```js
+const application = applicationById.get(45892);
+```
+
+* The important idea is:
+
+```text
+Array
+
+Good for:
+display
+iteration
+ordered collections
+
+
+Map
+
+Good for:
+lookup
+indexing
+key-value relationships
+```
+
+## Map with complex keys
+
+* Map keys don't have to be strings.
+
+```js
+const cache = new Map();
+
+const request = {
+    userId: 101,
+    endpoint: "/applications"
+};
+
+cache.set(request, {
+    timestamp: Date.now()
+});
+```
+
+* Map is also useful for caches, indexes, grouped data, counters, and lookup tables.
+
+# WeakMap
+
+* WeakMap stores object keys without keeping those objects alive just because they exist as keys.
+
+```js
+const metadata = new WeakMap();
+
+const application = {
+    id: 101,
+    name: "Gowtham"
+};
+
+metadata.set(application, {
+    viewedByAdmin: true,
+    viewedAt: Date.now()
+});
+```
+
+* The metadata is associated with the object but isn't part of the actual application object.
+
+* This can be useful when a library needs to attach internal metadata to objects.
+
+* WeakMap keys must be objects.
+
+* WeakMap is not a replacement for Map.
+
+* I use Map when I need normal key-value storage.
+
+* I use WeakMap for special object-lifecycle-related use cases.
+
+# WeakSet
+
+* WeakSet stores object references.
+
+```js
+const processed = new WeakSet();
+
+const application = {
+    id: 101
+};
+
+processed.add(application);
+```
+
+* I can check:
+
+```js
+if (processed.has(application)) {
+    console.log("Already processed");
+}
+```
+
+* It can be useful when tracking objects that have been processed without maintaining a strong reference to those objects.
+
+# Hashing and Hash Tables
+
+* Hashing converts a key into a location or bucket used for fast lookup.
+
+* JavaScript's `Map` and `Set` provide hash-table-like behavior internally, although their exact implementation is an engine detail.
+
+* The important application concept is fast lookup.
+
+## Real application example
+
+* Suppose I receive 100,000 users.
+
+```js
+const users = [
+    {
+        id: 1001,
+        name: "Gowtham"
+    },
+    ...
+];
+```
+
+* I repeatedly need to find users by ID.
+
+* Scanning the array every time is expensive.
+
+* I can create a lookup structure:
+
+```js
+const usersById = new Map();
+
+for (const user of users) {
+    usersById.set(user.id, user);
+}
+```
+
+* Then:
+
+```js
+const user = usersById.get(1001);
+```
+
+* The Map acts like an index.
+
+* This idea is also common in databases.
+
+* Databases create indexes so they don't have to scan every row for every lookup.
+
+# Tree
+
+* A tree represents hierarchical relationships.
+
+```text
+                 Application System
+                       |
+          +------------+------------+
+          |                         |
+       Frontend                  Backend
+                                    |
+                           +--------+--------+
+                           |                 |
+                       Services          Database
+```
+
+* A tree contains parent-child relationships.
+
+## Real application example
+
+* A file management application might contain:
+
+```text
+Documents
+ |
+ +-- Resume
+ |
+ +-- Certificates
+ |     |
+ |     +-- Degree
+ |     +-- Course
+ |
+ +-- Projects
+       |
+       +-- Workflow Engine
+       +-- Expense System
+```
+
+* This is naturally represented as a tree.
+
+```js
+const folder = {
+    name: "Documents",
+    children: [
+        {
+            name: "Certificates",
+            children: [
+                {
+                    name: "Degree",
+                    children: []
+                }
+            ]
+        },
+        {
+            name: "Projects",
+            children: []
+        }
+    ]
+};
+```
+
+* Recursive functions are useful for traversing this structure.
+
+```js
+function printTree(node) {
+    console.log(node.name);
+
+    for (const child of node.children) {
+        printTree(child);
+    }
+}
+```
+
+* Trees are also used by the browser DOM.
+
+```text
+html
+ |
+ +-- body
+      |
+      +-- div
+           |
+           +-- h1
+           +-- form
+```
+
+* When JavaScript interacts with nested DOM elements, it is effectively working with a tree structure.
+
+# Binary Tree
+
+* A binary tree is a tree where each node has at most two children.
+
+```text
+          10
+        /    \
+       5      20
+      / \    /  \
+     2   7  15  30
+```
+
+```js
+class TreeNode {
+    constructor(value) {
+        this.value = value;
+        this.left = null;
+        this.right = null;
+    }
+}
+```
+
+* Binary trees are useful for understanding hierarchical algorithms.
+
+# Binary Search Tree
+
+* A Binary Search Tree maintains an ordering rule.
+
+```text
+left values < current value < right values
+```
+
+```text
+          50
+        /    \
+      30      70
+     /  \    /  \
+   20   40  60   80
+```
+
+* Searching for `60`:
+
+```text
+60 < 50 ? No
+go right
+
+60 < 70 ? Yes
+go left
+
+60 found
+```
+
+* This can be much faster than checking every node when the tree is balanced.
+
+* A badly unbalanced tree can become:
+
+```text
+10
+  \
+   20
+     \
+      30
+        \
+         40
+```
+
+* Now the tree behaves almost like a linked list.
+
+* Balanced trees are therefore important in practical implementations.
+
+# Heap
+
+* A heap is a tree-based structure designed for quickly retrieving the highest-priority item.
+
+## Min Heap
+
+* The smallest value stays at the top.
+
+```text
+       1
+      / \
+     3   5
+    / \
+   8   7
+```
+
+## Max Heap
+
+* The largest value stays at the top.
+
+```text
+       10
+      /  \
+     8    7
+    / \
+   3   5
+```
+
+## Real application example
+
+* Imagine the workflow engine has thousands of tasks:
+
+```js
+[
+    {
+        id: 1,
+        priority: 10
+    },
+    {
+        id: 2,
+        priority: 1
+    },
+    {
+        id: 3,
+        priority: 5
+    }
+]
+```
+
+* Priority `1` means the task needs to be processed first.
+
+* If I repeatedly sort the entire array every time a task arrives, I am doing unnecessary work.
+
+* A priority queue backed by a heap is designed specifically for this problem.
+
+* The worker can repeatedly retrieve the highest-priority task.
+
+```text
+Priority Queue
+
+Critical task
+High priority task
+Normal task
+Low priority task
+```
+
+* Heaps are especially useful in scheduling and graph algorithms.
+
+# Graph
+
+* A graph represents relationships between entities.
+
+```text
+A ----- B
+|       |
+|       |
+C ----- D
+```
+
+* The entities are vertices.
+
+* The connections are edges.
+
+## Real application example - workflow engine
+
+* Imagine a workflow:
+
+```text
+Start
+ |
+ v
+Validate Application
+ |
+ v
+Manager Approval
+ |
+ +-------> Reject
+ |
+ v
+Finance Approval
+ |
+ v
+Send Email
+ |
+ v
+Complete
+```
+
+* This is a graph because each step has relationships to other steps.
+
+```js
+const workflow = {
+    start: ["validate"],
+    validate: ["managerApproval"],
+    managerApproval: [
+        "financeApproval",
+        "reject"
+    ],
+    financeApproval: ["sendEmail"],
+    sendEmail: ["complete"],
+    reject: []
+};
+```
+
+* Graph structures become useful when workflows become more complicated.
+
+```text
+A -> B
+|    |
+v    v
+C -> D
+```
+
+* I can traverse the graph to determine reachable steps.
+
+## Directed graph
+
+* An edge has a direction.
+
+```text
+A -> B
+```
+
+* A workflow is normally directed because execution moves from one step to another.
+
+## Undirected graph
+
+* The relationship works both ways.
+
+```text
+A --- B
+```
+
+* A social friendship relationship can be modeled this way.
+
+## Weighted graph
+
+* Edges contain a cost.
+
+```text
+A --5-- B
+|
+2
+|
+C
+```
+
+* Maps can have travel distances.
+
+* Networks can have latency.
+
+* A recommendation system can have similarity scores.
+
+* Weighted graphs are used by algorithms such as Dijkstra's algorithm.
+
+# Adjacency List
+
+* One common way to store a graph is an adjacency list.
+
+```js
+const graph = {
+    A: ["B", "C"],
+    B: ["A", "D"],
+    C: ["A"],
+    D: ["B"]
+};
+```
+
+* This means:
+
+```text
+A -> B, C
+B -> A, D
+C -> A
+D -> B
+```
+
+* It is efficient when most possible relationships do not actually exist.
+
+# Adjacency Matrix
+
+* Another representation uses a matrix.
+
+```text
+    A B C
+A   0 1 1
+B   1 0 0
+C   1 0 0
+```
+
+* `1` means a connection exists.
+
+* This can be useful when the graph is dense or constant-time edge checking is important.
+
+# Data Structure Selection
+
+* Use Array when I need an ordered collection.
+
+* Use Set when I need uniqueness or membership checking.
+
+* Use Map when I need key-based lookup.
+
+* Use Stack when the newest item should be processed first.
+
+* Use Queue when the oldest item should be processed first.
+
+* Use Priority Queue when the highest-priority item should be processed first.
+
+* Use Tree when data is hierarchical.
+
+* Use Graph when data represents relationships.
+
+* Use Heap when I repeatedly need the minimum or maximum priority item.
+
+* Use Linked List when node-based sequential relationships are useful.
+
+* The data structure should come from the problem.
+
+# Algorithms
+
+Algorithms are step-by-step methods for solving problems.
+
+The same result can often be produced by multiple algorithms, but the amount of time and memory required can be very different.
+
+# Big O
+
+* Big O describes how the amount of work grows as the input becomes larger.
+
+Common complexities:
+
+```text
+O(1)
+O(log n)
+O(n)
+O(n log n)
+O(n²)
+O(2ⁿ)
+```
+
+## O(1)
+
+* The operation does not grow with the input size.
+
+```js
+const firstApplication = applications[0];
+```
+
+* Whether there are 10 applications or 1,000,000, accessing a known array index is considered constant time.
+
+## O(n)
+
+* The amount of work grows with the number of items.
+
+```js
+for (const application of applications) {
+    process(application);
+}
+```
+
+* If the number of applications doubles, the loop may do roughly twice the work.
+
+## O(n²)
+
+* A common example is nested loops.
+
+```js
+for (const application of applications) {
+    for (const skill of skills) {
+        compare(application, skill);
+    }
+}
+```
+
+* If both collections grow, the number of comparisons can grow rapidly.
+
+## Real application example
+
+* Suppose I have:
+
+```text
+10,000 applicants
+10,000 blocked emails
+```
+
+* If I check every applicant against every blocked email:
+
+```text
+10,000 × 10,000
+```
+
+* That creates around 100 million comparisons.
+
+* Instead, I can store blocked emails in a Set.
+
+```js
+const blockedEmails = new Set(blockedEmailList);
+
+for (const application of applications) {
+    if (blockedEmails.has(application.email)) {
+        reject(application);
+    }
+}
+```
+
+* Now the lookup is much more efficient.
+
+* This is where data structures and algorithms work together.
+
+# Linear Search
+
+* Linear search checks values one after another.
+
+```js
+function findApplication(applications, applicationId) {
+    for (const application of applications) {
+        if (application.id === applicationId) {
+            return application;
+        }
+    }
+
+    return null;
+}
+```
+
+* This is O(n).
+
+## Real application example
+
+* If the admin page contains 30 applications, linear search is perfectly reasonable.
+
+* The code is simple:
+
+```js
+const application = applications.find(
+    application => application.id === 101
+);
+```
+
+* I should not build a complicated indexing system just because Map can theoretically be faster.
+
+* If the data becomes large and the lookup happens repeatedly, I can build a Map.
+
+```js
+const applicationById = new Map(
+    applications.map(application => [
+        application.id,
+        application
+    ])
+);
+```
+
+* Then:
+
+```js
+applicationById.get(101);
+```
+
+* The important engineering decision is based on access pattern and data size.
+
+# Binary Search
+
+* Binary search works by repeatedly cutting a sorted search space in half.
+
+```text
+[10, 20, 30, 40, 50, 60, 70]
+
+             40
+             |
+       search left/right
+```
+
+* Example:
+
+```js
+function binarySearch(numbers, target) {
+    let left = 0;
+    let right = numbers.length - 1;
+
+    while (left <= right) {
+        const middle = Math.floor(
+            (left + right) / 2
+        );
+
+        if (numbers[middle] === target) {
+            return middle;
+        }
+
+        if (numbers[middle] < target) {
+            left = middle + 1;
+        } else {
+            right = middle - 1;
+        }
+    }
+
+    return -1;
+}
+```
+
+* Suppose there are 1,000,000 sorted values.
+
+* Linear search may check a very large number of values.
+
+* Binary search keeps cutting the search space:
+
+```text
+1,000,000
+500,000
+250,000
+125,000
+...
+```
+
+* This gives O(log n).
+
+* The important condition is that the data must satisfy the ordering requirement.
+
+* If the data is unsorted, I cannot blindly use binary search.
+
+# Bubble Sort
+
+* Bubble sort compares neighboring values and swaps them when they are in the wrong order.
+
+```js
+function bubbleSort(numbers) {
+    for (let i = 0; i < numbers.length; i++) {
+        for (let j = 0; j < numbers.length - i - 1; j++) {
+            if (numbers[j] > numbers[j + 1]) {
+                [numbers[j], numbers[j + 1]] = [
+                    numbers[j + 1],
+                    numbers[j]
+                ];
+            }
+        }
+    }
+
+    return numbers;
+}
+```
+
+* Example:
+
+```text
+[5, 2, 4, 1]
+
+5 > 2 -> swap
+[2, 5, 4, 1]
+
+5 > 4 -> swap
+[2, 4, 5, 1]
+
+5 > 1 -> swap
+[2, 4, 1, 5]
+```
+
+* Eventually the largest values move toward the end.
+
+* Bubble sort is O(n²).
+
+* I would not normally use it for large application data.
+
+* It is useful for learning how sorting works.
+
+# Selection Sort
+
+* Selection sort repeatedly finds the smallest remaining value.
+
+```text
+[5, 2, 4, 1]
+
+smallest = 1
+
+[1, 2, 4, 5]
+```
+
+* The algorithm divides the collection conceptually into:
+
+```text
+sorted | unsorted
+```
+
+* It repeatedly selects an element from the unsorted part.
+
+* Complexity is generally O(n²).
+
+* It is useful for understanding sorting logic but not normally my first choice for large application datasets.
+
+# Insertion Sort
+
+* Insertion sort builds the sorted portion one element at a time.
+
+```text
+[3, 5, 7] | [4]
+```
+
+* `4` is inserted into its correct location.
+
+```text
+[3, 4, 5, 7]
+```
+
+* It works particularly well when data is already mostly sorted.
+
+* For example, if an application continuously receives small changes to an already sorted list, insertion-based techniques can be useful.
+
+* Complexity is O(n²) in the worst case.
+
+# Merge Sort
+
+* Merge sort uses divide and conquer.
+
+```text
+[8, 3, 5, 1]
+
+       |
+      split
+
+[8, 3]   [5, 1]
+
+   |        |
+ [3,8]    [1,5]
+
+       |
+      merge
+
+[1,3,5,8]
+```
+
+* The algorithm:
+
+```text
+1. Divide
+2. Sort each part
+3. Merge the sorted parts
+```
+
+* Time complexity is O(n log n).
+
+* The major trade-off is additional memory for merging.
+
+* Merge sort is useful for understanding how large datasets can be sorted efficiently.
+
+# Quick Sort
+
+* Quick sort chooses a pivot and separates values around that pivot.
+
+```text
+[8, 3, 5, 1, 7]
+
+pivot = 5
+
+smaller: [3, 1]
+pivot:   [5]
+larger:  [8, 7]
+```
+
+* Then the smaller and larger parts are processed recursively.
+
+* Average complexity is O(n log n).
+
+* Poor pivot choices can lead to O(n²).
+
+* In real JavaScript applications, I normally use the built-in `sort()` rather than manually implementing quick sort.
+
+# JavaScript Sort
+
+* JavaScript provides `sort()`.
+
+```js
+applications.sort(
+    (a, b) => a.age - b.age
+);
+```
+
+* Sorting objects requires a comparator.
+
+```js
+applications.sort(
+    (a, b) => a.name.localeCompare(b.name)
+);
+```
+
+* For an admin application:
+
+```js
+applications.sort(
+    (a, b) => {
+        return new Date(b.createdAt)
+            - new Date(a.createdAt);
+    }
+);
+```
+
+* This displays the newest applications first.
+
+* In a real application, if the database contains millions of records, I should usually let the database perform filtering and sorting rather than downloading everything and sorting it in the browser.
+
+# Recursion
+
+* Recursion means a function calls itself with a smaller or simpler problem.
+
+* Every recursive function needs a base case.
+
+```js
+function factorial(number) {
+    if (number <= 1) {
+        return 1;
+    }
+
+    return number * factorial(number - 1);
+}
+```
+
+* The calls look like:
+
+```text
+factorial(4)
+    |
+factorial(3)
+    |
+factorial(2)
+    |
+factorial(1)
+```
+
+* Once the base case is reached, the calls return.
+
+## Real application example - nested workflow
+
+* A workflow engine may contain nested structures.
+
+```js
+const workflow = {
+    name: "Expense Approval",
+    steps: [
+        {
+            name: "Manager Approval",
+            children: [
+                {
+                    name: "Finance Approval",
+                    children: []
+                }
+            ]
+        }
+    ]
+};
+```
+
+* I don't know how deeply nested the workflow can become.
+
+* A recursive function can process every step.
+
+```js
+function processStep(step) {
+    console.log(step.name);
+
+    for (const child of step.children) {
+        processStep(child);
+    }
+}
+```
+
+* This is much cleaner than writing separate loops for level 1, level 2, level 3, etc.
+
+* Recursion is especially useful for trees.
+
+# Two Pointers
+
+* Two pointers means maintaining two positions while processing data.
+
+## Real application example - duplicate detection
+
+* Suppose I have sorted applicant IDs:
+
+```js
+const ids = [
+    101,
+    103,
+    103,
+    107,
+    110
+];
+```
+
+* I want to detect duplicates.
+
+```js
+let left = 0;
+let right = 1;
+
+while (right < ids.length) {
+    if (ids[left] === ids[right]) {
+        console.log("Duplicate:", ids[left]);
+    }
+
+    left++;
+    right++;
+}
+```
+
+* For more complex problems, the two pointers can move at different speeds or from opposite ends.
+
+## Palindrome example
+
+```js
+function isPalindrome(value) {
+    let left = 0;
+    let right = value.length - 1;
+
+    while (left < right) {
+        if (value[left] !== value[right]) {
+            return false;
+        }
+
+        left++;
+        right--;
+    }
+
+    return true;
+}
+```
+
+* Instead of creating a reversed copy, the algorithm compares both ends.
+
+# Sliding Window
+
+* Sliding window is useful when I need to analyze a continuous range of data.
+
+## Real application example - API monitoring
+
+* Suppose I collect request counts every minute:
+
+```js
+const requests = [
+    20, 25, 30, 80, 90,
+    100, 120, 110, 50
+];
+```
+
+* I want to know the maximum number of requests in any 3-minute window.
+
+* A naive approach calculates every group from scratch.
+
+```text
+20 + 25 + 30
+25 + 30 + 80
+30 + 80 + 90
+...
+```
+
+* A sliding window reuses the previous calculation.
+
+```text
+[20, 25, 30]
+      |
+remove 20
+add 80
+      |
+[25, 30, 80]
+```
+
+* Implementation:
+
+```js
+function maxWindowSum(numbers, size) {
+    let windowSum = 0;
+
+    for (let i = 0; i < size; i++) {
+        windowSum += numbers[i];
+    }
+
+    let maxSum = windowSum;
+
+    for (let i = size; i < numbers.length; i++) {
+        windowSum += numbers[i];
+        windowSum -= numbers[i - size];
+
+        maxSum = Math.max(maxSum, windowSum);
+    }
+
+    return maxSum;
+}
+```
+
+* The algorithm avoids repeatedly adding the entire window.
+
+* This can reduce an O(n × windowSize) approach to O(n).
+
+## Other uses
+
+* Maximum requests in the last 5 minutes.
+* Longest active user session.
+* Longest substring.
+* Rolling analytics.
+* Time-based metrics.
+* Monitoring systems.
+
+# Hashing
+
+* Hash-based lookup is useful when I repeatedly need to determine whether something exists.
+
+## Real application example - blocked users
+
+* Suppose I have:
+
+```js
+const applications = [
+    { email: "a@example.com" },
+    { email: "b@example.com" },
+    { email: "c@example.com" }
+];
+```
+
+* And:
+
+```js
+const blockedEmails = [
+    "b@example.com",
+    "x@example.com"
+];
+```
+
+* A poor approach compares every application against every blocked email.
+
+```js
+for (const application of applications) {
+    for (const email of blockedEmails) {
+        if (application.email === email) {
+            // blocked
+        }
+    }
+}
+```
+
+* This becomes expensive as both datasets grow.
+
+* Instead:
+
+```js
+const blockedEmailSet = new Set(blockedEmails);
+
+for (const application of applications) {
+    if (blockedEmailSet.has(application.email)) {
+        application.status = "Rejected";
+    }
+}
+```
+
+* This is a classic example of using a data structure to improve an algorithm.
+
+# Breadth-First Search
+
+* BFS explores a graph level by level.
+
+```text
+A
+|
++-- B
+|   |
+|   +-- D
+|
++-- C
+    |
+    +-- E
+```
+
+* BFS visits:
+
+```text
+A
+B
+C
+D
+E
+```
+
+* A queue is normally used.
+
+```js
+function bfs(graph, start) {
+    const queue = [start];
+    const visited = new Set();
+    let index = 0;
+
+    while (index < queue.length) {
+        const node = queue[index];
+        index++;
+
+        if (visited.has(node)) {
+            continue;
+        }
+
+        visited.add(node);
+
+        for (const neighbor of graph[node]) {
+            if (!visited.has(neighbor)) {
+                queue.push(neighbor);
+            }
+        }
+    }
+
+    return visited;
+}
+```
+
+## Real application example
+
+* Imagine a company organization graph:
+
+```text
+CEO
+ |
+ +-- Engineering Manager
+ |       |
+ |       +-- Developer A
+ |       +-- Developer B
+ |
+ +-- HR Manager
+         |
+         +-- HR Executive
+```
+
+* If I need to find people level by level, BFS is natural.
+
+* BFS is also useful when I need the shortest number of connections in an unweighted graph.
+
+## Why a queue?
+
+* BFS means:
+
+```text
+Process current level
+then process next level
+then next level
+```
+
+* A queue naturally provides this behavior.
+
+# Depth-First Search
+
+* DFS explores as deeply as possible before moving to another branch.
+
+```text
+A
+|
+B
+|
+D
+```
+
+* DFS can use recursion:
+
+```js
+function dfs(node, graph, visited = new Set()) {
+    if (visited.has(node)) {
+        return;
+    }
+
+    visited.add(node);
+
+    for (const neighbor of graph[node]) {
+        dfs(neighbor, graph, visited);
+    }
+}
+```
+
+## Real application example - workflow dependency checking
+
+* Imagine:
+
+```text
+Build Frontend
+     |
+     v
+Run Tests
+     |
+     v
+Deploy
+```
+
+* Before deploying, I may need to inspect dependencies.
+
+* DFS can traverse dependency relationships.
+
+* DFS is also useful for:
+
+* Tree traversal.
+
+* Dependency graphs.
+
+* Detecting connected components.
+
+* Exploring nested structures.
+
+* Cycle detection.
+
+* Backtracking.
+
+# BFS vs DFS
+
+* BFS uses a queue.
+
+* DFS commonly uses recursion or a stack.
+
+* BFS explores level by level.
+
+* DFS explores one path deeply before backtracking.
+
+```text
+BFS:
+
+A
+B C
+D E F G
+
+
+DFS:
+
+A
+|
+B
+|
+D
+|
+...
+```
+
+* If I need the shortest number of edges in an unweighted graph, BFS is often appropriate.
+
+* If I need to completely explore a branch or recursively process nested data, DFS is often natural.
+
+# Greedy Algorithm
+
+* A greedy algorithm makes the best-looking choice at the current step.
+
+* The important warning is that greedy does not always produce the globally optimal result.
+
+## Real application example - meeting scheduling
+
+* Suppose an interview system has:
+
+```text
+Interview A: 9:00 - 10:00
+Interview B: 9:30 - 10:00
+Interview C: 10:00 - 11:00
+Interview D: 11:00 - 11:30
+```
+
+* If the goal is to schedule the maximum number of non-overlapping meetings, a classic greedy strategy is to select the meeting that finishes earliest.
+
+```text
+A finishes 10:00
+B finishes 10:00
+```
+
+* After selecting one, continue with meetings that start after the selected end time.
+
+* This works because the problem has the mathematical property required by the greedy approach.
+
+* I should not assume every optimization problem can be solved greedily.
+
+# Dynamic Programming
+
+* Dynamic programming is useful when a problem contains overlapping subproblems and the results of smaller problems can be reused.
+
+## Real application example
+
+* Imagine an expense system calculates possible approval paths.
+
+* The number of possible combinations can grow rapidly.
+
+* If the same subproblem is calculated repeatedly, I can cache its result.
+
+## Fibonacci example
+
+Naive recursion:
+
+```js
+function fibonacci(n) {
+    if (n <= 1) {
+        return n;
+    }
+
+    return fibonacci(n - 1) +
+           fibonacci(n - 2);
+}
+```
+
+* The problem is that the same values are calculated repeatedly.
+
+```text
+fib(5)
+ |
+ +-- fib(4)
+ |    |
+ |    +-- fib(3)
+ |
+ +-- fib(3)
+      |
+      +-- ...
+```
+
+* `fib(3)` is calculated multiple times.
+
+* Memoization stores the result.
+
+```js
+function fibonacci(n, memo = {}) {
+    if (n <= 1) {
+        return n;
+    }
+
+    if (memo[n] !== undefined) {
+        return memo[n];
+    }
+
+    memo[n] =
+        fibonacci(n - 1, memo) +
+        fibonacci(n - 2, memo);
+
+    return memo[n];
+}
+```
+
+* Now once `fib(3)` is calculated, its result is reused.
+
+## Dynamic programming components
+
+* A DP problem usually needs:
+
+```text
+State
+Transition
+Base case
+Stored results
+```
+
+* State describes what subproblem I am solving.
+
+* Transition describes how a larger problem is built from smaller problems.
+
+* Base case provides the smallest known result.
+
+* Stored results prevent repeated work.
+
+# Memoization
+
+* Memoization means caching the result of a function.
+
+## Real application example - expensive calculation
+
+```js
+const cache = new Map();
+
+function calculateEligibility(applicationId) {
+    if (cache.has(applicationId)) {
+        return cache.get(applicationId);
+    }
+
+    const result = performComplexEligibilityCheck(
+        applicationId
+    );
+
+    cache.set(applicationId, result);
+
+    return result;
+}
+```
+
+* If the same application is checked repeatedly, the expensive operation does not need to run every time.
+
+* In real applications, caching requires careful thinking about:
+
+* How long should data remain cached?
+
+* When does it become stale?
+
+* What happens when the underlying data changes?
+
+* How much memory can the cache use?
+
+* Can multiple users see outdated information?
+
+* Caching is not simply "store everything forever."
+
+# Backtracking
+
+* Backtracking explores possible choices and reverses a choice when it cannot produce a valid solution.
+
+```text
+choose
+  |
+explore
+  |
+valid?
+ /   \
+yes   no
+ |     |
+continue
+       |
+      undo
+```
+
+## Real application example - workflow paths
+
+* Imagine a workflow engine allows:
+
+```text
+Start
+ |
+ +-- Manager Approval
+ |       |
+ |       +-- Finance
+ |
+ +-- Direct Approval
+         |
+         +-- Finance
+```
+
+* The system may need to generate possible execution paths.
+
+* Backtracking can explore each possibility.
+
+```js
+function explore(path, choices, results) {
+    if (choices.length === 0) {
+        results.push([...path]);
+        return;
+    }
+
+    for (let i = 0; i < choices.length; i++) {
+        const choice = choices[i];
+
+        path.push(choice);
+
+        const remaining = [
+            ...choices.slice(0, i),
+            ...choices.slice(i + 1)
+        ];
+
+        explore(path, remaining, results);
+
+        path.pop();
+    }
+}
+```
+
+* `push()` represents choosing.
+
+* Recursive call represents exploring.
+
+* `pop()` represents undoing the choice.
+
+* Backtracking is useful for:
+
+* Permutations.
+
+* Combinations.
+
+* Sudoku.
+
+* Maze solving.
+
+* Scheduling possibilities.
+
+* Configuration generation.
+
+* Constraint problems.
+
+* The major problem is that the number of possibilities can become extremely large.
+
+# Divide and Conquer
+
+* Divide and conquer breaks a large problem into smaller independent problems.
+
+```text
+Large problem
+      |
+    divide
+    /    \
+small    small
+ |        |
+solve    solve
+ \        /
+   combine
+```
+
+* Merge sort is a classic example.
+
+* Binary search also repeatedly reduces the search space.
+
+* The advantage is that a difficult problem can become easier when broken into smaller pieces.
+
+# Sorting in Real Applications
+
+* Suppose the admin dashboard has:
+
+```text
+10,000 applications
+```
+
+* The admin wants:
+
+```text
+Newest applications first
+```
+
+* If all 10,000 applications are already loaded:
+
+```js
+applications.sort(
+    (a, b) =>
+        new Date(b.createdAt) -
+        new Date(a.createdAt)
+);
+```
+
+* But if there are 10 million records in the database, I should not fetch all 10 million records into JavaScript and sort them.
+
+* Instead, the backend/database should handle:
+
+```text
+WHERE
+ORDER BY
+LIMIT
+OFFSET
+```
+
+* For example:
+
+```text
+Database
+    |
+    | status = Pending
+    | order by createdAt DESC
+    | limit 20
+    |
+    v
+Backend
+    |
+    v
+Frontend
+```
+
+* This is a major real-world lesson:
+
+* Knowing an algorithm is not enough.
+
+* I also need to understand where the operation should happen.
+
+# Search in Real Applications
+
+* Suppose an admin searches:
+
+```text
+"javascript"
+```
+
+* For 100 records, filtering in JavaScript is simple:
+
+```js
+const results = applications.filter(
+    application =>
+        application.skills.some(
+            skill =>
+                skill
+                    .toLowerCase()
+                    .includes("javascript")
+        )
+);
+```
+
+* For millions of records, searching in the frontend is not realistic.
+
+* The backend/database should perform the search.
+
+```text
+Frontend
+   |
+   | GET /applications?search=javascript
+   v
+Backend
+   |
+   v
+Database
+   |
+   v
+Matching records
+```
+
+* This demonstrates an important principle:
+
+* An algorithm that is fine for 100 records may be completely inappropriate for millions of records.
+
+# Time and Space Trade-Off
+
+* Sometimes I can make an algorithm faster by using additional memory.
+
+## Example
+
+* Searching an array repeatedly:
+
+```js
+applications.find(
+    application => application.id === id
+);
+```
+
+* Instead, build a Map:
+
+```js
+const applicationMap = new Map();
+
+for (const application of applications) {
+    applicationMap.set(
+        application.id,
+        application
+    );
+}
+```
+
+* Now I use additional memory for the Map, but repeated lookup becomes much faster.
+
+```text
+Memory increases
+      |
+      v
+Lookup becomes faster
+```
+
+* This is a time-space trade-off.
+
+* There is no universal "fastest" solution.
+
+# Data Structure + Algorithm Together
+
+* Data structures and algorithms are closely connected.
+
+## Example - Duplicate application detection
+
+* Requirement:
+
+```text
+Reject duplicate applications using email.
+```
+
+* Poor approach:
+
+```js
+for (const application of applications) {
+    for (const existing of existingApplications) {
+        if (application.email === existing.email) {
+            // duplicate
+        }
+    }
+}
+```
+
+* This can become O(n²).
+
+* Better approach:
+
+```js
+const existingEmails = new Set();
+
+for (const application of existingApplications) {
+    existingEmails.add(application.email);
+}
+
+for (const application of applications) {
+    if (existingEmails.has(application.email)) {
+        application.status = "Duplicate";
+    }
+}
+```
+
+* Here:
+
+```text
+Data Structure -> Set
+Algorithm      -> one-pass lookup
+Problem solved -> duplicate detection
+```
+
+# Example - Application Lookup
+
+* Requirement:
+
+```text
+Admin opens /applications/50001
+```
+
+* If I only have an array:
+
+```js
+applications.find(
+    application => application.id === 50001
+);
+```
+
+* The application may need to scan records.
+
+* If I create an index:
+
+```js
+const applicationById = new Map();
+
+for (const application of applications) {
+    applicationById.set(
+        application.id,
+        application
+    );
+}
+```
+
+* Then:
+
+```js
+applicationById.get(50001);
+```
+
+* Here:
+
+```text
+Data Structure -> Map
+Problem        -> repeated ID lookup
+Benefit        -> fast key-based access
+```
+
+# Example - Workflow Dependency
+
+* Requirement:
+
+```text
+Before executing step C,
+make sure step A and B have completed.
+```
+
+* This is a relationship problem.
+
+* A graph is appropriate.
+
+```text
+A ----\
+       ---> C ---> D
+B ----/
+```
+
+* The graph can represent:
+
+```js
+const dependencies = {
+    A: ["C"],
+    B: ["C"],
+    C: ["D"],
+    D: []
+};
+```
+
+* Graph traversal can determine which steps are reachable and whether dependencies exist.
+
+* If cycles are allowed accidentally:
+
+```text
+A -> B
+B -> C
+C -> A
+```
+
+* The workflow can never finish.
+
+* Graph algorithms can be used to detect such cycles.
+
+# Example - Priority Workflow Processing
+
+* Requirement:
+
+```text
+Critical approval tasks must be processed before normal tasks.
+```
+
+* A normal queue is not enough because arrival order is not the only requirement.
+
+* A priority queue is more appropriate.
+
+```text
+Priority 1 -> Critical
+Priority 2 -> High
+Priority 3 -> Normal
+Priority 4 -> Low
+```
+
+* A heap can efficiently maintain the highest-priority task.
+
+# Example - Recent Activity
+
+* Requirement:
+
+```text
+Show the last 10 actions performed by an admin.
+```
+
+* A stack-like structure can help maintain recent actions.
+
+```js
+const recentActions = [];
+
+recentActions.push(action);
+
+if (recentActions.length > 10) {
+    recentActions.shift();
+}
+```
+
+* For small data this is simple.
+
+* For a more specialized high-volume implementation, a fixed-size circular buffer can avoid repeated shifting.
+
+# Circular Buffer
+
+* A circular buffer reuses a fixed amount of storage.
+
+```text
+[ A ][ B ][ C ][ D ][ E ]
+  ^
+  |
+write position
+```
+
+* When the end is reached, writing continues from the beginning.
+
+* This is useful when I only care about the most recent N values.
+
+## Real application
+
+* API monitoring:
+
+```text
+Keep last 60 seconds of metrics.
+```
+
+* Instead of continuously growing:
+
+```js
+[
+    metric1,
+    metric2,
+    metric3,
+    ...
+]
+```
+
+* I can maintain a fixed-size buffer.
+
+* This prevents memory from growing indefinitely.
 

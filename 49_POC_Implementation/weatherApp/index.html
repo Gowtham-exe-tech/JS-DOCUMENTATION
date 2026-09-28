@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Glass Weather</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <main class="weatherApp">
+
+      <div class="topBar">
+        <span id="statusBadge" class="statusBadge online">● Online</span>
+        <button id="themeToggle" class="themeToggle" aria-label="Toggle theme">
+          🌙
+        </button>
+      </div>
+
+      <h1 class="title">Weather</h1>
+      <!-- a form (not just an input) so pressing Enter also searches without extra JS -->
+
+      <form id="searchForm" class="searchForm" novalidate>
+        <input
+          id="cityInput"
+          class="cityInput"
+          type="text"
+          placeholder="Search city..."
+          autocomplete="off"
+        />
+        <button id="searchButton" class="btn" type="submit">Search</button>
+      </form>
+
+      <button id="locationButton" class="btn locationButton" type="button">
+        📍 Use my current location
+      </button>
+
+      <p id="messageBox" class="messageBox hidden"></p>
+
+      <section id="weatherCard" class="weatherCard hidden">
+
+        <div id="weatherIcon" class="weatherIcon"></div>
+
+        <h2 id="cityName" class="cityName"></h2>
+        <p id="temperature" class="temperature"></p>
+        <p id="description" class="description"></p>
+
+        <div class="details">
+
+          <div class="detailBox">
+            <span>Feels like</span><strong id="feelsLike"></strong>
+          </div>
+
+          <div class="detailBox">
+            <span>Humidity</span><strong id="humidity"></strong>
+          </div>
+          
+          <div class="detailBox">
+            <span>Wind</span><strong id="windSpeed"></strong>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>
