@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Debugging Demo</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>Debugging - Shopping Cart</h1>
+<p>Open DevTools (F12) and watch the Console. Add an item and check the units count, there is a bug.</p>
+<table><thead><tr><th>Name</th><th>Price</th><th>Qty</th></tr></thead><tbody id="rows"></tbody></table>
+<div class="box">
+<form id="addForm"><input id="name" placeholder="name" required><input id="price" type="number" placeholder="price" required><input id="qty" type="number" placeholder="qty" required><button>Add</button></form>
+<button id="totalBtn">Calculate total</button><button id="breakBtn">Trigger error</button>
+<p id="total"></p>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

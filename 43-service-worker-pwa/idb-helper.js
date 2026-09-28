@@ -1,0 +1,5 @@
+// small indexedDB helper, used by both page and service worker (localStorage is not available in service worker)
+function openDb() { return new Promise((resolve, reject) => { const req = indexedDB.open("notes-db", 1); req.onupgradeneeded = () => req.result.createObjectStore("queue", { autoIncrement: true }); req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error); }); }
+async function addToQueue(note) { const db = await openDb(); return new Promise(resolve => { const tx = db.transaction("queue", "readwrite"); tx.objectStore("queue").add(note); tx.oncomplete = resolve; }); }
+async function getQueue() { const db = await openDb(); return new Promise(resolve => { const req = db.transaction("queue").objectStore("queue").getAll(); req.onsuccess = () => resolve(req.result); }); }
+async function clearQueue() { const db = await openDb(); return new Promise(resolve => { const tx = db.transaction("queue", "readwrite"); tx.objectStore("queue").clear(); tx.oncomplete = resolve; }); }

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Event Loop Demo</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>Event Loop & Concurrency</h1>
+<div class="box">Ticker (updates every 100ms): <span id="ticker">0</span></div>
+<div class="box">
+<button id="orderBtn">1. Show execution order</button>
+<button id="blockBtn">2. Block 3 sec (ticker freezes)</button>
+<button id="chunkBtn">3. Chunked processing (ticker keeps going)</button>
+<progress id="bar" value="0" max="100"></progress>
+</div>
+<pre id="log"></pre>
+<script src="script.js"></script>
+</body>
+</html>

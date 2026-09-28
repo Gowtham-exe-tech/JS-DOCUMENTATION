@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Performance Demo</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>Performance</h1>
+<p>Run with a local server (npx serve) because of dynamic import.</p>
+<div class="box">Search (debounced): <input id="search" placeholder="type fast..."> <p>API calls made: <b id="apiCount">0</b> | Keystrokes: <b id="keyCount">0</b></p></div>
+<div class="box">Scroll events (throttled): <b id="scrollCount">0</b> | Images loaded: <b id="imgCount">0</b></div>
+<div class="box"><button id="workerBtn">Heavy work in Web Worker</button><button id="mainBtn">Heavy work on main thread</button><button id="exportBtn">Load export module (dynamic import)</button></div>
+<pre id="log"></pre>
+<div id="gallery"></div>
+<script type="module" src="script.js" defer></script>
+</body>
+</html>
