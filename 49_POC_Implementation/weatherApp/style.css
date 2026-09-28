@@ -1,25 +1,25 @@
-/* same theme variable idea as my calculator, toggle changes data-theme and all colors follow */
+/* split screen layout: dark green side panel for the controls, plain paper area for the result. the temperature is the biggest thing on the page. no animation on purpose */
 :root[data-theme="light"] {
-  --bgStart: #d9f7e3;
-  --bgEnd: #6fd39a;
-  --glass: rgba(255, 255, 255, 0.28);
-  --glassBorder: rgba(255, 255, 255, 0.6);
-  --text: #0b3d20;
-  --accent: #1faa59;
-  --accentText: #ffffff;
-  --shadow: rgba(20, 90, 50, 0.25);
-  --errorColor: #b3261e;
+  --panel: #143f29;
+  --panelText: #ecf8ef;
+  --paper: #f2f5ec;
+  --ink: #15291c;
+  --accent: #1d7a44;
+  --line: rgba(21, 41, 28, 0.3);
+  --okOnPanel: #a4efbe;
+  --badOnPanel: #ffb4a8;
+  --errorInk: #b3261e;
 }
 :root[data-theme="dark"] {
-  --bgStart: #03130a;
-  --bgEnd: #0e4d2b;
-  --glass: rgba(255, 255, 255, 0.08);
-  --glassBorder: rgba(255, 255, 255, 0.18);
-  --text: #e6fff0;
-  --accent: #2fd076;
-  --accentText: #03130a;
-  --shadow: rgba(0, 0, 0, 0.5);
-  --errorColor: #ff8a80;
+  --panel: #14452c;
+  --panelText: #ecf8ef;
+  --paper: #0e1712;
+  --ink: #dcefe1;
+  --accent: #58d68d;
+  --line: rgba(220, 239, 225, 0.3);
+  --okOnPanel: #a4efbe;
+  --badOnPanel: #ffb4a8;
+  --errorInk: #ff8a80;
 }
 * {
   box-sizing: border-box;
@@ -28,156 +28,241 @@
 }
 body {
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  font-family: Arial, sans-serif;
-  color: var(--text);
-  background: linear-gradient(135deg, var(--bgStart), var(--bgEnd));
-  position: relative;
-  overflow: hidden;
-  transition: background 0.4s;
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
 }
-
+/* the panel is only a hard-stop gradient on the parent, so I did not need to change the html to add a wrapper div */
 .weatherApp {
-  width: 100%;
-  max-width: 400px;
-  padding: 22px;
-  border-radius: 24px;
-  background: var(--glass);
-  border: 1px solid var(--glassBorder);
-  box-shadow: 0 8px 32px var(--shadow);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  grid-template-rows: auto auto auto auto auto 1fr;
+  background: linear-gradient(
+    90deg,
+    var(--panel) 0 380px,
+    var(--paper) 380px 100%
+  );
 }
 .topBar {
+  grid-column: 1 / -1;
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-.title {
-  margin: 8px 0 14px;
-  font-size: 22px;
+  padding: 16px 28px;
 }
 .statusBadge {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 .statusBadge.online {
-  background: rgba(47, 208, 118, 0.3);
-  border: 1px solid var(--accent);
+  color: var(--okOnPanel);
 }
 .statusBadge.offline {
-  background: rgba(255, 90, 80, 0.3);
-  border: 1px solid var(--errorColor);
-  color: var(--errorColor);
+  color: var(--badOnPanel);
 }
 .themeToggle {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: 1px solid var(--glassBorder);
-  background: var(--glass);
-  font-size: 18px;
+  width: 36px;
+  height: 30px;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 15px;
   cursor: pointer;
 }
-.searchForm {
-  display: flex;
-  gap: 8px;
+.themeToggle:hover {
+  background: var(--line);
 }
+/* left column items, all grouped so the margin and color are written once */
+.title,
+.searchForm,
+.locationButton,
+.messageBox {
+  grid-column: 1;
+  margin-left: 28px;
+  margin-right: 28px;
+  color: var(--panelText);
+}
+.title {
+  grid-row: 2;
+  margin-top: 36px;
+  margin-bottom: 26px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 46px;
+  font-weight: normal;
+  font-style: italic;
+}
+.searchForm {
+  grid-row: 3;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+/* only a line under the input instead of a box, focus makes the line thick so keyboard users still see where they are */
 .cityInput {
   flex: 1;
   min-width: 0;
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--glassBorder);
-  background: var(--glass);
-  color: var(--text);
-  font-size: 15px;
+  padding: 8px 0;
+  border: 0;
+  border-bottom: 2px solid var(--panelText);
+  border-radius: 0;
+  background: transparent;
+  color: var(--panelText);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
   outline: none;
 }
 .cityInput:focus {
-  border-color: var(--accent);
+  border-bottom-width: 5px;
 }
 .cityInput::placeholder {
-  color: var(--text);
-  opacity: 0.6;
+  color: var(--panelText);
+  opacity: 0.55;
 }
 .btn {
-  padding: 12px 16px;
-  border-radius: 12px;
-  border: none;
-  background: var(--accent);
-  color: var(--accentText);
-  font-size: 15px;
-  font-weight: bold;
+  border-radius: 0;
+  font-family: inherit;
   cursor: pointer;
 }
-/* disabled style is important so the user can see the buttons are locked while loading */
+.searchForm .btn {
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: var(--panelText);
+  font-size: 13px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.searchForm .btn:not(:disabled)::after {
+  content: " →";
+}
+.searchForm .btn:hover {
+  text-decoration: underline;
+}
+.locationButton {
+  grid-row: 4;
+  margin-top: 26px;
+  padding: 12px 14px;
+  border: 2px solid var(--panelText);
+  background: transparent;
+  font-size: 13px;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.locationButton:hover {
+  background: var(--panelText);
+  color: var(--panel);
+}
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
-.locationButton {
-  width: 100%;
-  margin-top: 10px;
-  background: var(--glass);
-  color: var(--text);
-  border: 1px solid var(--glassBorder);
-}
 .messageBox {
-  margin-top: 14px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: var(--glass);
-  border: 1px solid var(--glassBorder);
+  grid-row: 5;
+  margin-top: 24px;
+  padding-left: 12px;
+  border-left: 4px solid var(--panelText);
   font-size: 14px;
+  line-height: 1.5;
 }
 .messageBox.error {
-  color: var(--errorColor);
-  border-color: var(--errorColor);
+  border-left-color: var(--badOnPanel);
+  color: var(--badOnPanel);
 }
-.hidden {
-  display: none;
-}
+/* result area: icon and city on one line, then the huge temperature, then a ruled row of details */
 .weatherCard {
-  margin-top: 18px;
-  text-align: center;
+  grid-column: 2;
+  grid-row: 2 / 7;
+  max-width: 760px;
+  padding: 36px 48px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: "icon city" "temp temp" "desc desc" "details details";
+  align-content: start;
+  column-gap: 18px;
 }
 .weatherIcon {
-  font-size: 64px;
+  grid-area: icon;
+  font-size: 56px;
+  line-height: 1;
 }
 .cityName {
-  margin-top: 4px;
-  font-size: 22px;
+  grid-area: city;
+  align-self: center;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 30px;
+  font-style: italic;
+  font-weight: normal;
 }
 .temperature {
-  font-size: 48px;
-  font-weight: bold;
+  grid-area: temp;
+  margin: 22px 0 6px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(90px, 15vw, 190px);
+  line-height: 0.95;
+  letter-spacing: -4px;
 }
 .description {
-  text-transform: capitalize;
-  opacity: 0.8;
+  grid-area: desc;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--ink);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
 }
 .details {
+  grid-area: details;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-top: 16px;
+  border-bottom: 2px solid var(--ink);
 }
 .detailBox {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 10px 4px;
-  border-radius: 12px;
-  background: var(--glass);
-  border: 1px solid var(--glassBorder);
+  gap: 8px;
+  padding: 20px 16px;
   font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.detailBox:first-child {
+  padding-left: 0;
+}
+.detailBox + .detailBox {
+  border-left: 1px solid var(--line);
 }
 .detailBox strong {
-  font-size: 15px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 28px;
+  font-weight: normal;
+  letter-spacing: 0;
+  text-transform: none;
+}
+/* phone: everything in one column and the panel color is dropped, so the panel-only colors are pointed to the normal ones here */
+@media (max-width: 760px) {
+  .weatherApp {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    background: var(--paper);
+    --panelText: var(--ink);
+    --panel: var(--paper);
+    --okOnPanel: var(--accent);
+    --badOnPanel: var(--errorInk);
+  }
+  .weatherApp > * {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .weatherCard {
+    padding: 28px;
+  }
+}
+/* at the end so it always wins over the display rules above (hidden is toggled by the javascript) */
+.hidden {
+  display: none !important;
 }
