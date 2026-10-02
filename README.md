@@ -8205,6 +8205,43 @@ UI is updated
 
 * With classes, this same prototype mechanism appears through `extends`.
 
+Ex: When you build a payment checkout system, every payment method (Credit Card, PayPal, Apple Pay) shares common behavior (like generating transaction IDs, writing audit logs,, but each has its own unique processing logic.
+
+```js
+
+// Base prototype / parent class
+class PaymentProcessor {
+  constructor(amount, currency = "USD") {
+    this.amount = amount;
+    this.currency = currency;
+    this.transactionId = `TXN-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  // Shared method residing on PaymentProcessor.prototype
+  logTransaction(status) {
+    console.log(`[AUDIT] ${this.transactionId} | ${this.amount} ${this.currency} | Status: ${status}`);
+  }
+}
+
+// Child class inheriting from PaymentProcessor via Prototype Chain
+class StripeProcessor extends PaymentProcessor {
+  constructor(amount, currency, cardNumber) {
+    super(amount, currency); // Runs parent constructor
+    this.cardNumber = cardNumber;
+  }
+
+  process() {
+    // Unique processing logic...
+    const success = true;
+    this.logTransaction(success ? "SUCCESS" : "FAILED"); // Inherited up the prototype chain
+    return success;
+  }
+}
+
+const checkout = new StripeProcessor(150, "USD", "**** **** **** 4242");
+checkout.process();
+```
+
 * **Key points:**
   * JavaScript uses prototype-based inheritance
   * objects can inherit properties/methods from prototypes
@@ -8224,6 +8261,7 @@ UI is updated
 * `this` tells a function which object or context it is currently operating with.
 
 * The most important rule is that I should not decide what `this` means by looking only at where the function was written.
+
 * For regular functions, I should look at **how the function was called**.
 
 * In an object method:
@@ -8268,11 +8306,10 @@ UI is updated
 ```js
   class Dashboard {
       constructor() {
-          this.count = 0;
+          this.count = 0; // Here 'this' refers to the Dashboard instance
 
-          document
-              .querySelector("#increase")
-              .addEventListener("click", () => {
+          document.querySelector("#increase").addEventListener ("click", () => {  
+            // Arrow function looks outside its own scope to constructor()
                   this.count++;
                   this.render();
               });
@@ -8286,10 +8323,48 @@ UI is updated
 * The arrow function keeps the `this` belonging to the `Dashboard` instance.
 
 * `call()` executes a function immediately while explicitly setting its `this`.
+* `call()` lets an object borrow a function and run it immediately by passing this explicitly, followed by arguments.
+
+```js
+const printer = {
+  paperType: "A4 Standard",
+  printDocument(documentTitle) {
+    console.log(`Printing "${documentTitle}" using ${this.paperType}`);
+  }
+};
+
+const sarah = { paperType: "Glossy Photo Paper" };
+// "Hey Printer, run printDocument RIGHT NOW, but use Sarah's settings!"
+printer.printDocument.call(sarah, "Marketing Flyer");
+
+// Output: Printing "Marketing Flyer" using Glossy Photo Paper
+```
 
 * `apply()` does the same but receives function arguments as an array.
+* `apply()` is identical to `call()`, but takes the parameters as an array instead of individual items
+
+```js
+const sarah = { paperType: "Glossy Photo Paper" };
+const printArgs = ["Marketing Flyer"]; // Arguments packed in an array
+printer.printDocument.apply(sarah, printArgs);
+
+// Output: Printing "Marketing Flyer" using Glossy Photo Paper
+```
 
 * `bind()` creates a new function with a fixed `this`.
+* bind() doesn't run the function immediately. It returns a brand-new function with this permanently attached so it can be passed into timers or event listeners safely
+
+```js
+const boss = { paperType: "Official Letterhead" };
+
+// Create a NEW function where `this` is permanently locked to `boss`
+const scheduledJob = printer.printDocument.bind(boss, "Daily Financial Report");
+
+// Hand the locked function to setTimeout to run 5 seconds later
+setTimeout(scheduledJob, 5000);
+
+// Output (after 5s): Printing "Daily Financial Report" using Official Letterhead
+```
 
 * Real application use case:
   * A class method is passed to `setTimeout()`, an event listener, or another callback.
@@ -8346,7 +8421,8 @@ UI is updated
       invoice => invoice.status === "pending"
   );
 ```
-* This is useful when displaying only pending records in an admin dashboard.
+* This is useful when dis
+playing only pending records in an admin dashboard.
 
 * `reduce()` processes multiple values and produces one final result.
 ```js
@@ -8756,6 +8832,600 @@ UI is updated
   * detailed errors belong in logs
   * safe, meaningful messages belong in user-facing responses
   * asynchronous errors should be handled correctly with `await` / Promise handling
+
+# Event Loop & Concurrency
+
+* JavaScript uses a single-threaded execution model for running JavaScript code, while the surrounding runtime handles asynchronous operations so JavaScript does not have to wait synchronously for every operation.
+
+* The main pieces are:
+
+* Call Stack
+* Web APIs / Runtime APIs
+* Task Queue
+* Microtask Queue
+* Event Loop
+* Rendering
+
+* The simplified lifecycle is:
+
+```text
+Synchronous JavaScript | Call Stack | Async operation | Queue | Event Loop | Callback execution
+```
+
+# Call Stack
+
+Definition: The call stack is the structure JavaScript uses to keep track of the functions currently being executed.
+
+* When a function is called, it is pushed onto the call stack.
+* When it finishes, it is removed.
+* JavaScript executes the function at the top of the stack.
+
+```js
+function createTask() {
+    console.log("Creating task");
+}
+
+function handleRequest() {
+    createTask();
+}
+
+handleRequest();
+```
+
+* The execution can be understood as:
+
+```text
+handleRequest() | createTask() | console.log() | createTask finishes | handleRequest finishes
+```
+
+* The stack follows LIFO: Last In, First Out.
+* This matters because another JavaScript function cannot execute on the same call stack while long-running synchronous code is occupying it.
+
+## Blocking the Call Stack
+
+Definition: Blocking happens when synchronous JavaScript keeps the call stack busy for a long time and prevents other JavaScript work from executing.
+
+```js
+function processLargeTaskList() {
+    for (let i = 0; i < 10000000000; i++) {
+        // heavy processing
+    }
+}
+
+processLargeTaskList();
+
+console.log("Request completed");
+```
+
+* `"Request completed"` cannot run until the loop finishes.
+* In a browser, this can freeze the UI.
+* In Node.js, CPU-heavy synchronous work can delay other requests and callbacks.
+
+# Web APIs / Runtime APIs
+
+Definition: Runtime APIs are asynchronous capabilities provided by the environment around JavaScript, such as browser APIs or Node.js APIs.
+
+* In a browser, examples include:
+* `setTimeout`
+* `fetch`
+* DOM events
+* browser APIs
+
+* In Node.js, asynchronous file, network, timer, and other system operations are handled by the Node.js runtime.
+
+```js
+console.log("Start");
+
+setTimeout(() => {
+    console.log("Timer finished");
+}, 2000);
+
+console.log("End");
+```
+
+* The synchronous code executes first:
+
+```text
+console.log("Start") | setTimeout() | console.log("End")
+```
+
+* The timer is handled by the runtime.
+* Its callback becomes eligible for execution after the timer expires.
+* The callback still has to wait for the call stack and scheduling rules.
+
+# Task Queue
+
+Definition: The task queue stores callbacks from completed asynchronous tasks that are waiting for the JavaScript call stack to become available.
+
+* It is also commonly called the macrotask queue.
+* Timer callbacks and browser events are common examples.
+* A `0` millisecond timer does not execute immediately.
+
+```js
+console.log("Start");
+
+setTimeout(() => {
+    console.log("Task callback");
+}, 0);
+
+console.log("End");
+```
+
+* Output:
+
+```text
+Start | End | Task callback
+```
+
+* The important sequence is:
+
+```text
+Synchronous code | Call stack becomes empty | Task callback becomes executable | Event loop moves it to the call stack
+```
+
+# Microtask Queue
+
+Definition: The microtask queue contains promise-related callbacks and other microtasks that are processed after the current synchronous execution finishes and before the next normal task.
+
+* Common microtasks include:
+* `Promise.then()`
+* `Promise.catch()`
+* `Promise.finally()`
+* `queueMicrotask()`
+* continuation of an `async` function after `await`
+
+```js
+console.log("Start");
+
+Promise.resolve().then(() => {
+    console.log("Promise callback");
+});
+
+setTimeout(() => {
+    console.log("Timer callback");
+}, 0);
+
+console.log("End");
+```
+
+* Output:
+
+```text
+Start | End | Promise callback | Timer callback
+```
+
+* The reason is:
+
+```text
+Synchronous code | Microtasks | Next task
+```
+
+* Promise callbacks therefore normally run before a timer task that is already waiting.
+
+# Event Loop
+
+Definition: The event loop coordinates when queued asynchronous callbacks can move onto the call stack for JavaScript execution.
+
+* A simplified model is:
+
+```text
+Call Stack | Synchronous execution | Call Stack empty | Microtasks | Next task | Repeat
+```
+
+* The event loop does not execute JavaScript itself.
+* It coordinates when queued callbacks are allowed to enter the call stack.
+
+```js
+console.log("A");
+
+setTimeout(() => {
+    console.log("B");
+}, 0);
+
+Promise.resolve().then(() => {
+    console.log("C");
+});
+
+console.log("D");
+```
+
+* Output:
+
+```text
+A | D | C | B
+```
+
+* The execution is:
+
+```text
+A | register timer | register promise callback | D | stack empty | C | B
+```
+
+# `async` / `await`
+
+Definition: `async` and `await` provide a readable way to work with promises, but `await` pauses only the current async function rather than blocking the entire JavaScript runtime.
+
+```js
+async function loadTasks() {
+    console.log("Before API call");
+
+    const response = await fetch("/api/tasks");
+
+    console.log("After API call");
+}
+
+loadTasks();
+
+console.log("Continue running");
+```
+
+* When execution reaches `await`, the network operation continues asynchronously.
+* The `loadTasks()` function pauses until the promise settles.
+* Other JavaScript can execute during that time.
+
+```text
+loadTasks() | fetch starts | await pauses loadTasks | other JavaScript runs | response arrives | continuation runs
+```
+
+* This is why `async/await` is useful in API development.
+
+# Promise Microtasks
+
+Definition: Promise callbacks are scheduled as microtasks, so they run after the current synchronous code finishes.
+
+```js
+console.log("1");
+
+Promise.resolve().then(() => {
+    console.log("2");
+});
+
+console.log("3");
+```
+
+* Output:
+
+```text
+1 | 3 | 2
+```
+
+* The Promise callback does not interrupt the current synchronous execution.
+
+# Task Queue vs Microtask Queue
+
+Definition: Both queues hold callbacks waiting to execute, but microtasks are processed before the next normal task.
+
+```js
+setTimeout(() => {
+    console.log("Timer");
+}, 0);
+
+Promise.resolve().then(() => {
+    console.log("Promise");
+});
+```
+
+* Output:
+
+```text
+Promise | Timer
+```
+
+* The simplified order is:
+
+```text
+Current JavaScript finishes | Microtask queue | Promise callback | Task queue | Timer callback
+```
+
+## Too Many Microtasks
+
+Definition: Excessive microtask work can delay normal tasks because the runtime processes pending microtasks before moving to the next task.
+
+```js
+function createMicrotasks() {
+    Promise.resolve().then(() => {
+        console.log("Microtask");
+
+        createMicrotasks();
+    });
+}
+
+createMicrotasks();
+
+setTimeout(() => {
+    console.log("Timer");
+}, 0);
+```
+
+* This keeps creating microtasks.
+* The timer can be delayed because the microtask queue keeps receiving more work.
+* The lesson is that asynchronous does not automatically mean inexpensive.
+
+# Rendering
+
+Definition: Rendering is the browser's process of updating the visible page after JavaScript changes, style/layout work, and painting are handled.
+
+* Rendering is mainly relevant to browser JavaScript.
+* Suppose a job application dashboard has an Approve button:
+
+```js
+button.addEventListener("click", () => {
+    statusElement.textContent = "Approved";
+});
+```
+
+* JavaScript changes the DOM.
+* The browser then needs to update what the user sees.
+
+```text
+User interaction | JavaScript | DOM changes | Browser rendering work | Updated screen
+```
+
+* If JavaScript performs a very long synchronous calculation, rendering can be delayed and the interface can appear frozen.
+
+# Event Loop and Rendering Together
+
+Definition: In browser applications, event processing, microtasks, JavaScript execution, and rendering work together to keep the interface responsive.
+
+* Imagine a job application dashboard.
+* The user clicks Approve.
+* The click handler runs as a task.
+* JavaScript updates state or the DOM.
+* Promise callbacks scheduled by that work may run as microtasks.
+* The browser can then get an opportunity to render the updated interface.
+
+```text
+Click event | JavaScript task | Microtasks | Browser gets rendering opportunity | Updated UI
+```
+
+* If the JavaScript task takes too long:
+
+```text
+Click event | Huge synchronous calculation | Call stack remains busy | Rendering delayed | UI feels frozen
+```
+
+# Concurrency
+
+Definition: Concurrency means multiple operations can make progress during overlapping periods even though JavaScript execution on the main call stack happens one piece at a time.
+
+* Consider a Task Manager dashboard loading three APIs:
+
+```js
+async function loadDashboard() {
+    const tasksPromise = fetch("/api/tasks");
+    const usersPromise = fetch("/api/users");
+    const statisticsPromise = fetch("/api/statistics");
+
+    const [
+        tasksResponse,
+        usersResponse,
+        statisticsResponse
+    ] = await Promise.all([
+        tasksPromise,
+        usersPromise,
+        statisticsPromise
+    ]);
+
+    console.log("Dashboard data received");
+}
+```
+
+* The requests are started without waiting synchronously for the first request to finish.
+
+```text
+Start tasks request | Start users request | Start statistics request | Network operations continue | Responses arrive | Promise continuation runs
+```
+
+* This is concurrency.
+* It does not mean three JavaScript functions are simultaneously executing on the same call stack.
+
+# Concurrency vs Parallelism
+
+Definition: Concurrency is overlapping progress between operations, while parallelism means multiple operations are actually executing at the same time using separate execution resources.
+
+* For three API requests:
+
+```text
+Request A | waiting for network
+Request B | waiting for network
+Request C | waiting for network
+```
+
+* JavaScript can start these operations and continue doing other work.
+* That is concurrency.
+* Parallelism is different: separate CPU execution resources can perform work simultaneously.
+* Do not use "concurrent" and "parallel" as if they mean exactly the same thing.
+
+# Why This Matters in Node.js
+
+Definition: Node.js uses an event-driven, non-blocking architecture where the event loop allows JavaScript to continue processing other work while asynchronous I/O operations are pending.
+
+* Suppose the Task Manager API receives:
+
+```text
+POST /tasks | GET /tasks | GET /tasks/42
+```
+
+* One request might start a database operation.
+* While the database is waiting, Node.js can continue processing other available work.
+
+```text
+Request A | start database operation | waiting asynchronously
+Request B | process request
+Request C | process request
+Database A completes | continuation runs | response sent
+```
+
+* This is a major reason Node.js works well for I/O-heavy applications.
+
+# Blocking vs Non-Blocking Work
+
+Definition: Blocking work keeps JavaScript execution busy, while non-blocking asynchronous work allows the runtime to continue handling other work while the operation is pending.
+
+* Blocking example:
+
+```js
+const data = fs.readFileSync("large-file.csv");
+```
+
+* JavaScript waits for the synchronous file operation.
+
+* Non-blocking example:
+
+```js
+fs.readFile("large-file.csv", (error, data) => {
+    if (error) {
+        console.error(error);
+        return;
+    }
+
+    console.log(data);
+});
+
+console.log("Continue processing");
+```
+
+* The asynchronous file operation can finish later.
+* JavaScript can continue executing other work before the callback runs.
+
+# Common Mistake: `setTimeout(..., 0)`
+
+Definition: A zero-delay timer makes a callback eligible for a later task; it does not make the callback execute immediately.
+
+```js
+console.log("Start");
+
+setTimeout(() => {
+    console.log("Timer");
+}, 0);
+
+console.log("End");
+```
+
+* Output:
+
+```text
+Start | End | Timer
+```
+
+* The timer cannot interrupt synchronous code already running.
+
+# Common Mistake: Promise Means Immediate Execution
+
+Definition: A Promise callback is asynchronous even when the Promise is already resolved.
+
+```js
+console.log("Start");
+
+Promise.resolve().then(() => {
+    console.log("Promise");
+});
+
+console.log("End");
+```
+
+* Output:
+
+```text
+Start | End | Promise
+```
+
+* The callback waits for the current synchronous execution to finish.
+
+# Common Mistake: `await` Blocks the Entire Application
+
+Definition: `await` pauses the current async function until its promise settles; it does not freeze the entire JavaScript runtime.
+
+```js
+async function loadTasks() {
+    const response = await fetch("/api/tasks");
+
+    console.log("Tasks loaded");
+}
+
+loadTasks();
+
+console.log("Other work");
+```
+
+* `"Other work"` can execute while the network operation is pending.
+
+# Debugging Event Loop Problems
+
+Definition: Event loop debugging means identifying which synchronous work, microtask, task, or asynchronous operation is affecting execution order or responsiveness.
+
+* Start with logs:
+
+```js
+console.log("A");
+
+setTimeout(() => {
+    console.log("B");
+}, 0);
+
+Promise.resolve().then(() => {
+    console.log("C");
+});
+
+console.log("D");
+```
+
+* Compare the output with the scheduling rules.
+
+* If an application feels slow, ask:
+
+* Is the call stack busy?
+* Is there expensive synchronous code?
+* Are too many microtasks being generated?
+* Is an asynchronous operation being unnecessarily waited on?
+* In a browser, is rendering being delayed by a long JavaScript task?
+
+# Complete Mental Model
+
+Definition: The event loop model explains how synchronous JavaScript, runtime APIs, queued callbacks, promise continuations, and browser rendering cooperate to execute asynchronous applications.
+
+```text
+JavaScript code | Call Stack | Async operation starts | Runtime handles operation | Callback becomes ready | Event Loop | Microtasks | Next task | Browser may render
+```
+
+* The important rules to remember:
+
+* Synchronous JavaScript runs on the call stack.
+* A busy call stack prevents other JavaScript callbacks from executing.
+* Runtime APIs handle asynchronous operations outside the normal synchronous call stack.
+* `setTimeout` callbacks are tasks.
+* Promise callbacks are microtasks.
+* Microtasks are processed before the next normal task.
+* `await` pauses the current async function, not the entire application.
+* Zero-delay timers are not immediate.
+* Concurrency does not automatically mean parallel JavaScript execution.
+* Long synchronous work can block Node.js request handling and browser UI updates.
+
+# Practical Task Manager Example
+
+Definition: A Task Manager API request connects the event loop concepts to actual backend development because database/network operations are asynchronous while the controller's JavaScript still executes sequentially.
+
+```js
+async function getTasks(req, res) {
+    const tasks = await Task.find();
+
+    res.json({
+        success: true,
+        data: tasks
+    });
+}
+```
+
+* The simplified execution is:
+
+```text
+GET /api/tasks | Express route starts | Task.find() starts | Database operation is pending | getTasks pauses at await | Node.js can handle other work | Database result arrives | Promise continuation runs | getTasks continues | res.json() | Response sent
+```
+
+* The important lesson is not that the database operation is running on the JavaScript call stack.
+* The important lesson is that JavaScript does not need to keep the call stack blocked while waiting for an I/O operation.
+* This is the foundation of asynchronous programming in Node.js.
+
 
 # Memory Management
 

@@ -424,13 +424,102 @@
 //     console.log(output);
 // });
 
-const a = 10;
-const b = 20;
+// const a = 10;
+// const b = 20;
 
-if (a<b){
-    a = 30;
-    b = 40;
+// if (a<b){
+//     a = 30;
+//     b = 40;
+// }
+
+// console.log(a);
+// console.log(b);
+
+// async function fetchUsers() {
+//     const response = await fetch("/api/users");
+
+//     if (!response.ok) {
+//         throw new Error(`Users API failed: ${response.status}`);
+//     }
+
+//     return response.json();
+// }
+
+// async function fetchProducts() {
+//     const response = await fetch("/api/products");
+
+//     if (!response.ok) {
+//         throw new Error(`Products API failed: ${response.status}`);
+//     }
+
+//     return response.json();
+// }
+
+// async function fetchOrders() {
+//     const response = await fetch("/api/orders");
+
+//     if (!response.ok) {
+//         throw new Error(`Orders API failed: ${response.status}`);
+//     }
+
+//     return response.json();
+// }
+
+// async function loadDashboard() {
+//     const results = await Promise.allSettled([
+//         fetchUsers(),
+//         fetchProducts(),
+//         fetchOrders()
+//     ]);
+
+//     results.forEach((result, index) => {
+//         if (result.status === "fulfilled") {
+//             console.log(`API ${index + 1} success:`, result.value);
+//         } else {
+//             console.error(`API ${index + 1} failed:`, result.reason);
+//         }
+//     });
+// }
+
+// loadDashboard();
+
+// class Calc {
+//     static pi = 3.14;
+
+//     area(radius) {
+//         return Calc.pi * radius * radius;
+//     }
+// }
+
+// const calculator = new Calc();
+// console.log(calculator.area(5));
+
+
+// function first() {
+//     second();
+// }
+
+// function second() {
+//     third();
+// }
+
+// function third() {
+//     console.log("Hello");
+// }
+
+// first();
+
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+function validatePassword(password) {
+  if (!PASSWORD_REGEX.test(password)) {
+    return { 
+      isValid: false, 
+      error: "Password must be 8+ chars with uppercase, lowercase, number, and special character." 
+    };
+  }
+  return { isValid: true };
 }
 
-console.log(a);
-console.log(b);
+console.log(validatePassword("Weak1!"));      
+console.log(validatePassword("StrongP@ss2026"));
