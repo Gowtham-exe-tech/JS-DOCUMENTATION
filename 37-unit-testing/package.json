@@ -1,6 +1,14 @@
 {
   "name": "unit-testing-demo",
   "version": "1.0.0",
-  "scripts": { "test": "jest", "test:mocha": "mocha cart.mocha.js", "test:all": "jest && mocha cart.mocha.js" },
-  "devDependencies": { "jest": "^29.7.0", "mocha": "^10.4.0", "chai": "^4.4.1" }
+  "scripts": {
+    "test": "jest",
+    "test:mocha": "mocha cart.mocha.js",
+    "test:all": "jest && mocha cart.mocha.js"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "mocha": "^10.4.0",
+    "chai": "^4.4.1"
+  }
 }

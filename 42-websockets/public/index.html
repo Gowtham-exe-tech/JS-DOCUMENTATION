@@ -1,17 +1,24 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Socket.IO Chat</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<h1>Realtime Chat (open in 2 tabs)</h1>
-<div class="box"><input id="name" placeholder="your name"><button id="joinBtn">Join room</button> <span id="status">disconnected</span></div>
-<div id="messages"></div>
-<div id="typing"></div>
-<div class="box"><input id="msg" placeholder="message"><button id="send">Send</button></div>
-<script src="/socket.io/socket.io.js"></script>
-<script src="client.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Socket.IO Chat</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>Realtime Chat (open in 2 tabs)</h1>
+    <div class="box">
+      <input id="name" placeholder="your name" /><button id="joinBtn">
+        Join room
+      </button>
+      <span id="status">disconnected</span>
+    </div>
+    <div id="messages"></div>
+    <div id="typing"></div>
+    <div class="box">
+      <input id="msg" placeholder="message" /><button id="send">Send</button>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
+  </body>
 </html>

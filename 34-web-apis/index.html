@@ -1,16 +1,32 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Web APIs Demo</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<h1>Web APIs Dashboard</h1>
-<div class="box"><button id="locBtn">Get my location</button><ul id="locList"></ul><div id="locCard">No location yet</div></div>
-<div class="box"><canvas id="chart" width="320" height="160"></canvas><br><button id="drawBtn">Draw random chart</button></div>
-<div class="box"><button id="notifyBtn">Send notification</button></div>
-<div class="box"><p id="visits"></p><textarea id="noteBox" placeholder="Type note, auto saves in localStorage"></textarea></div>
-<script src="script.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Web APIs Demo</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>Web APIs Dashboard</h1>
+    <div class="box">
+      <button id="locBtn">Get my location</button>
+      <ul id="locList"></ul>
+      <div id="locCard">No location yet</div>
+    </div>
+    <div class="box">
+      <canvas id="chart" width="320" height="160"></canvas><br /><button
+        id="drawBtn"
+      >
+        Draw random chart
+      </button>
+    </div>
+    <div class="box"><button id="notifyBtn">Send notification</button></div>
+    <div class="box">
+      <p id="visits"></p>
+      <textarea
+        id="noteBox"
+        placeholder="Type note, auto saves in localStorage"
+      ></textarea>
+    </div>
+    <script src="script.js"></script>
+  </body>
 </html>

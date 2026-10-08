@@ -1,20 +1,27 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Security Demo</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<h1>Security - Comment Section</h1>
-<p>Try this comment: <code>&lt;img src=x onerror=alert(1)&gt;</code></p>
-<div class="box">
-<input id="text" placeholder="write a comment">
-<div><button id="unsafeBtn">Add with innerHTML (unsafe)</button><button id="escapeBtn">Add with escapeHtml</button><button id="safeBtn">Add with textContent</button></div>
-<div><button id="postBtn">POST with CSRF token</button><button id="badPostBtn">POST without token</button></div>
-</div>
-<pre id="log"></pre>
-<div id="comments"></div>
-<script src="script.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Security Demo</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>Security - Comment Section</h1>
+    <p>Try this comment: <code>&lt;img src=x onerror=alert(1)&gt;</code></p>
+    <div class="box">
+      <input id="text" placeholder="write a comment" />
+      <div>
+        <button id="unsafeBtn">Add with innerHTML (unsafe)</button
+        ><button id="escapeBtn">Add with escapeHtml</button
+        ><button id="safeBtn">Add with textContent</button>
+      </div>
+      <div>
+        <button id="postBtn">POST with CSRF token</button
+        ><button id="badPostBtn">POST without token</button>
+      </div>
+    </div>
+    <pre id="log"></pre>
+    <div id="comments"></div>
+    <script src="script.js"></script>
+  </body>
 </html>

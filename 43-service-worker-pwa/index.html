@@ -1,18 +1,22 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#1976d2">
-<link rel="manifest" href="/manifest.json">
-<link rel="stylesheet" href="style.css">
-<title>Offline Notes PWA</title>
-</head>
-<body>
-<h1>Offline Notes <span id="status">online</span></h1>
-<div class="box"><input id="noteInput" placeholder="write a note"><button id="saveBtn">Save</button><button id="installBtn" style="display:none">Install app</button></div>
-<ul id="list"></ul>
-<script src="idb-helper.js"></script>
-<script src="app.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1976d2" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Offline Notes PWA</title>
+  </head>
+  <body>
+    <h1>Offline Notes <span id="status">online</span></h1>
+    <div class="box">
+      <input id="noteInput" placeholder="write a note" /><button id="saveBtn">
+        Save</button
+      ><button id="installBtn" style="display: none">Install app</button>
+    </div>
+    <ul id="list"></ul>
+    <script src="idb-helper.js"></script>
+    <script src="app.js"></script>
+  </body>
 </html>

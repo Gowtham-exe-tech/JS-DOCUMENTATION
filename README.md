@@ -10710,24 +10710,124 @@ worker.onmessage = (event) => {
 # 37. Unit Testing
 
 * Unit testing means testing small pieces of application logic separately.
+
 * A unit can be a function or a small module.
+
 * The purpose is to automatically verify expected behavior.
+
+* Instead of manually checking the application every time I change code, unit tests allow me to verify important behavior automatically.
+
+* A good unit test should be:
+
+  * Small
+  * Focused on one behavior
+  * Repeatable
+  * Independent from other tests
+  * Easy to understand
 
 ## Basic test structure
 
-* Arrange -> prepare input.
-* Act -> call the function.
-* Assert -> verify the result.
+* A common unit testing pattern is:
 
-## Real applicant validation example
+  Arrange | prepare the input and test conditions.
+
+  Act | call the function being tested.
+
+  Assert | verify that the result is what I expected.
+
+* Example:
 
 ```js
-function validateAge(age) {
-    return age >= 18 && age <= 100;
+test("age 17 should be rejected", () => {
+    // Arrange
+    const age = 17;
+
+    // Act
+    const result = validateAge(age);
+
+    // Assert
+    expect(result).toBe(false);
+});
+```
+
+* The test is easier to understand when I can clearly identify what I am preparing, executing and checking.
+
+## Real application example - Cart logic
+
+* In my unit testing project, I created a small cart module instead of testing a simple mathematical function.
+
+* The module contains three functions:
+
+  `addItem()` | adds a product to a cart
+
+  `total()` | calculates the total cart price
+
+  `getUser()` | retrieves a user through a fetch dependency
+
+* This gives me different types of logic to test: synchronous logic, validation, array manipulation, calculation and asynchronous external dependencies.
+
+## addItem()
+
+* The `addItem()` function validates the product before adding it to the cart.
+
+```js
+function addItem(cart, item) {
+    if (!item.name || item.price <= 0) {
+        throw new Error("invalid item");
+    }
+
+    return [...cart, item];
 }
 ```
 
-* Tests should cover normal and boundary cases.
+* It rejects an item when the name is missing or the price is less than or equal to zero.
+
+* If the item is valid, it returns a new array containing the existing cart items and the new item.
+
+* My tests check both successful and invalid cases.
+
+```js
+test("adds an item", () => {
+    cart = addItem(cart, { name: "Pen", price: 10 });
+
+    expect(cart).toHaveLength(1);
+});
+```
+
+* I also test invalid input:
+
+```js
+test("throws for bad item", () => {
+    expect(() => addItem(cart, { name: "", price: 0 }))
+        .toThrow("invalid item");
+});
+```
+
+* This is important because testing only the successful case would not prove that my validation works.
+
+## Testing business rules
+
+* Unit tests should test the actual rules of the application.
+
+* For example, my cart has a rule that an item must have a name and a positive price.
+
+* I test:
+
+  Valid item | should be added
+
+  Missing name | should be rejected
+
+  Zero price | should be rejected
+
+  Negative price | should be rejected
+
+* This means I am testing the business rule rather than simply testing whether the function runs.
+
+## Testing boundary and invalid cases
+
+* Tests should cover normal values, boundary values and invalid values.
+
+* For example, if an application accepts an age from 18 to 100:
 
 ```js
 expect(validateAge(25)).toBe(true);
@@ -10738,72 +10838,544 @@ expect(validateAge(101)).toBe(false);
 ```
 
 * This is better than testing only `25`.
-* Boundary values often reveal mistakes.
+
+* Boundary values often reveal mistakes in conditions such as `<` versus `<=`.
+
+* The same idea applies to my cart project.
+
+* Instead of testing only a valid product, I also test invalid prices such as `0` and negative values.
+
+## total()
+
+* The `total()` function calculates the total price of all products in the cart.
+
+```js
+function total(cart) {
+    return cart.reduce(
+        (sum, i) => sum + i.price * (i.qty || 1),
+        0
+    );
+}
+```
+
+* The function also supports quantity.
+
+* If an item does not have a `qty`, it uses `1`.
+
+* Example:
+
+```text
+Pen
+Price = 10
+Quantity = 1
+Total = 10
+```
+
+* Another example:
+
+```text
+Pen
+Price = 10
+Quantity = 3
+Total = 30
+```
+
+* My Jest test verifies this behavior:
+
+```js
+test("respects qty", () => {
+    expect(total([
+        { name: "Pen", price: 10, qty: 3 }
+    ])).toBe(30);
+});
+```
+
+* I also test an empty cart:
+
+```js
+it("returns 0 for empty cart", function () {
+    expect(total([])).to.equal(0);
+});
+```
+
+* This verifies that the function handles an important edge case instead of assuming that the cart always contains products.
+
+## Testing immutability
+
+* My `addItem()` function uses:
+
+```js
+return [...cart, item];
+```
+
+* This creates a new array instead of modifying the original cart.
+
+* I explicitly test this behavior:
+
+```js
+test("does not change old cart", () => {
+    const next = addItem(cart, {
+        name: "Pen",
+        price: 10
+    });
+
+    expect(cart).toHaveLength(0);
+    expect(next).not.toBe(cart);
+});
+```
+
+* This test checks two things:
+
+  The old cart is still empty.
+
+  The returned cart is a different array.
+
+* This is useful because changing existing state unexpectedly can create difficult bugs in larger applications.
+
+* A unit test can therefore verify not only the final result but also an important implementation behavior such as preserving the original state.
+
+## beforeEach()
+
+* My Jest tests use `beforeEach()`:
+
+```js
+beforeEach(() => {
+    cart = [];
+});
+```
+
+* This runs before every test.
+
+* It gives each test a fresh cart.
+
+* Without resetting the cart, one test could accidentally affect another test.
+
+* For example:
+
+```text
+Test 1 → adds Pen
+Test 2 → starts with Pen already inside cart
+```
+
+* This would make Test 2 dependent on Test 1.
+
+* With `beforeEach()`:
+
+```text
+Test 1 → fresh cart
+Test 2 → fresh cart
+Test 3 → fresh cart
+```
+
+* This makes tests independent and more reliable.
 
 ## Jest
 
 * Jest is a JavaScript testing framework.
+
 * It provides test runners, assertions and mocking features.
 
+* My project uses Jest as one of the testing frameworks.
+
+* My `package.json` contains:
+
+```json
+"test": "jest"
+```
+
+* Therefore I can run:
+
+```bash
+npm test
+```
+
+* My Jest tests use:
+
 ```js
-test("age 17 should be rejected", () => {
-    expect(validateAge(17)).toBe(false);
+test("total is correct", () => {
+    cart = addItem(
+        addItem(cart, { name: "Pen", price: 10 }),
+        { name: "Book", price: 40 }
+    );
+
+    expect(total(cart)).toBe(50);
 });
 ```
 
-* Real application example:
-  * Before changing applicant validation rules, I can run the tests.
-  * If a change breaks the age rules, the test tells me immediately.
+* Here I am testing actual application behavior:
+
+  Add Pen | ₹10
+
+  Add Book | ₹40
+
+  Calculate total | ₹50
+
+* This is more meaningful than simply testing whether a function returns a hardcoded value.
+
+## Testing errors
+
+* Unit tests should also verify that invalid operations fail correctly.
+
+* In my project, `addItem()` throws an error for an invalid item.
+
+```js
+expect(() => addItem(cart, {
+    name: "",
+    price: 0
+})).toThrow("invalid item");
+```
+
+* The test verifies both:
+
+  Invalid input causes an error.
+
+  The error contains the expected message.
+
+* Testing failures is important because production applications need to behave correctly when users provide invalid data.
 
 ## Mocha
 
 * Mocha is another JavaScript test framework.
+
 * It provides a structure for organizing and running tests.
-* It is commonly combined with assertion and mocking libraries.
+
+* My project also contains a Mocha test file so I can compare the testing style with Jest.
+
+* Example:
 
 ```js
-describe("validateAge", () => {
-    it("rejects age below 18", () => {
-        // assertion
+describe("total()", function () {
+    it("adds prices", function () {
+        expect(total([
+            { price: 5 },
+            { price: 15 }
+        ])).to.equal(20);
     });
 });
 ```
 
-* Mocha and Jest solve similar testing needs but have different ecosystems and APIs.
-* A project normally chooses a consistent testing setup.
+* Mocha itself provides the test structure and runner.
+
+* My project combines Mocha with Chai for assertions.
 
 ## Chai
 
 * Chai is an assertion library.
+
 * It can be used with Mocha.
 
+* My project uses:
+
 ```js
-expect(validateAge(17)).to.equal(false);
+const { expect } = require("chai");
 ```
 
-* Jest already includes an assertion system, so I would not add Chai to a Jest project without a reason.
+* Example:
+
+```js
+expect(total([
+    { price: 5 },
+    { price: 15 }
+])).to.equal(20);
+```
+
+* Chai provides assertion styles such as:
+
+```js
+.to.equal()
+.to.deep.equal()
+.to.have.lengthOf()
+.to.throw()
+.to.be.a()
+```
+
+* Jest already provides its own assertion system, so I do not need Chai when writing normal Jest tests.
+
+## Jest vs Mocha + Chai
+
+* My project intentionally demonstrates both approaches.
+
+```text
+Jest
+→ Test runner
+→ Assertions
+→ Mocking
+→ One integrated testing framework
+
+Mocha + Chai
+→ Mocha = test runner / test structure
+→ Chai = assertions
+→ Additional libraries can be added for mocking
+```
+
+* My `package.json` contains scripts for both:
+
+```json
+"test": "jest",
+"test:mocha": "mocha cart.mocha.js",
+"test:all": "jest && mocha cart.mocha.js"
+```
+
+* `npm test` runs the Jest tests.
+
+* `npm run test:mocha` runs the Mocha tests.
+
+* `npm run test:all` runs both test suites.
+
+* In a real project, I would normally choose a consistent testing stack rather than adding multiple frameworks without a reason.
 
 ## Mocking
 
 * Mocking replaces a real dependency with a controlled fake.
-* Real application example:
-  * `approveApplication()` may call an email service.
-  * I do not want a unit test to actually send an email.
-  * I mock the email service.
-  * Then I test whether the function attempted to send the correct email.
 
-* Mocking keeps the unit test focused on the function being tested.
+* It is especially useful when the function being tested depends on something external.
+
+* My `getUser()` function makes an API request:
+
+```js
+async function getUser(id, fetcher = fetch) {
+    const res = await fetcher("/api/users/" + id);
+    return res.json();
+}
+```
+
+* The important design decision here is:
+
+```js
+fetcher = fetch
+```
+
+* Normally the function uses the real `fetch`.
+
+* During testing, I can provide a fake `fetcher`.
+
+* This allows me to test the function without making a real network request.
+
+## Mocking a successful API response
+
+* My Jest test creates a mock fetch function:
+
+```js
+const mockFetch = jest
+    .fn()
+    .mockResolvedValue({
+        json: () => Promise.resolve({
+            id: 1,
+            name: "Ravi"
+        })
+    });
+```
+
+* This means I am controlling what the API call returns.
+
+* Then I call:
+
+```js
+const user = await getUser(1, mockFetch);
+```
+
+* I verify that the function called the expected endpoint:
+
+```js
+expect(mockFetch).toHaveBeenCalledWith("/api/users/1");
+```
+
+* I also verify that it was called exactly once:
+
+```js
+expect(mockFetch).toHaveBeenCalledTimes(1);
+```
+
+* Finally, I verify the returned data:
+
+```js
+expect(user.name).toBe("Ravi");
+```
+
+* I am therefore testing three things:
+
+  Correct endpoint | `/api/users/1`
+
+  Correct number of calls | `1`
+
+  Correct returned data | `"Ravi"`
+
+## Mocking an API failure
+
+* Unit tests should also verify how the application behaves when an external dependency fails.
+
+* My project uses:
+
+```js
+const badFetch = jest
+    .fn()
+    .mockRejectedValue(new Error("network down"));
+```
+
+* Then I test:
+
+```js
+await expect(
+    getUser(2, badFetch)
+).rejects.toThrow("network down");
+```
+
+* This simulates a network failure without actually disconnecting the computer from the internet.
+
+* This is one of the main reasons mocking is useful.
+
+* I can test situations that are difficult, slow or unreliable to reproduce with real external services.
+
+## Why I mock external dependencies
+
+* Imagine `getUser()` directly calls a real user API during every unit test.
+
+* Then the test depends on:
+
+  Network availability
+
+  API availability
+
+  API response
+
+  API authentication
+
+  API speed
+
+* If the external API is down, my unit test could fail even when my own function is correct.
+
+* By mocking the dependency, I isolate the unit being tested.
+
+```text
+getUser()
+    |
+    ↓
+fetcher
+    |
+    ├── Real fetch → actual API
+    |
+    └── Mock fetch → controlled test response
+```
+
+* This allows my unit test to focus on the behavior of `getUser()` rather than testing the external API itself.
+
+## What my project currently tests
+
+* My Jest tests cover:
+
+  Adding an item
+
+  Calculating cart totals
+
+  Product quantity
+
+  Invalid items
+
+  Preserving the original cart
+
+  Successful API response
+
+  API endpoint and call count
+
+  API/network failure
+
+* My Mocha + Chai tests cover:
+
+  Empty cart
+
+  Price calculation
+
+  Return type
+
+  Adding an item
+
+  Invalid price handling
+
+* This gives the project examples of both normal behavior and failure behavior.
+
+## Running my tests
+
+* My project has these npm scripts:
+
+```bash
+npm test
+```
+
+* Runs the Jest test suite.
+
+```bash
+npm run test:mocha
+```
+
+* Runs the Mocha + Chai test suite.
+
+```bash
+npm run test:all
+```
+
+* Runs Jest first and then the Mocha test suite.
+
+* My `package.json` defines these scripts and includes Jest, Mocha and Chai as development dependencies.
+
+## What I learned from this project
+
+* Unit testing is not just about checking whether a function returns the expected value.
+
+* I learned to test:
+
+  Normal behavior
+
+  Invalid input
+
+  Edge cases
+
+  Errors
+
+  State isolation
+
+  Immutability
+
+  Asynchronous behavior
+
+  External dependencies
+
+  Mocked success responses
+
+  Mocked failure responses
+
+* The main purpose is to catch regressions when application code changes.
+
+* For example, if I later change the cart calculation logic, I can run the existing tests and immediately know whether the expected behavior has been broken.
+
+* The most important principle I learned is:
+
+  **A good unit test verifies a meaningful behavior of the application and isolates the code being tested from unrelated dependencies.**
+
 
 # 38. Security
 
 * Security means protecting application data, users and functionality from misuse.
+
 * Client-side JavaScript cannot be treated as trusted because users control their browser.
+
 * Important validation and authorization must also happen on the server.
+
+* Security should be handled in multiple layers instead of depending on a single protection.
+
+* A typical security flow is:
+
+  User input | Validation | Authorization | Safe processing | Secure response
 
 ## XSS
 
 * XSS means Cross-Site Scripting.
+
 * It happens when attacker-controlled content becomes executable HTML or JavaScript in another user's browser.
+
+* The main problem is not simply that the user entered `<script>`.
+
+* The real problem is that the application takes untrusted data and puts it into a context where the browser interprets it as executable HTML or JavaScript.
+
 * Example dangerous pattern:
 
 ```js
@@ -10811,32 +11383,177 @@ result.innerHTML = applicant.name;
 ```
 
 * If `applicant.name` contains malicious HTML, the browser may interpret it as markup.
+
+* Example attacker input:
+
+```html
+<img src="x" onerror="alert('XSS')">
+```
+
+* If this value is inserted using `innerHTML`, the browser may interpret the `<img>` element and execute the event handler.
+
 * Safer for plain text:
 
 ```js
 result.textContent = applicant.name;
 ```
 
-* Real application example:
-  * An applicant enters a name.
-  * The admin page displays the name.
-  * I treat the name as untrusted data.
-  * I safely render it as text rather than assuming it is safe HTML.
+* `textContent` treats the value as text instead of parsing it as HTML.
+
+### Real application example - Applicant Management System
+
+* Imagine my application has an applicant management page.
+
+* An applicant enters their name:
+
+```text
+Gowtham
+```
+
+* The admin page later displays that name.
+
+* Normally there is nothing dangerous about displaying a name.
+
+* But an attacker could submit something like:
+
+```html
+<img src=x onerror=alert('Hacked')>
+```
+
+* If the admin page does this:
+
+```js
+applicantName.innerHTML = applicant.name;
+```
+
+* The browser may interpret the attacker-controlled value as HTML.
+
+* If I instead do:
+
+```js
+applicantName.textContent = applicant.name;
+```
+
+* The browser displays the value as text.
+
+* The important rule is:
+
+  **User-controlled data should not automatically be treated as trusted HTML.**
+
+### How my security project demonstrates XSS
+
+* My security project intentionally contains an unsafe `innerHTML` example so I can understand the vulnerability.
+
+* It also contains an `escapeHtml()` approach and a `textContent` approach.
+
+* The `textContent` approach creates a paragraph element and assigns the user input as text instead of HTML.
+
+```js
+const p = document.createElement("p");
+p.textContent = input.value;
+box.appendChild(p);
+```
+
+* This lets me compare:
+
+  `innerHTML` | potentially dangerous when handling untrusted HTML
+
+  `escapeHtml()` | converts dangerous HTML characters into safe text
+
+  `textContent` | treats the value directly as text
+
+* I also added CSP as another layer of protection.
 
 ## CSRF
 
 * CSRF means Cross-Site Request Forgery.
+
 * The attacker tries to make an authenticated user's browser perform an unwanted state-changing request.
-* This matters especially for applications that authenticate with cookies.
-* Common defenses include CSRF tokens and appropriate cookie settings such as `SameSite`.
-* Real application example:
-  * An admin is logged into an expense approval system.
-  * An attacker should not be able to trick that browser into approving an expense without the admin intentionally doing it.
-* The exact defense depends on the authentication architecture.
+
+* This matters especially for applications that authenticate with cookies because browsers automatically send applicable cookies with requests.
+
+### Real application example - Expense Approval System
+
+* Imagine I have an expense management system.
+
+* A manager is already logged into the application.
+
+* The manager has permission to approve expenses.
+
+* Suppose the application has an endpoint:
+
+```text
+POST /api/expenses/EXP-1024/approve
+```
+
+* The manager normally clicks an **Approve** button.
+
+* Without appropriate CSRF protection, an attacker could try to make the manager's browser send an unwanted approval request.
+
+* The dangerous situation is:
+
+  Manager logs into expense application | Browser has authenticated session | Attacker tricks browser into making a request | Expense gets approved without the manager intentionally approving it
+
+* The important point is that the attacker does not necessarily need to know the manager's password.
+
+* The attack abuses the browser's existing authenticated session.
+
+### CSRF protection
+
+* A common defense is a CSRF token.
+
+* The server generates a token that an attacker cannot simply guess.
+
+* The legitimate frontend sends that token with the state-changing request.
+
+* The server verifies the token before processing the request.
+
+* Example:
+
+```text
+POST /api/expenses/EXP-1024/approve
+
+X-CSRF-Token: random-server-generated-token
+```
+
+* If the token is missing or invalid, the server rejects the request.
+
+* Appropriate cookie settings such as `SameSite` can provide additional protection depending on the authentication architecture.
+
+### How my security project demonstrates CSRF
+
+* My project has a `/token` endpoint that generates a random token.
+
+* The frontend requests that token and stores it.
+
+* When making the POST request, the frontend sends:
+
+```js
+headers["X-CSRF-Token"] = csrfToken;
+```
+
+* The server checks whether the token exists before accepting the request.
+
+* With the token:
+
+```text
+200 OK
+```
+
+* Without the token:
+
+```text
+403 Forbidden
+```
+
+* This demonstrates the basic idea of requiring proof that the request came from the legitimate application flow.
 
 ## Input validation
 
 * Validation checks whether data follows the application's expected rules.
+
+* Validation is mainly about deciding whether a value is acceptable according to business and application rules.
+
 * Example:
 
 ```js
@@ -10847,26 +11564,266 @@ function validateApplicantAge(age) {
 }
 ```
 
-* Real application example:
-  * My form accepts age from 18 to 100.
-  * Browser validation gives immediate feedback.
-  * The backend must repeat the validation because a user can bypass my frontend completely.
+### Real application example - Job Application
+
+* Suppose my job application form accepts an applicant's age.
+
+* My business rule is:
+
+```text
+Minimum age = 18
+Maximum age = 100
+```
+
+* A normal user might submit:
+
+```text
+Age = 23
+```
+
+* This is valid.
+
+* But someone can modify the request manually and send:
+
+```text
+Age = 12
+```
+
+* Or:
+
+```text
+Age = 150
+```
+
+* Or even:
+
+```text
+Age = "twenty"
+```
+
+* Browser-side validation can prevent some of these values during normal usage.
+
+* But I cannot trust browser validation because the user controls the browser.
+
+* Therefore, the backend must validate the value again.
+
+### Important distinction
+
+* Frontend validation improves the user experience.
+
+* Backend validation protects the application.
+
+```text
+Frontend validation
+        |
+        | fast feedback to user
+        ↓
+Backend validation
+        |
+        | actual security/business rule
+        ↓
+Process the request
+```
+
+* Never assume that because a field was validated in JavaScript, the backend can trust it.
 
 ## Sanitization
 
 * Sanitization means cleaning or transforming input so it can be safely used in a particular context.
-* Validation asks "Is this value acceptable?"
-* Sanitization asks "How can I safely handle this value for this context?"
+
+* Validation asks:
+
+```text
+"Is this value acceptable?"
+```
+
+* Sanitization asks:
+
+```text
+"How can I safely handle this value for this context?"
+```
+
 * They are related but not identical.
+
+### Real application example - Comment System
+
+* Imagine my application allows users to add comments.
+
+* A comment could contain:
+
+```text
+Great application!
+```
+
+* That is normal content.
+
+* But a malicious user could submit:
+
+```html
+<img src=x onerror=alert('XSS')>
+```
+
+* If I display this value as HTML without proper handling, it can become an XSS problem.
+
+* Depending on the context, I can safely render it as text or apply appropriate output encoding.
+
+* My security project demonstrates this using `escapeHtml()` and server-side HTML escaping.
+
+* The server also escapes the submitted comment before returning it.
+
+* This is important because I should not depend only on the frontend to protect the data.
+
+### Validation vs sanitization
+
+```text
+Input: "<script>alert('XSS')</script>"
+
+Validation:
+"Is this acceptable as a comment?"
+        |
+        ↓
+May reject it based on application rules
+
+Sanitization / output encoding:
+"How can I safely represent this value?"
+        |
+        ↓
+Treat dangerous characters as text
+```
+
+* The exact approach depends on where the data will be used.
+
+* HTML, URLs, SQL queries, shell commands and other contexts have different security requirements.
 
 ## Content Security Policy
 
 * CSP is a browser security policy delivered mainly through HTTP response headers.
+
 * It tells the browser which resources are allowed.
+
 * A CSP can restrict script sources, image sources, styles and other resources.
-* Real application example:
-  * My application can define trusted script sources and reduce the ability of injected scripts to execute.
+
+### Real application example
+
+* Imagine an admin dashboard where user-generated content is displayed.
+
+* An attacker somehow manages to inject HTML containing an inline script or event handler.
+
+* CSP can tell the browser:
+
+```text
+Only execute scripts loaded from trusted sources.
+Do not execute inline scripts.
+```
+
+* This can reduce the impact of certain XSS attacks.
+
+* For example, my project uses Helmet to configure CSP.
+
+```js
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'"],
+            objectSrc: ["'none'"]
+        }
+    }
+}));
+```
+
+* Here `'self'` means resources should come from my own application origin.
+
+* `scriptSrc` controls where scripts can be loaded from.
+
+* `objectSrc: ["'none'"]` prevents object-based resources.
+
+### Important security principle
+
 * CSP is an additional security layer, not a replacement for safe coding and input handling.
+
+* I should not think:
+
+```text
+"I have CSP, so using innerHTML with user input is safe."
+```
+
+* Instead:
+
+```text
+Safe rendering
+        +
+Input handling
+        +
+Server-side protection
+        +
+CSP
+        |
+        ↓
+Defense in depth
+```
+
+## Security principles I learned from this project
+
+* **Never trust the client**
+
+  The browser and frontend JavaScript are controlled by the user.
+
+* **Validate on the server**
+
+  Frontend validation is useful for user experience, but the backend must enforce important rules.
+
+* **Treat user input as untrusted**
+
+  User input should not automatically be treated as HTML, JavaScript, SQL, commands or any other trusted format.
+
+* **Use context-appropriate output handling**
+
+  `textContent` is appropriate when I want to display plain text. HTML escaping or other context-specific encoding may be required in other situations.
+
+* **Use defense in depth**
+
+  I should not depend on only one security mechanism. Safe coding, validation, authorization, secure cookies, CSRF protection and CSP can work together.
+
+* **Security is not only about preventing attacks**
+
+  It is also about limiting what an attacker can do if one protection fails.
+
+## My Security Project
+
+* I created a small Express.js security demonstration application.
+
+* The project demonstrates two major web security problems:
+
+  XSS | Cross-Site Scripting
+
+  CSRF | Cross-Site Request Forgery
+
+* For XSS, I demonstrate:
+
+  `innerHTML` | unsafe handling of untrusted HTML
+
+  `escapeHtml()` | escaping dangerous HTML characters
+
+  `textContent` | treating user input as plain text
+
+  CSP | additional browser-level protection
+
+* For CSRF, I demonstrate:
+
+  `/token` | generating a random CSRF token
+
+  `X-CSRF-Token` | sending the token with the request
+
+  Server validation | rejecting requests without a valid token
+
+* The project also performs server-side HTML escaping, giving an additional layer of protection.
+
+* The main lesson from the project is:
+
+  **Security should not depend on trusting the browser. The server must enforce important security rules, and multiple layers of protection should work together.**
+
 
 # 39. Tooling
 
