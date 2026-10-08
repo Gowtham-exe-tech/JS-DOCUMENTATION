@@ -11890,242 +11890,5087 @@ Defense in depth
 
 # 40. JavaScript in the Browser
 
-* Browser JavaScript runs inside a browser environment.
-* The browser provides APIs that Node.js does not provide by default.
-* Examples are DOM, localStorage, Notifications, Geolocation and browser history.
+## What JavaScript in the Browser Means
 
-## DOM
+JavaScript in the browser allows me to make an HTML page dynamic and interactive.
 
-* JavaScript can inspect and change HTML through the DOM.
-* Real application example:
-  * Add/remove education fields in my application form.
-  * Update application status in the admin dashboard.
-  * Display API results in a table.
+HTML defines the structure, CSS controls the appearance, and JavaScript controls the behavior.
 
-## Events
+My project is a browser-based Notes App built using:
 
-* Events represent things happening in the browser.
-* Examples:
-  * `click`
-  * `input`
-  * `submit`
-  * `change`
-  * `keydown`
-  * `scroll`
-* I register listeners to respond to these events.
+```text
+HTML
+|
+| Page structure
 
-```js
-form.addEventListener("submit", submitApplication);
+CSS
+|
+| Styling
+
+JavaScript
+|
+| Application logic
+| DOM manipulation
+| Events
+| Storage
+| Navigation
+| Media APIs
 ```
 
-* Real application example:
-  * When the applicant submits the form, the submit event runs validation, collects data and sends it to the backend.
+I intentionally built it using **plain JavaScript without React, Vue, or another framework**.
 
-## Rendering
+This helped me understand the browser APIs directly before depending on framework abstractions.
 
-* Rendering is how the browser converts HTML/CSS and visual changes into what I see.
-* A JavaScript change can cause style recalculation, layout and painting.
-* If I repeatedly make expensive DOM changes, the browser may have more rendering work.
-* Real application example:
-  * Updating a 5,000-row table one row at a time can be expensive.
-  * I can reduce unnecessary DOM work by creating the needed content efficiently.
+My application supports:
 
-## Storage
+* Creating notes
+* Reading notes
+* Deleting notes
+* Persisting notes using `localStorage`
+* Keyboard interaction using `Enter`
+* Event delegation
+* Browser navigation using the History API
+* Back/forward navigation using `popstate`
+* Voice recording using the Media API
+* Dynamic DOM updates
+* Browser permission handling
+* Audio playback
+* Resource cleanup
 
-* Browser applications can store data using localStorage, sessionStorage, IndexedDB and cookies, depending on the requirement.
-* Each has different behavior and security characteristics.
-* Real application example:
-  * Small non-sensitive form preferences -> localStorage.
-  * Larger structured client-side data -> IndexedDB.
-  * Server-managed authentication/session state -> often cookies depending on architecture.
+The overall architecture is:
 
-## History API
-
-* The History API lets JavaScript change browser history and URLs without necessarily performing a full page reload.
-* `pushState()` adds a history entry.
-* `replaceState()` changes the current history entry.
-* `popstate` fires when the active history entry changes through browser navigation.
-
-```js
-history.pushState(
-    { applicantId: 42 },
-    "",
-    "/applications/42"
-);
+```text
+User
+|
+v
+Browser
+|
++-- HTML
+|   |-- Input
+|   |-- Buttons
+|   |-- Notes list
+|
++-- CSS
+|   |-- Layout
+|   |-- Styling
+|
++-- JavaScript
+    |
+    +-- DOM
+    +-- Events
+    +-- localStorage
+    +-- History API
+    +-- Media API
+    +-- Application state
 ```
 
-* Real application example:
-  * In an admin SPA, clicking an applicant can change the URL to `/applications/42` and display the details without reloading the entire page.
+# 1. Browser JavaScript
 
-## Media API
+## Definition
 
-* Browser media APIs allow applications to work with audio, video, cameras and microphones.
-* `getUserMedia()` can request camera or microphone access.
-* Real application example:
-  * A video interview platform can request camera and microphone permission and stream the media to the application.
-* Permissions and privacy are important.
+Browser JavaScript is JavaScript running inside a web browser with access to browser-provided APIs.
+
+JavaScript itself is the language.
+
+The browser provides additional APIs such as:
+
+```text
+DOM API
+Storage API
+History API
+Media API
+Fetch API
+Timer API
+```
+
+My Notes App uses several of these APIs directly.
+
+For example:
+
+```js
+localStorage
+history.pushState()
+navigator.mediaDevices.getUserMedia()
+MediaRecorder
+document.querySelector()
+setTimeout()
+```
+
+These are browser capabilities available to JavaScript running in the page.
+
+# 2. Browser Environment
+
+When my JavaScript runs in the browser, it has access to objects such as:
+
+```text
+window
+document
+navigator
+localStorage
+history
+location
+```
+
+For example:
+
+```js
+document.querySelector("#notes")
+```
+
+uses the DOM API.
+
+And:
+
+```js
+localStorage.setItem(...)
+```
+
+uses the browser's Web Storage API.
+
+The browser provides these capabilities around the JavaScript language.
+
+Conceptually:
+
+```text
+Browser
+|
++-- JavaScript Engine
+|
++-- DOM API
++-- Storage API
++-- History API
++-- Media API
++-- Fetch API
++-- Timer API
+```
+
+# 3. DOM
+
+## Definition
+
+DOM stands for **Document Object Model**.
+
+The browser converts the HTML document into a tree-like object structure that JavaScript can access and modify.
+
+For example, my HTML may contain:
+
+```html
+<ul id="notes"></ul>
+```
+
+JavaScript can access it using:
+
+```js
+const notesList = document.querySelector("#notes");
+```
+
+Now JavaScript has a reference to that DOM element.
+
+The flow is:
+
+```text
+HTML
+|
+v
+Browser parses HTML
+|
+v
+DOM
+|
+v
+JavaScript
+|
+v
+Modify DOM
+|
+v
+Browser updates page
+```
+
+# 4. DOM Manipulation
+
+## Definition
+
+DOM manipulation means using JavaScript to create, remove, update, or modify elements on the page.
+
+My Notes App dynamically renders notes.
+
+When I add:
+
+```text
+Tested login module
+```
+
+JavaScript creates the corresponding list item and adds it to the `<ul>`.
+
+Conceptually:
+
+```text
+User enters note
+|
+v
+JavaScript
+|
+v
+Create <li>
+|
+v
+Set note text
+|
+v
+Add <li> to #notes
+|
+v
+Browser displays note
+```
+
+This means the page does not need to be manually refreshed after adding a note.
+
+# 5. Creating Notes
+
+My application allows the user to type a note into an input field.
+
+For example:
+
+```text
+Tested login module
+```
+
+Then the user can either:
+
+```text
+Click Add
+```
+
+or:
+
+```text
+Press Enter
+```
+
+The JavaScript handles both interactions.
+
+The flow is:
+
+```text
+User enters text
+|
++-- Click Add
+|
++-- Press Enter
+|
+v
+JavaScript event handler
+|
+v
+Read input value
+|
+v
+Create note
+|
+v
+Save note
+|
+v
+Render notes
+```
+
+# 6. Keyboard Events
+
+## Definition
+
+Keyboard events allow JavaScript to respond when the user interacts with the keyboard.
+
+My Notes App supports:
+
+```text
+Enter
+```
+
+to add a note.
+
+For example, conceptually:
+
+```js
+input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+        addNote();
+    }
+});
+```
+
+The important part is:
+
+```js
+event.key
+```
+
+It tells me which key triggered the event.
+
+The flow is:
+
+```text
+User presses Enter
+|
+v
+keydown event
+|
+v
+Check event.key
+|
+v
+"Enter"?
+|
+v
+addNote()
+```
+
+This makes the application more convenient because the user doesn't always need to click the Add button.
+
+# 7. Browser Events
+
+## Definition
+
+An event represents something that happened in the browser.
+
+Examples:
+
+```text
+click
+keydown
+input
+change
+submit
+load
+popstate
+```
+
+My application uses events for multiple features.
+
+For example:
+
+```text
+Add button
+|
+v
+click
+
+Input
+|
+v
+keydown
+
+Notes list
+|
+v
+click
+
+Browser navigation
+|
+v
+popstate
+
+Voice recording
+|
+v
+MediaRecorder events
+```
+
+The browser detects the event and calls the JavaScript event handler.
+
+# 8. Event Listeners
+
+## Definition
+
+An event listener tells JavaScript what to do when a particular event happens.
+
+For example:
+
+```js
+button.addEventListener("click", addNote);
+```
+
+This means:
+
+```text
+When button is clicked
+|
+v
+Run addNote()
+```
+
+In my Notes App, event listeners connect the user's actions to application behavior.
+
+Without event listeners, the browser would display the UI but my JavaScript would not know when the user interacts with it.
+
+# 9. Event Delegation
+
+## Definition
+
+Event delegation means attaching one event listener to a parent element instead of creating separate listeners for every child element.
+
+This is one of the important concepts demonstrated by my Notes App.
+
+Suppose I have:
+
+```html
+<ul id="notes">
+    <li>Learn Node.js</li>
+    <li>Practice Express</li>
+    <li>Review MongoDB</li>
+</ul>
+```
+
+Instead of doing:
+
+```text
+li 1 | listener
+li 2 | listener
+li 3 | listener
+```
+
+I attach one listener to:
+
+```text
+#notes
+```
+
+The flow is:
+
+```text
+User clicks a note
+|
+v
+Event reaches <li>
+|
+v
+Event bubbles to <ul>
+|
+v
+#notes listener
+|
+v
+Identify clicked <li>
+|
+v
+Delete corresponding note
+```
+
+# 10. Event Bubbling
+
+Event delegation works because events can bubble from the target element toward its ancestors.
+
+For example:
+
+```text
+<li>
+|
+v
+<ul>
+|
+v
+<body>
+|
+v
+document
+```
+
+If I click the `<li>`, the event can reach the parent `<ul>`.
+
+My application uses this behavior to handle note deletion from one parent listener.
+
+# 11. Why I Used Event Delegation
+
+Imagine the application contains 1,000 notes.
+
+If I create one event listener for every note:
+
+```text
+1000 notes
+|
+v
+1000 listeners
+```
+
+I have more listener registrations to manage.
+
+With event delegation:
+
+```text
+1000 notes
+|
+v
+1 listener on #notes
+```
+
+The handler determines which note was clicked.
+
+This makes the code simpler and works especially well when list items are dynamically created.
+
+This is important in my app because notes are not fixed in the HTML.
+
+They are created dynamically by JavaScript.
+
+# 12. Dynamic DOM Rendering
+
+My notes are stored as application data and then rendered into the DOM.
+
+Conceptually:
+
+```text
+notes array
+|
+v
+renderNotes()
+|
+v
+Create <li> elements
+|
+v
+Append to #notes
+|
+v
+Browser displays notes
+```
+
+When the data changes, I can render the updated state again.
+
+For example:
+
+```text
+Before:
+notes = [Note A, Note B]
+
+Delete Note A
+
+After:
+notes = [Note B]
+
+Render again
+|
+v
+Browser displays only Note B
+```
+
+This introduces an important frontend concept:
+
+```text
+Application data
+|
+v
+UI representation
+```
+
+# 13. Local Storage
+
+## Definition
+
+`localStorage` allows the browser to store small amounts of data as key-value pairs that persist across page reloads.
+
+My Notes App uses it to save notes.
+
+For example:
+
+```js
+localStorage.setItem("notes", ...)
+```
+
+The important point is that `localStorage` belongs to the browser.
+
+The data is stored on the user's device rather than being sent to my backend server.
+
+# 14. Why I Used localStorage
+
+My Notes App does not require a backend database just to demonstrate persistent notes.
+
+Without localStorage:
+
+```text
+Add note
+|
+v
+Refresh page
+|
+v
+Notes disappear
+```
+
+With localStorage:
+
+```text
+Add note
+|
+v
+Save to localStorage
+|
+v
+Refresh page
+|
+v
+Read localStorage
+|
+v
+Restore notes
+```
+
+This allowed me to implement persistence entirely on the client side.
+
+# 15. localStorage Stores Strings
+
+One important limitation is that `localStorage` stores values as strings.
+
+But my notes are represented as an array.
+
+For example:
+
+```js
+const notes = [
+    "Learn JavaScript",
+    "Practice Node.js"
+];
+```
+
+I cannot directly store the JavaScript array as an array in localStorage.
+
+I convert it to JSON:
+
+```text
+JavaScript array
+|
+v
+JSON.stringify()
+|
+v
+String
+|
+v
+localStorage
+```
+
+When retrieving:
+
+```text
+localStorage
+|
+v
+String
+|
+v
+JSON.parse()
+|
+v
+JavaScript array
+```
+
+# 16. JSON Serialization
+
+## Definition
+
+Serialization converts JavaScript data into a format that can be stored or transmitted.
+
+My Notes App uses:
+
+```js
+JSON.stringify(notes)
+```
+
+before storing notes.
+
+For example:
+
+```js
+[
+    "Learn JavaScript",
+    "Practice Node.js"
+]
+```
+
+becomes JSON text.
+
+When reading it back:
+
+```js
+JSON.parse(savedNotes)
+```
+
+converts it back into a JavaScript value.
+
+The complete flow is:
+
+```text
+JavaScript array
+|
+v
+JSON.stringify()
+|
+v
+localStorage
+|
+v
+JSON string
+|
+v
+JSON.parse()
+|
+v
+JavaScript array
+```
+
+# 17. Loading Notes After Refresh
+
+When the page loads, JavaScript checks whether notes already exist in localStorage.
+
+The flow is:
+
+```text
+Page loads
+|
+v
+Read localStorage
+|
+v
+Find "notes"
+|
++-- Notes exist
+|   |
+|   v
+|   JSON.parse()
+|
++-- No notes
+    |
+    v
+    Start with empty array
+|
+v
+Render notes
+```
+
+This gives the application persistence across browser refreshes.
+
+# 18. CRUD in My Notes App
+
+CRUD means:
+
+```text
+Create
+Read
+Update
+Delete
+```
+
+My current Notes App mainly demonstrates:
+
+```text
+Create | Add a note
+Read   | Load and display notes
+Delete | Click note to remove it
+```
+
+The basic flow is:
+
+```text
+Create
+|
+v
+Add note
+|
+v
+Save to localStorage
+|
+v
+Render
+
+Read
+|
+v
+Load localStorage
+|
+v
+Render
+
+Delete
+|
+v
+Identify selected note
+|
+v
+Remove from array
+|
+v
+Update localStorage
+|
+v
+Render again
+```
+
+Even though this is a small application, it demonstrates the same fundamental data lifecycle used in larger frontend applications.
+
+# 19. State in My Application
+
+The notes array acts as client-side application state.
+
+Conceptually:
+
+```text
+notes
+|
++-- Note A
++-- Note B
++-- Note C
+```
+
+The UI is based on this state.
+
+For example:
+
+```text
+State
+|
+v
+notes = [A, B, C]
+|
+v
+DOM
+|
+v
+A
+B
+C
+```
+
+After deleting B:
+
+```text
+State
+|
+v
+notes = [A, C]
+|
+v
+DOM
+|
+v
+A
+C
+```
+
+This separation between data and UI becomes extremely important in larger frontend applications.
+
+Frameworks such as React and Vue provide more structured ways to manage this concept, but I implemented the basic idea manually using plain JavaScript.
+
+# 20. History API
+
+## Definition
+
+The History API allows JavaScript to control browser history and URL navigation without necessarily performing a full page reload.
+
+My Notes App has two views:
+
+```text
+Home
+All Notes
+```
+
+I use URLs such as:
+
+```text
+?view=home
+?view=all
+```
+
+When I move between these views, I update the browser URL using:
+
+```js
+history.pushState()
+```
+
+without reloading the entire page.
+
+# 21. Single-Page Navigation
+
+Normally, navigating to another page could mean:
+
+```text
+Click link
+|
+v
+Browser requests new HTML
+|
+v
+Page reload
+```
+
+My Notes App instead does:
+
+```text
+Click All Notes
+|
+v
+JavaScript handles navigation
+|
+v
+history.pushState()
+|
+v
+URL changes
+|
+v
+JavaScript changes DOM view
+|
+v
+No full page reload
+```
+
+This is a basic form of single-page application behavior.
+
+I did not use React Router or Vue Router.
+
+I implemented the navigation behavior directly using the browser's History API.
+
+# 22. history.pushState()
+
+## Definition
+
+`history.pushState()` adds a new entry to the browser's history without reloading the page.
+
+For example:
+
+```text
+Current:
+?view=home
+
+User clicks All Notes
+
+After:
+?view=all
+```
+
+The flow is:
+
+```text
+User clicks All Notes
+|
+v
+JavaScript
+|
+v
+history.pushState()
+|
+v
+URL becomes ?view=all
+|
+v
+Render All Notes view
+```
+
+The browser remains on the same loaded document.
+
+# 23. popstate
+
+## Definition
+
+The `popstate` event fires when the active history entry changes through browser history navigation such as Back and Forward.
+
+This is important in my application because changing the URL using `pushState()` does not automatically render my UI.
+
+I need to listen for:
+
+```js
+window.addEventListener("popstate", ...)
+```
+
+The flow is:
+
+```text
+User clicks Back
+|
+v
+Browser history changes
+|
+v
+popstate event
+|
+v
+JavaScript reads URL
+|
+v
+Determine view
+|
+v
+Render Home
+```
+
+# 24. Browser Back and Forward
+
+My application supports the browser's native navigation buttons.
+
+For example:
+
+```text
+Home
+|
+v
+All Notes
+|
+v
+Back
+|
+v
+Home
+```
+
+The important flow is:
+
+```text
+All Notes
+|
+| Browser Back
+v
+popstate
+|
+v
+Read URL
+|
+v
+?view=home
+|
+v
+Render Home
+```
+
+This gives the application a more natural browser experience.
+
+# 25. Why pushState and popstate Are Different
+
+This is an important point.
+
+`pushState()`:
+
+```text
+JavaScript
+|
+v
+Changes browser history
+```
+
+`popstate`:
+
+```text
+Browser history changes
+|
+v
+Notifies JavaScript
+```
+
+So they solve different problems.
+
+In my application:
+
+```text
+Click navigation
+|
+v
+pushState()
+|
+v
+Update view
+```
+
+But:
+
+```text
+Browser Back / Forward
+|
+v
+popstate
+|
+v
+Update view
+```
+
+# 26. URL as Application State
+
+My URL contains:
+
+```text
+?view=home
+```
+
+or:
+
+```text
+?view=all
+```
+
+This means the URL itself tells my application which view should be displayed.
+
+Conceptually:
+
+```text
+URL
+|
+v
+?view=all
+|
+v
+Read query parameter
+|
+v
+View = all
+|
+v
+Render All Notes
+```
+
+This is useful because the browser history can preserve navigation state.
+
+It also means the current view is represented by something the browser understands, rather than only by an internal JavaScript variable.
+
+# 27. URLSearchParams
+
+To read the query parameter, browser JavaScript can use `URLSearchParams`.
+
+For example:
+
+```js
+const params = new URLSearchParams(window.location.search);
+const view = params.get("view");
+```
+
+For:
+
+```text
+?view=all
+```
+
+the result is:
+
+```text
+view = "all"
+```
+
+Then my application can decide which view to render.
+
+# 28. Media API
+
+## Definition
+
+The Media APIs allow browser JavaScript to interact with media devices such as microphones and cameras.
+
+My Notes App uses:
+
+```js
+navigator.mediaDevices.getUserMedia()
+```
+
+to request microphone access.
+
+The browser asks the user for permission before giving JavaScript access to the microphone.
+
+The flow is:
+
+```text
+User clicks Record
+|
+v
+getUserMedia()
+|
+v
+Browser permission
+|
++-- Allow
+|   |
+|   v
+|   Microphone stream
+|
++-- Deny
+    |
+    v
+    Handle permission error
+```
+
+# 29. Microphone Permission
+
+Browser applications cannot silently access the user's microphone.
+
+The browser asks for permission.
+
+This is important from a security and privacy perspective.
+
+My application requests:
+
+```js
+{ audio: true }
+```
+
+The browser then provides a media stream if the user allows access.
+
+Conceptually:
+
+```text
+JavaScript
+|
+| Request microphone
+v
+Browser security permission
+|
++-- Allowed
+|   |
+|   v
+|   MediaStream
+|
++-- Denied
+    |
+    v
+    Error
+```
+
+# 30. MediaStream
+
+## Definition
+
+A `MediaStream` represents a stream of media data coming from a source such as a microphone.
+
+After:
+
+```js
+navigator.mediaDevices.getUserMedia({ audio: true })
+```
+
+I receive a stream.
+
+That stream contains audio tracks.
+
+Conceptually:
+
+```text
+Microphone
+|
+v
+MediaStream
+|
+v
+Audio Track
+|
+v
+MediaRecorder
+```
+
+# 31. MediaRecorder
+
+## Definition
+
+`MediaRecorder` records media from a `MediaStream`.
+
+My application creates a recorder using the microphone stream.
+
+The flow is:
+
+```text
+Microphone
+|
+v
+getUserMedia()
+|
+v
+MediaStream
+|
+v
+MediaRecorder
+|
+v
+Audio chunks
+|
+v
+Blob
+|
+v
+Audio element
+```
+
+This demonstrates an asynchronous browser API that interacts with real hardware.
+
+# 32. Recording Audio Chunks
+
+The recorder does not necessarily give me one complete audio file immediately.
+
+Instead, audio data can arrive through recorder events.
+
+Conceptually:
+
+```text
+Recording starts
+|
+v
+Audio chunk
+|
+v
+Audio chunk
+|
+v
+Audio chunk
+|
+v
+Recording stops
+|
+v
+Combine chunks
+```
+
+My application stores the binary chunks in an array.
+
+For example:
+
+```text
+audioChunks
+|
++-- chunk 1
++-- chunk 2
++-- chunk 3
+...
+```
+
+# 33. Blob
+
+## Definition
+
+A `Blob` represents immutable raw data that can be treated as a file-like object in browser JavaScript.
+
+After recording:
+
+```text
+Audio chunks
+|
+v
+Blob
+|
+v
+Object URL
+|
+v
+<audio>
+```
+
+The Blob allows me to treat the recorded binary data as something the browser can play.
+
+# 34. Audio Preview
+
+My application creates an `<audio>` element dynamically.
+
+The flow is:
+
+```text
+Recording complete
+|
+v
+Create Blob
+|
+v
+Create object URL
+|
+v
+Create <audio>
+|
+v
+Set audio source
+|
+v
+Add to DOM
+|
+v
+User clicks Play
+|
+v
+Browser plays recording
+```
+
+This demonstrates another example of dynamic DOM manipulation.
+
+The `<audio>` element did not need to exist in the original HTML.
+
+JavaScript creates it when the user finishes recording.
+
+# 35. Object URLs
+
+The browser can create a temporary URL that points to the Blob.
+
+Conceptually:
+
+```text
+Blob
+|
+v
+URL.createObjectURL()
+|
+v
+blob URL
+|
+v
+audio.src
+```
+
+The `<audio>` element can then use that URL as its source.
+
+This allows the browser to play the recorded audio without uploading it to a backend server.
+
+# 36. Recording for 3 Seconds
+
+My application records for three seconds.
+
+The flow is:
+
+```text
+Click Record
+|
+v
+Request microphone
+|
+v
+Start MediaRecorder
+|
+v
+Collect audio chunks
+|
+v
+Wait 3 seconds
+|
+v
+Stop MediaRecorder
+|
+v
+Create Blob
+|
+v
+Create audio preview
+```
+
+The three-second duration is controlled using a browser timer.
+
+This demonstrates how multiple asynchronous APIs can work together.
+
+# 37. setTimeout()
+
+## Definition
+
+`setTimeout()` schedules a function to run after a specified delay.
+
+My application uses it to stop recording after three seconds.
+
+Conceptually:
+
+```text
+Start recording
+|
+v
+setTimeout()
+|
+| 3000 ms
+|
+v
+Stop recording
+```
+
+This does not mean JavaScript blocks for three seconds.
+
+The browser schedules the callback and continues handling other events.
+
+# 38. Asynchronous Media Operations
+
+The microphone and recording APIs are asynchronous.
+
+My application cannot assume:
+
+```text
+Click Record
+|
+v
+Audio is immediately available
+```
+
+Instead:
+
+```text
+Click Record
+|
+v
+Request permission
+|
+v
+Wait for browser response
+|
+v
+Receive MediaStream
+|
+v
+Start recording
+|
+v
+Receive chunks asynchronously
+|
+v
+Stop
+|
+v
+Create Blob
+```
+
+This is a good example of why event-driven programming is important in browser JavaScript.
+
+# 39. Resource Cleanup
+
+One important part of my voice recording implementation is cleanup.
+
+After recording finishes, I stop the microphone tracks.
+
+Conceptually:
+
+```text
+Recording complete
+|
+v
+stream.getTracks()
+|
+v
+track.stop()
+|
+v
+Microphone released
+```
+
+This is important because simply stopping `MediaRecorder` does not mean the underlying hardware stream should remain active forever.
+
+The application should release resources it no longer needs.
+
+# 40. Why Resource Cleanup Matters
+
+If I forget to stop the microphone stream:
+
+```text
+Recording finished
+|
+v
+Microphone stream still active
+```
+
+the browser may continue holding access to the microphone.
+
+That can:
+
+* Waste resources
+* Keep the microphone active unnecessarily
+* Cause privacy concerns
+* Create problems when starting another recording
+
+So the correct lifecycle is:
+
+```text
+Request
+|
+v
+Use
+|
+v
+Stop
+|
+v
+Release
+```
+
+# 41. Permissions and Browser Security
+
+Browser APIs involving sensitive hardware are protected.
+
+For example:
+
+```text
+Microphone
+Camera
+Location
+Notifications
+```
+
+usually require permission.
+
+My application demonstrates this with:
+
+```js
+navigator.mediaDevices.getUserMedia()
+```
+
+The browser controls the permission.
+
+JavaScript cannot simply bypass that permission.
+
+This is one of the major differences between browser JavaScript and server-side Node.js.
+
+# 42. Browser JavaScript vs Node.js
+
+This distinction became clearer to me through my different projects.
+
+My Notes App runs in:
+
+```text
+Browser
+|
+v
+Browser JavaScript
+|
++-- document
++-- localStorage
++-- history
++-- navigator
++-- MediaRecorder
+```
+
+My Node.js HTTP Log Server runs in:
+
+```text
+Node.js
+|
+v
+Server-side JavaScript
+|
++-- http
++-- fs
++-- path
++-- os
++-- process
++-- events
+```
+
+So:
+
+```text
+Browser
+|
+| UI + user interaction + browser APIs
+
+Node.js
+|
+| Server + filesystem + networking + OS APIs
+```
+
+They both execute JavaScript, but their available runtime APIs are different.
+
+# 43. No Framework
+
+I intentionally built the Notes App using plain JavaScript.
+
+I did not use:
+
+```text
+React
+Vue
+Angular
+```
+
+That means I manually handle:
+
+```text
+DOM updates
+Event listeners
+Application state
+Routing
+Storage
+Media recording
+```
+
+For example, a framework may provide a router abstraction.
+
+In my project, I use:
+
+```text
+history.pushState()
+popstate
+URLSearchParams
+```
+
+directly.
+
+A framework may provide a state management abstraction.
+
+In my project:
+
+```text
+notes array
++
+localStorage
++
+renderNotes()
+```
+
+form the basic state-management approach.
+
+This helped me understand the underlying browser APIs.
+
+# 44. Complete Add Note Flow
+
+This is one of the main flows in my project.
+
+```text
+User types note
+|
+v
+Input value
+|
+v
+Click Add / Press Enter
+|
+v
+Event handler
+|
+v
+Read input
+|
+v
+Add note to array
+|
+v
+JSON.stringify()
+|
+v
+localStorage.setItem()
+|
+v
+Render notes
+|
+v
+Create <li>
+|
+v
+DOM update
+|
+v
+Browser displays note
+```
+
+This one feature demonstrates:
+
+```text
+Events
+DOM
+State
+JSON
+localStorage
+```
+
+# 45. Complete Delete Note Flow
+
+```text
+User clicks note
+|
+v
+click event
+|
+v
+Event bubbles to #notes
+|
+v
+Event delegation handler
+|
+v
+Identify clicked note
+|
+v
+Remove note from array
+|
+v
+Update localStorage
+|
+v
+Render notes
+|
+v
+DOM updates
+```
+
+This demonstrates:
+
+```text
+Event bubbling
+Event delegation
+DOM manipulation
+State management
+localStorage
+```
+
+# 46. Complete Navigation Flow
+
+When I click **All Notes**:
+
+```text
+Click All Notes
+|
+v
+Click event
+|
+v
+history.pushState()
+|
+v
+URL becomes ?view=all
+|
+v
+Render All Notes
+|
+v
+No full page reload
+```
+
+When I click the browser Back button:
+
+```text
+Back button
+|
+v
+History changes
+|
+v
+popstate
+|
+v
+Read URL
+|
+v
+?view=home
+|
+v
+Render Home
+```
+
+This demonstrates:
+
+```text
+History API
+URL state
+Events
+DOM rendering
+Single-page navigation
+```
+
+# 47. Complete Voice Recording Flow
+
+```text
+User clicks Record 3s voice
+|
+v
+getUserMedia()
+|
+v
+Browser asks microphone permission
+|
+v
+MediaStream
+|
+v
+Create MediaRecorder
+|
+v
+Start recording
+|
+v
+Receive audio chunks
+|
+v
+Store chunks in array
+|
+v
+3 second timer completes
+|
+v
+Stop recorder
+|
+v
+Create Blob
+|
+v
+Create object URL
+|
+v
+Create <audio>
+|
+v
+Append audio to DOM
+|
+v
+Stop microphone tracks
+```
+
+This one feature demonstrates:
+
+```text
+Browser permissions
+Media API
+MediaStream
+MediaRecorder
+Events
+setTimeout
+Blob
+Object URLs
+DOM manipulation
+Resource cleanup
+```
+
+
 
 # 41. JavaScript in Node.js
 
-* Node.js lets me run JavaScript outside the browser.
-* It is commonly used for APIs, backend services, command-line tools and server-side applications.
-* Node.js provides APIs that are different from browser APIs.
+## What JavaScript in Node.js Means
 
-## Modules
+JavaScript was originally designed to run inside browsers, but Node.js allows JavaScript to run outside the browser.
 
-* Modules let me split code into separate files.
-* With ES modules:
+Node.js is a **JavaScript runtime environment** built on Chrome's V8 JavaScript engine.
+
+In my project, I used Node.js without Express or any external NPM package. I built a lightweight HTTP Log Server using only Node.js core modules.
+
+My project helped me understand how Node.js handles:
+
+* HTTP requests
+* File-system operations
+* Streams
+* Events
+* Asynchronous operations
+* Process information
+* Operating-system information
+* Static file serving
+* Error handling
+* Graceful shutdown
+* Basic security
+
+My project structure is conceptually:
+
+```text
+Node.js Runtime
+|
+|-- HTTP Server
+|   |-- Static file serving
+|   |-- POST /log
+|   |-- GET /logs
+|   |-- GET /info
+|
+|-- EventEmitter
+|   |-- log event
+|
+|-- File System
+|   |-- Read logs
+|   |-- Append logs
+|
+|-- Streams
+|   |-- Request body chunks
+|
+|-- OS / Process
+|   |-- Memory
+|   |-- Platform
+|   |-- Node version
+|   |-- Uptime
+|   |-- PID
+|
+|-- Process Lifecycle
+    |-- uncaughtException
+    |-- SIGINT
+```
+
+This project was useful because instead of hiding Node.js concepts behind Express APIs, I worked directly with the Node.js core APIs.
+
+# 1. Node.js Runtime
+
+## Definition
+
+Node.js is a runtime environment that allows JavaScript code to execute outside the browser.
+
+Normally:
+
+```text
+Browser
+|
+| JavaScript
+|
+| DOM
+| document
+| window
+| fetch
+```
+
+With Node.js:
+
+```text
+Node.js
+|
+| JavaScript
+|
+| http
+| fs
+| path
+| os
+| process
+| events
+```
+
+Node.js provides APIs that are useful for server-side applications.
+
+For example, the browser does not normally provide Node's `fs` module for directly reading and writing server files.
+
+In my project, Node.js provides the environment where I can create an HTTP server and access the server's file system.
 
 ```js
-export function calculateTotal(amount) {
-    return amount;
+import http from "node:http";
+import fs from "node:fs";
+import path from "node:path";
+import os from "node:os";
+import { EventEmitter } from "node:events";
+```
+
+These are Node.js core modules.
+
+No external package is required.
+
+# 2. Node.js Core Modules
+
+## Definition
+
+Node.js core modules are built-in modules provided by Node.js itself.
+
+My project mainly uses:
+
+```text
+http  | Create HTTP server
+fs    | Read and write files
+path  | Safely work with file paths
+os    | Get operating-system information
+events| Create event-driven communication
+process | Access Node.js process information
+```
+
+Because these modules are built into Node.js, I don't need:
+
+```bash
+npm install express
+```
+
+or another third-party package.
+
+This makes my project useful for understanding what frameworks such as Express are doing underneath.
+
+# 3. HTTP Module
+
+## Definition
+
+The `http` module allows Node.js to create HTTP servers and directly handle incoming requests and outgoing responses.
+
+In my project, I create the server using:
+
+```js
+const server = http.createServer((req, res) => {
+    // Handle request
+});
+```
+
+Whenever a browser sends a request, Node.js gives me:
+
+```text
+req | Incoming request
+res | Server response
+```
+
+For example:
+
+```text
+Browser
+|
+| GET /
+|
+v
+Node.js HTTP Server
+|
+| req
+|
+| route handling
+|
+v
+res
+|
+| HTML
+|
+v
+Browser
+```
+
+This helped me understand what happens underneath Express.
+
+With Express, I might write:
+
+```js
+app.get("/", handler);
+```
+
+But in my project, I manually inspect:
+
+```js
+req.method
+req.url
+```
+
+and decide what the server should do.
+
+# 4. HTTP Methods
+
+My project handles different types of HTTP requests.
+
+For example:
+
+```text
+GET /
+GET /logs
+GET /info
+POST /log
+```
+
+The meaning is different for each request.
+
+### GET
+
+Used when the client wants to retrieve information.
+
+My project uses:
+
+```text
+GET /logs
+GET /info
+GET /
+```
+
+For example:
+
+```text
+Browser
+|
+| GET /info
+|
+v
+Node.js
+|
+| Collect system information
+|
+v
+JSON response
+```
+
+### POST
+
+Used when the client wants to send data to the server.
+
+My project uses:
+
+```text
+POST /log
+```
+
+The frontend sends a log message to the server.
+
+```text
+Browser
+|
+| POST /log
+| { message: "Tested login module" }
+|
+v
+Node.js
+|
+| Read request body
+|
+| Emit "log"
+|
+v
+logs/app.log
+```
+
+# 5. Request Object
+
+## Definition
+
+The `req` object contains information about the incoming HTTP request.
+
+In my project, I use values such as:
+
+```js
+req.method
+req.url
+```
+
+For example:
+
+```text
+GET /info
+```
+
+can be understood as:
+
+```js
+req.method // "GET"
+req.url    // "/info"
+```
+
+This allows my server to decide what operation needs to happen.
+
+Unlike Express, I am manually doing the routing logic.
+
+# 6. Response Object
+
+## Definition
+
+The `res` object is used by the server to send a response back to the client.
+
+For example:
+
+```js
+res.writeHead(200, {
+    "Content-Type": "application/json"
+});
+
+res.end(JSON.stringify(data));
+```
+
+The response contains:
+
+```text
+Status code
+Headers
+Body
+```
+
+For example:
+
+```text
+200
+Content-Type: application/json
+```
+
+and then the JSON response body.
+
+This helped me understand what Express eventually abstracts for us.
+
+# 7. Static File Serving
+
+## Definition
+
+Static file serving means returning files such as HTML, CSS, JavaScript, images, etc. directly from the server.
+
+My project contains a `public` directory:
+
+```text
+public/
+|
+|-- index.html
+|-- style.css
+|-- script.js
+```
+
+When I open:
+
+```text
+http://localhost:3000
+```
+
+the Node.js server serves:
+
+```text
+public/index.html
+```
+
+The browser then requests additional files such as:
+
+```text
+/style.css
+/script.js
+```
+
+and my server serves those files as well.
+
+The flow is:
+
+```text
+Browser
+|
+| GET /
+v
+public/index.html
+
+Browser
+|
+| GET /style.css
+v
+public/style.css
+
+Browser
+|
+| GET /script.js
+v
+public/script.js
+```
+
+This taught me that Express's static middleware is ultimately solving a problem that can be implemented manually using Node.js APIs.
+
+# 8. Content-Type
+
+## Definition
+
+The server needs to tell the browser what type of content it is receiving.
+
+For example:
+
+```text
+.html | text/html
+.css  | text/css
+.js   | text/javascript
+.json | application/json
+```
+
+My `serveStatic` logic checks the file extension and sends the appropriate `Content-Type`.
+
+For example:
+
+```text
+index.html
+|
+| Content-Type: text/html
+|
+v
+Browser renders HTML
+```
+
+Without the correct content type, browsers may not interpret the response correctly.
+
+# 9. Path Module
+
+## Definition
+
+The `path` module provides utilities for safely working with file and directory paths.
+
+My project uses it to resolve files inside the `public` directory.
+
+For example:
+
+```js
+path.join(publicDir, requestedPath)
+```
+
+Instead of manually concatenating:
+
+```js
+publicDir + "/" + requestedPath
+```
+
+I use Node's path utilities because path formats can differ between operating systems.
+
+For example:
+
+```text
+Windows | \
+Linux   | /
+```
+
+Node's `path` module handles these differences.
+
+# 10. Directory Traversal Security
+
+## Definition
+
+Directory traversal is an attack where a user tries to access files outside the intended directory using paths such as `../`.
+
+Suppose my server is supposed to serve:
+
+```text
+public/
+|
+|-- index.html
+|-- style.css
+```
+
+An attacker might request:
+
+```text
+../../secret.txt
+```
+
+If I blindly use that path, the server might accidentally expose files outside `public`.
+
+My project protects against this.
+
+The basic idea is:
+
+```text
+Requested path
+|
+v
+Normalize path
+|
+v
+Create full path
+|
+v
+Check whether it stays inside publicDir
+|
++-- Yes | serve file
+|
++-- No  | reject request
+```
+
+I use:
+
+```js
+path.normalize()
+```
+
+and a boundary check such as:
+
+```js
+full.startsWith(publicDir)
+```
+
+This is important because file-serving code should never blindly trust a path received from the client.
+
+# 11. File System Module
+
+## Definition
+
+The `fs` module allows Node.js applications to interact with files and directories.
+
+My project uses `fs` for:
+
+```text
+Reading log files
+Writing log entries
+Checking files
+Serving static files
+```
+
+For example:
+
+```text
+POST /log
+|
+v
+Create log entry
+|
+v
+fs.appendFile()
+|
+v
+logs/app.log
+```
+
+And:
+
+```text
+GET /logs
+|
+v
+fs.readFile()
+|
+v
+logs/app.log
+|
+v
+Browser
+```
+
+# 12. Asynchronous File Operations
+
+Node.js applications commonly use asynchronous APIs for I/O operations.
+
+For example:
+
+```js
+fs.appendFile(...)
+```
+
+allows the application to start the file operation without blocking the entire JavaScript execution flow while the disk operation completes.
+
+This is important because file operations can be much slower than CPU operations.
+
+Conceptually:
+
+```text
+Request
+|
+v
+Start file operation
+|
+|--------------------|
+| Disk is working    |
+|--------------------|
+|
+v
+Callback / Promise completes
+|
+v
+Continue processing
+```
+
+The important idea is:
+
+```text
+Node.js does not need to sit idle waiting for the disk.
+```
+
+# 13. Event-Driven Architecture
+
+## Definition
+
+Node.js is heavily based on events.
+
+Instead of every part of the application constantly checking whether something happened, an event can be emitted when something happens.
+
+My project uses an `EventEmitter`.
+
+```js
+const emitter = new EventEmitter();
+```
+
+I register a listener:
+
+```js
+emitter.on("log", (message) => {
+    // Save log
+});
+```
+
+Then another part of the application can emit:
+
+```js
+emitter.emit("log", message);
+```
+
+The flow is:
+
+```text
+POST /log
+|
+v
+Receive log message
+|
+v
+emit("log")
+|
+v
+"log" listener
+|
+v
+fs.appendFile()
+|
+v
+logs/app.log
+```
+
+This separates:
+
+```text
+Receiving the request
+```
+
+from:
+
+```text
+Deciding how the log should be stored
+```
+
+That separation becomes more useful as an application grows.
+
+# 14. EventEmitter
+
+## Definition
+
+`EventEmitter` is a Node.js core API used to create and listen for custom events.
+
+My project creates:
+
+```js
+const emitter = new EventEmitter();
+```
+
+Then:
+
+```js
+emitter.on("log", (message) => {
+    // Handle log
+});
+```
+
+And:
+
+```js
+emitter.emit("log", message);
+```
+
+The important concept is:
+
+```text
+emit() | Announces that an event happened
+on()   | Listens for that event
+```
+
+In my project:
+
+```text
+HTTP request
+|
+v
+emit("log")
+|
+v
+log listener
+|
+v
+Append to file
+```
+
+This is a simple example of event-driven architecture.
+
+# 15. Streams
+
+## Definition
+
+A stream allows data to be processed piece by piece instead of waiting for the complete data to be available.
+
+This is important for handling large amounts of data efficiently.
+
+My project demonstrates this through the incoming HTTP request body.
+
+For:
+
+```text
+POST /log
+```
+
+the request body can arrive in chunks.
+
+I listen for:
+
+```js
+req.on("data", (chunk) => {
+    // Receive chunk
+});
+```
+
+and:
+
+```js
+req.on("end", () => {
+    // All chunks received
+});
+```
+
+The flow is:
+
+```text
+Client
+|
+| Request body
+|
+| chunk 1
+| chunk 2
+| chunk 3
+|
+v
+req.on("data")
+|
+v
+Collect/process chunks
+|
+v
+req.on("end")
+|
+v
+Complete request body
+```
+
+This is different from assuming that the entire body is immediately available.
+
+# 16. Why Request Body Streaming Matters
+
+Suppose a client sends:
+
+```json
+{
+    "message": "Tested login module"
 }
 ```
 
-```js
-import { calculateTotal } from "./expense.js";
-```
+The data might arrive in one or multiple chunks.
 
-* Real application example:
-  * My Express backend can have:
-    * routes
-    * controllers
-    * services
-    * models
-    * utilities
-  * Each module has a focused responsibility.
-
-## Filesystem
-
-* Node provides filesystem APIs.
-* I can read and write files.
+So I cannot safely assume:
 
 ```js
-import { readFile } from "node:fs/promises";
-
-const data = await readFile("./data.json", "utf8");
+const body = req.body;
 ```
 
-* Real application example:
-  * A backend might temporarily process uploaded documents or read configuration files.
-  * File paths from users must never be blindly trusted.
+because raw Node.js HTTP does not automatically provide Express-style `req.body`.
 
-## HTTP
-
-* Node can create HTTP servers and handle HTTP requests.
-* Express provides a higher-level framework over Node's HTTP functionality.
+Instead, I handle the stream:
 
 ```js
-app.get("/applications", async (req, res) => {
-    res.json(applications);
-});
+req.on("data", ...)
+req.on("end", ...)
 ```
 
-* Real application example:
-  * My job application frontend can call `GET /applications`.
-  * Node/Express receives the request.
-  * The backend reads application data.
-  * It returns JSON.
-  * The browser receives the response and updates the DOM.
-
-## npm packages
-
-* Node projects can install external packages.
-* Examples include Express, Mongoose and testing tools.
-* Real application example:
-  * My college management backend can use Express for routing and Mongoose for MongoDB interaction.
-* Third-party packages should be reviewed because they become part of the application's dependency chain.
-
-## process object
-
-* Node provides the global `process` object.
-* It gives access to environment variables, command-line arguments and process information.
+This helped me understand what middleware such as:
 
 ```js
-const port = process.env.PORT || 3000;
+express.json()
 ```
 
-* Real application example:
-  * I can keep the MongoDB connection string in an environment variable instead of hardcoding it in the source code.
-* Secrets should not be committed to Git.
+is doing at a lower level.
+
+# 17. JSON Parsing
+
+The browser sends the log information as JSON.
+
+Conceptually:
+
+```json
+{
+    "message": "Tested login module"
+}
+```
+
+The server receives the body as data chunks.
+
+After receiving the complete body:
+
+```text
+Chunks
+|
+v
+Complete string
+|
+v
+JSON.parse()
+|
+v
+JavaScript object
+```
+
+This is an important distinction:
+
+```text
+JSON | Data format
+JavaScript object | Runtime data structure
+```
+
+The incoming JSON needs to be parsed before I can access its properties as a JavaScript object.
+
+# 18. Client-Server Communication
+
+My frontend uses `fetch()` to communicate with the Node.js server.
+
+For example:
+
+```text
+Browser
+|
+| fetch("/log", {
+|   method: "POST",
+|   ...
+| })
+|
+v
+Node.js HTTP Server
+|
+v
+Read request body
+|
+v
+Emit log event
+|
+v
+Write to app.log
+```
+
+For reading logs:
+
+```text
+Browser
+|
+| fetch("/logs")
+|
+v
+Node.js
+|
+| Read app.log
+|
+v
+Response
+|
+v
+Browser displays logs
+```
+
+This gives me a complete understanding of how frontend JavaScript communicates with backend JavaScript.
+
+# 19. /logs Endpoint
+
+My `/logs` endpoint reads the existing log file.
+
+The flow is:
+
+```text
+GET /logs
+|
+v
+Node.js
+|
+v
+fs.readFile()
+|
+v
+logs/app.log
+|
+v
+Return text response
+|
+v
+Browser
+```
+
+The log file contains both:
+
+```text
+HTTP access logs
+```
+
+and:
+
+```text
+Custom user logs
+```
+
+Each log contains an ISO timestamp so I can understand when the event happened.
+
+For example, conceptually:
+
+```text
+2026-10-07T10:30:00.000Z GET /logs
+2026-10-07T10:31:00.000Z Tested login module
+```
+
+This makes the project behave like a very small custom logging server.
+
+# 20. /info Endpoint
+
+My `/info` endpoint demonstrates how Node.js can access information about the running system and process.
+
+It returns information such as:
+
+```text
+platform
+freeMemMB
+node version
+uptimeSec
+pid
+```
+
+For example:
+
+```json
+{
+    "platform": "win32",
+    "freeMemMB": 1234,
+    "node": "v24.x.x",
+    "uptimeSec": 120,
+    "pid": 12345
+}
+```
+
+This is useful for understanding that Node.js is not restricted to handling HTTP.
+
+It can also interact with the environment where the application is running.
+
+# 21. OS Module
+
+## Definition
+
+The `os` module provides information about the operating system.
+
+My project uses it for system telemetry.
+
+For example:
+
+```js
+os.platform()
+os.freemem()
+```
+
+This allows my `/info` endpoint to expose information about the server.
+
+The flow is:
+
+```text
+GET /info
+|
+v
+os.platform()
+os.freemem()
+|
+v
+process.version
+process.pid
+process.uptime()
+|
+v
+JSON response
+```
+
+# 22. Process Object
+
+## Definition
+
+The Node.js `process` object provides information and controls related to the currently running Node.js process.
+
+My project uses:
+
+```js
+process.env.PORT
+process.version
+process.pid
+process.uptime()
+```
+
+### process.env.PORT
+
+Allows the server port to be configured through an environment variable.
+
+Conceptually:
+
+```text
+Environment variable
+|
+v
+process.env.PORT
+|
+v
+HTTP server
+|
+v
+Port 3000
+```
+
+This is better than permanently hardcoding configuration values when deploying applications.
+
+### process.version
+
+Provides the Node.js version running the application.
+
+### process.pid
+
+Provides the process ID.
+
+### process.uptime()
+
+Provides how long the Node.js process has been running.
+
+# 23. Environment Variables
+
+Environment variables allow configuration to be provided from outside the source code.
+
+For example:
+
+```text
+PORT=3000
+```
+
+can be accessed using:
+
+```js
+process.env.PORT
+```
+
+This becomes useful when the same application runs in different environments.
+
+For example:
+
+```text
+Development | 3000
+Testing     | 4000
+Production  | Platform-provided port
+```
+
+The application code does not need to be rewritten just because the port changes.
+
+# 24. Node.js Event Loop
+
+## Definition
+
+The Node.js event loop allows Node.js to handle asynchronous operations without blocking the main JavaScript execution thread for every I/O operation.
+
+My project performs several I/O operations:
+
+```text
+HTTP requests
+File reads
+File writes
+Request streams
+```
+
+For example:
+
+```text
+POST /log
+|
+v
+Receive request
+|
+v
+Start asynchronous file operation
+|
+| Node.js can continue handling other work
+|
+v
+File operation completes
+|
+v
+Callback / completion handler
+```
+
+This is one reason Node.js is effective for I/O-heavy applications.
+
+# 25. Why Async I/O Matters in My Project
+
+Imagine multiple users are sending logs:
+
+```text
+User A | POST /log
+User B | POST /log
+User C | GET /logs
+User D | GET /info
+```
+
+The server should not completely stop responding to everyone just because one file operation is taking time.
+
+Node.js is designed around this asynchronous I/O model.
+
+This does not mean Node.js magically makes CPU-heavy work parallel.
+
+The important distinction is:
+
+```text
+I/O-heavy work
+|
+| Node.js handles very well
+
+CPU-heavy JavaScript work
+|
+| Can block the event loop
+```
+
+# 26. Error Handling
+
+A server needs to handle errors rather than allowing unexpected failures to crash silently.
+
+My project listens for:
+
+```js
+process.on("uncaughtException", ...)
+```
+
+This allows me to detect an exception that was not handled elsewhere.
+
+The idea is:
+
+```text
+Unexpected error
+|
+v
+uncaughtException
+|
+v
+Log the failure
+|
+v
+Perform controlled shutdown
+```
+
+However, `uncaughtException` should not be treated as a normal error-handling strategy for every application error.
+
+Expected errors should be handled close to where they occur.
+
+For example:
+
+```text
+File not found
+Invalid request
+Invalid JSON
+Unsupported route
+```
+
+should be handled normally.
+
+`uncaughtException` is more of a last-resort safety mechanism for unexpected failures.
+
+# 27. HTTP Error Responses
+
+My server should also respond appropriately when something goes wrong.
+
+For example:
+
+```text
+404 | Requested resource does not exist
+400 | Invalid client request
+500 | Unexpected server error
+```
+
+The status code tells the client what happened.
+
+For example:
+
+```text
+GET /something-that-does-not-exist
+|
+v
+404 Not Found
+```
+
+This is better than returning a successful `200` response for every situation.
+
+# 28. Graceful Shutdown
+
+## Definition
+
+Graceful shutdown means allowing the server to stop cleanly instead of immediately terminating everything.
+
+My project listens for:
+
+```js
+process.on("SIGINT", ...)
+```
+
+When I press:
+
+```text
+Ctrl + C
+```
+
+the operating system sends a `SIGINT` signal to the process.
+
+My server catches that signal and performs cleanup.
+
+The flow is:
+
+```text
+Ctrl + C
+|
+v
+SIGINT
+|
+v
+Shutdown handler
+|
+v
+Close HTTP server
+|
+v
+Exit process
+```
+
+This is different from suddenly killing the process.
+
+# 29. Why Graceful Shutdown Matters
+
+Imagine the server is handling requests when I press `Ctrl+C`.
+
+If the process disappears immediately, active requests may be interrupted.
+
+A graceful shutdown gives the application an opportunity to:
+
+```text
+Stop accepting new connections
+|
+v
+Finish existing work
+|
+v
+Close resources
+|
+v
+Exit
+```
+
+In larger applications, graceful shutdown can also involve:
+
+```text
+Database connections
+Message queues
+Background workers
+File handles
+Socket connections
+```
+
+# 30. HTTP Server Lifecycle
+
+My project helped me understand the complete lifecycle:
+
+```text
+Start Node.js process
+|
+v
+Create HTTP server
+|
+v
+Listen on PORT
+|
+v
+Receive request
+|
+v
+Identify route
+|
+v
+Perform operation
+|
+v
+Send response
+|
+v
+Continue listening
+|
+v
+SIGINT
+|
+v
+Graceful shutdown
+|
+v
+Process exits
+```
+
+This is the basic lifecycle of a Node.js server.
+
+# 31. Complete POST /log Flow
+
+This is one of the most important flows in my project.
+
+When I type:
+
+```text
+Tested login module
+```
+
+and click:
+
+```text
+Save log
+```
+
+the complete flow is:
+
+```text
+Browser
+|
+| fetch("/log", POST)
+|
+v
+Node.js HTTP Server
+|
+v
+req.on("data")
+|
+| Receive request chunks
+|
+v
+req.on("end")
+|
+| Complete body received
+|
+v
+Parse JSON
+|
+v
+emitter.emit("log")
+|
+v
+"log" listener
+|
+v
+fs.appendFile()
+|
+v
+logs/app.log
+|
+v
+HTTP response
+|
+v
+Browser
+```
+
+This one feature demonstrates several Node.js concepts together:
+
+```text
+HTTP
+Streams
+Events
+JSON
+Asynchronous I/O
+File System
+```
+
+# 32. Complete GET /logs Flow
+
+```text
+User clicks "Read logs"
+|
+v
+Browser
+|
+| GET /logs
+|
+v
+Node.js
+|
+v
+fs.readFile()
+|
+v
+logs/app.log
+|
+v
+Response
+|
+v
+Browser
+|
+v
+Display logs
+```
+
+This demonstrates:
+
+```text
+HTTP
+File System
+Asynchronous I/O
+Client-server communication
+```
+
+# 33. Complete GET /info Flow
+
+```text
+User clicks "Server info"
+|
+v
+Browser
+|
+| GET /info
+|
+v
+Node.js
+|
+| os.platform()
+| os.freemem()
+| process.version
+| process.uptime()
+| process.pid
+|
+v
+Create JSON
+|
+v
+HTTP response
+|
+v
+Browser
+```
+
+This demonstrates:
+
+```text
+OS module
+Process object
+HTTP
+JSON
+Runtime information
+```
+
+# 34. Why I Built This Without Express
+
+This was an intentional learning decision.
+
+If I immediately used Express:
+
+```js
+app.get(...)
+app.post(...)
+app.use(express.json())
+app.use(express.static(...))
+```
+
+many low-level Node.js concepts would be hidden behind framework APIs.
+
+Instead, I used:
+
+```text
+http
+fs
+path
+os
+events
+process
+```
+
+directly.
+
+This helped me understand what is happening underneath Express.
+
+For example:
+
+```text
+Express
+|
+v
+Node.js HTTP module
+|
+v
+HTTP server
+```
+
+Express makes server development easier, but Node.js is the underlying runtime.
+
+# 35. Node.js vs Express
+
+Node.js:
+
+```text
+Runtime environment
+```
+
+Express:
+
+```text
+Web framework built on Node.js
+```
+
+For example:
+
+```text
+My project:
+
+Node.js
+|
+| http
+| fs
+| path
+| os
+| events
+|
+v
+My custom server
+```
+
+A typical Express application:
+
+```text
+Node.js
+|
+v
+Express
+|
+| routing
+| middleware
+| body parsing
+| static serving
+|
+v
+Application
+```
+
+Express does not replace Node.js.
+
+It makes building HTTP applications easier.
+
+# 36. Security Considerations in My Project
+
+My project is small, but I still considered security.
+
+### Path Traversal
+
+I prevent requests from escaping the `public` directory.
+
+```text
+../
+|
+v
+Normalize
+|
+v
+Boundary check
+|
+v
+Reject unsafe path
+```
+
+### Request Validation
+
+The server should not blindly trust the request body.
+
+For example:
+
+```json
+{
+    "message": "Tested login module"
+}
+```
+
+should be validated before writing it to the log.
+
+A production system could additionally check:
+
+```text
+Is body valid JSON?
+Is message present?
+Is message a string?
+Is message too large?
+Does it contain unexpected content?
+```
+
+### Resource Limits
+
+Because request bodies arrive through streams, I can also enforce a maximum body size.
+
+This prevents a client from sending an unnecessarily large payload and consuming server memory.
+
+# 37. Memory and Performance
+
+One important lesson from this project is that Node.js applications need to be careful with memory.
+
+For small log messages, collecting the request body is reasonable.
+
+But imagine:
+
+```text
+POST /log
+|
+v
+500 MB request body
+```
+
+If the server stores the entire body in memory, memory usage can become a problem.
+
+For larger data, streaming is preferable.
+
+The general idea is:
+
+```text
+Small data
+|
+v
+Buffering can be acceptable
+
+Large data
+|
+v
+Streaming is safer
+```
+
+This is the same reason streaming was important in my previous CSV processing POC.
+
+# 38. Logging Architecture
+
+My project has two types of useful logs:
+
+```text
+HTTP access logs
+```
+
+and:
+
+```text
+User-generated logs
+```
+
+For example:
+
+```text
+GET /info
+GET /logs
+POST /log
+```
+
+can be recorded automatically.
+
+Then a user can also create:
+
+```text
+Tested login module
+```
+
+The `EventEmitter` provides a clean way to send these logging events to the logging handler.
+
+Conceptually:
+
+```text
+Request
+|
+v
+Logging event
+|
+v
+EventEmitter
+|
+v
+Logging handler
+|
+v
+app.log
+```
+
+# 39. What Happens When Multiple Requests Arrive?
+
+Suppose three requests arrive:
+
+```text
+GET /info
+POST /log
+GET /logs
+```
+
+Node.js receives and processes these events through its event-driven architecture.
+
+The server doesn't create a completely new JavaScript process for every request.
+
+Instead, the Node.js process continues running and handles incoming events.
+
+Conceptually:
+
+```text
+Node.js Process
+|
+|-- Request A
+|-- Request B
+|-- Request C
+|-- File I/O
+|-- Timers
+|-- Network events
+|
+v
+Event Loop
+```
+
+This is one of the core architectural ideas behind Node.js.
+
+
+
 
 # 42. WebSockets
 
-* WebSockets create a persistent two-way communication channel between the browser and server.
-* Normal HTTP commonly follows a request -> response pattern.
-* WebSocket allows the server to send data to the client when an event occurs without waiting for a new request from the client.
+WebSockets provide a persistent, two-way communication channel between a client and server.
 
-## Why I use WebSockets
+With normal HTTP, communication commonly follows:
 
-* Useful for:
-  * Chat.
-  * Live notifications.
-  * Live dashboards.
-  * Collaborative editing.
-  * Real-time status.
-  * Live tracking.
-* It is unnecessary for normal pages where occasional HTTP requests are enough.
+```text
+Client
+|
+| Request
+v
+Server
+|
+| Response
+v
+Client
+```
 
-## How WebSocket works
+The client normally has to initiate the request.
 
-* The browser initially contacts the server.
-* A WebSocket handshake establishes the connection.
-* After the connection is established, both sides can send messages.
-* The connection remains open until it is closed.
+With WebSockets:
 
-## Real application example
+```text
+Client <=====================> Server
+          persistent
+        two-way connection
+```
 
-* Imagine my expense approval system has an admin dashboard.
-* Admin A approves an expense.
-* Without WebSocket:
-  * Admin B's browser may need to request the latest data again.
-  * Polling every few seconds can create unnecessary requests.
-* With WebSocket:
-  * Server processes the approval.
-  * Server emits an event.
-  * Admin B's connected browser receives the event.
-  * JavaScript updates the status immediately.
+After the connection is established:
 
-## Important things to handle
+* Client can send data to server.
+* Server can send data to client.
+* Both can communicate without creating a new HTTP request for every message.
 
-* Connection failure.
+This makes WebSockets useful when the application needs real-time updates.
+
+## Why WebSockets Are Useful
+
+WebSockets are useful when the client needs updates quickly and continuously.
+
+Common use cases include:
+
+* Chat applications.
+* Live notifications.
+* Live dashboards.
+* Collaborative editing.
+* Real-time application status.
+* Online gaming.
+* Live tracking.
+* Real-time monitoring.
+
+For example, a normal employee management page does not necessarily need WebSockets if the data only changes when the user refreshes the page.
+
+But a chat application does.
+
+If Alice sends:
+
+```text
+Hello Bob
+```
+
+Bob should receive it immediately.
+
+The application should not require Bob to repeatedly click Refresh.
+
+## HTTP Polling vs WebSocket
+
+One way to implement real-time behavior without WebSockets is polling.
+
+For example:
+
+```text
+Browser
+|
+| GET /messages
+v
+Server
+|
+| messages
+v
+Browser
+
+Wait 5 seconds
+
+Browser
+|
+| GET /messages
+v
+Server
+|
+| messages
+v
+Browser
+
+Wait 5 seconds
+...
+```
+
+This creates repeated requests even when there are no new messages.
+
+For a chat application with many users, this can create unnecessary traffic.
+
+With WebSockets:
+
+```text
+Browser
+|
+| Establish connection
+v
+Server
+|
+| Connection remains open
+|
+| <----- message
+| <----- message
+| <----- typing event
+| <----- notification
+```
+
+The server can send an event when something actually happens.
+
+## Important Point About WebSockets
+
+WebSocket is a communication protocol.
+
+Socket.IO is a library that provides a higher-level real-time communication system.
+
+They should not be treated as exactly the same thing.
+
+```text
+WebSocket
+|
+|-- Standard communication protocol/API
+|
+Socket.IO
+|
+|-- Higher-level real-time library
+|-- Event-based API
+|-- Rooms
+|-- Reconnection support
+|-- Acknowledgements
+|-- Multiple transports
+```
+
+Socket.IO can use WebSocket as a transport, but Socket.IO is not simply another name for WebSocket.
+
+## How a WebSocket Connection Works
+
+The communication starts with the client contacting the server.
+
+A simplified flow is:
+
+```text
+Browser
+|
+| Initial connection
+v
+Server
+|
+| Handshake
+v
+Connection established
+|
++--------------------------+
+|                          |
+v                          v
+Client can send        Server can send
+messages               messages
+|                          |
++------------+-------------+
+             |
+             v
+       Persistent connection
+```
+
+The connection stays open until one side closes it or the connection is lost.
+
+## My Real Project: Multi-User Chat Application
+
+My POC is a real-time multi-user chat application built using:
+
+* Node.js.
+* Express.
+* Socket.IO.
+* HTML/CSS/JavaScript.
+
+The purpose of the POC is to demonstrate:
+
+* Persistent real-time communication.
+* Full-duplex communication.
+* Event-based messaging.
+* Multiple users.
+* Room management.
+* Targeted broadcasting.
+* Typing indicators.
+* Connection lifecycle.
 * Reconnection.
-* Authentication/authorization.
-* Message validation.
-* Server resource usage.
-* Proper connection cleanup.
+* In-memory user state.
 
-## Socket.IO
+The application can be tested using two browser tabs.
 
-* Socket.IO is a library that provides event-based real-time communication and features such as reconnection handling.
-* It is not simply the same thing as the native WebSocket API.
-* It provides its own client/server protocol and can use different transports.
+```text
+Browser Tab 1
+Alice
+|
+|
++----------+
+           |
+           v
+        Server
+           ^
+           |
++----------+
+|
+|
+Bob
+Browser Tab 2
+```
 
-## Real Socket.IO example
+Both users maintain their own Socket.IO connection with the server.
 
-* Server:
+## Creating the HTTP Server
+
+My application uses Node's HTTP server together with Socket.IO.
+
+Conceptually:
 
 ```js
-io.emit("applicationUpdated", {
-    id: 42,
-    status: "Approved"
+const httpServer = http.createServer(app);
+
+const io = new Server(httpServer);
+```
+
+This is important because Socket.IO needs to attach its communication layer to the HTTP server.
+
+The architecture becomes:
+
+```text
+Node.js
+|
++-- HTTP Server
+|      |
+|      +-- Express
+|      |
+|      +-- HTTP routes
+|
++-- Socket.IO
+       |
+       +-- Real-time connections
+       +-- Events
+       +-- Rooms
+```
+
+The same server can therefore handle normal HTTP requests and real-time Socket.IO communication.
+
+## Full-Duplex Communication
+
+Full-duplex means both sides can communicate independently.
+
+In my chat application:
+
+```text
+Alice
+|
+| "Hello Bob"
+v
+Server
+|
+| "Hello Bob"
+v
+Bob
+```
+
+But the server can also initiate communication.
+
+For example, when Bob joins the room:
+
+```text
+Bob
+|
+| join event
+v
+Server
+|
+| "Bob joined"
+v
+Alice
+```
+
+Alice did not send a request asking:
+
+```text
+"Has someone joined?"
+```
+
+The server proactively sent the event.
+
+That is one of the important differences between normal request/response communication and persistent real-time communication.
+
+# Socket Connections
+
+Every connected client gets a unique Socket.IO socket.
+
+The socket has an identifier:
+
+```js
+socket.id
+```
+
+For example:
+
+```text
+Alice -> socket.id = abc123
+Bob   -> socket.id = xyz789
+```
+
+I use this socket ID to track connected users.
+
+My POC maintains:
+
+```js
+const users = new Map();
+```
+
+The conceptual state looks like:
+
+```text
+users Map
+
+socket.id
+    |
+    v
+{
+  name: "Alice",
+  room: "general"
+}
+```
+
+Another connection:
+
+```text
+socket.id
+    |
+    v
+{
+  name: "Bob",
+  room: "general"
+}
+```
+
+This allows the server to know which user belongs to which room.
+
+## Why Use a Map?
+
+A JavaScript `Map` provides a convenient way to associate a unique socket ID with user information.
+
+Conceptually:
+
+```text
+socket.id
+    |
+    v
+user information
+```
+
+For example:
+
+```js
+users.set(socket.id, {
+  name,
+  room
 });
 ```
 
-* Client:
+Later I can retrieve the user:
 
 ```js
-socket.on("applicationUpdated", (application) => {
-    updateApplicationRow(application);
+const user = users.get(socket.id);
+```
+
+When the user disconnects:
+
+```js
+users.delete(socket.id);
+```
+
+This gives the server a simple in-memory representation of currently connected users.
+
+## Rooms
+
+A room allows connected sockets to be grouped together.
+
+In my POC, users join the `general` room.
+
+For example:
+
+```js
+socket.join(room);
+```
+
+If Alice and Bob are both in:
+
+```text
+general
+```
+
+the server can send an event specifically to that room.
+
+```text
+general room
+|
++-- Alice
+|
++-- Bob
+|
++-- Charlie
+```
+
+If another user is in a different room:
+
+```text
+private-room
+|
++-- David
+```
+
+David should not receive messages intended for `general`.
+
+This is why rooms are useful.
+
+## Real Project Example: Joining a Room
+
+When Alice joins:
+
+```text
+Alice
+|
+| join room
+v
+Server
+|
+| socket.join("general")
+v
+general room
+|
++-- Alice
+```
+
+When Bob joins:
+
+```text
+Bob
+|
+| join room
+v
+Server
+|
+| socket.join("general")
+v
+general room
+|
++-- Alice
++-- Bob
+```
+
+Now both users are members of the same room.
+
+# Event-Based Communication
+
+Socket.IO uses named events.
+
+For example:
+
+```js
+socket.on("join", handler);
+```
+
+means:
+
+```text
+When the "join" event arrives,
+execute handler.
+```
+
+The client can emit:
+
+```js
+socket.emit("join", data);
+```
+
+The server can listen:
+
+```js
+socket.on("join", (data) => {
+  // handle join
 });
 ```
 
-* Real application flow:
-  * Admin approves application 42.
-  * Backend updates database.
-  * Backend emits `applicationUpdated`.
-  * Connected admin browsers receive it.
-  * Frontend updates the matching row.
+This is different from thinking only in terms of URLs.
+
+Instead of:
+
+```text
+POST /join
+GET /messages
+POST /typing
+```
+
+the real-time layer can work with events:
+
+```text
+join
+message
+typing
+disconnect
+```
+
+## My POC Event Flow
+
+My chat application uses events for different real-time actions.
+
+Conceptually:
+
+```text
+Client
+|
++-- join
++-- message
++-- typing
+|
+Server
+|
++-- join notification
++-- message broadcast
++-- typing notification
++-- disconnect notification
+```
+
+Each event has a specific purpose.
+
+# Broadcasting
+
+Broadcasting means sending an event to one or more connected clients.
+
+Socket.IO provides different ways to control who receives the event.
+
+This is an important part of my POC.
+
+## socket.to(room).emit()
+
+This sends the event to everyone in the room except the sender.
+
+For example:
+
+```js
+socket.to(room).emit("userJoined", {
+  name
+});
+```
+
+Suppose:
+
+```text
+general
+|
++-- Alice
++-- Bob
+```
+
+Bob joins the room.
+
+The server executes:
+
+```js
+socket.to("general").emit("userJoined", {
+  name: "Bob"
+});
+```
+
+The result is:
+
+```text
+Bob
+|
+| userJoined
+v
+Server
+|
++---------> Alice
+|
+X
+Bob does not receive his own broadcast
+```
+
+This is useful for system notifications.
+
+In my POC:
+
+```text
+Bob joins
+|
+v
+Bob sees:
+"You joined general"
+
+Alice sees:
+"Bob joined"
+```
+
+This happens because the join confirmation can be sent to Bob separately while the room notification uses:
+
+```js
+socket.to(room).emit(...)
+```
+
+## io.to(room).emit()
+
+This sends an event to all sockets in the room, including the sender.
+
+For example:
+
+```js
+io.to(room).emit("message", {
+  name,
+  message
+});
+```
+
+Suppose Alice sends:
+
+```text
+Hello Bob!
+```
+
+The server broadcasts:
+
+```text
+general
+|
++-- Alice
++-- Bob
+```
+
+Both receive the message.
+
+```text
+Alice <------+
+             |
+             v
+           Server
+             |
+             +------> Alice
+             |
+             +------> Bob
+```
+
+This is useful for chat messages because the sender also needs to see the message.
+
+## Difference Between socket.to() and io.to()
+
+This is an important interview/mentor discussion point.
+
+```text
+socket.to(room).emit()
+|
++-- Everyone in room
++-- Except sender
+
+io.to(room).emit()
+|
++-- Everyone in room
++-- Including sender
+```
+
+My POC uses this difference intentionally.
+
+```text
+Join notification
+|
+socket.to(room).emit()
+|
+Other users receive it
+
+Chat message
+|
+io.to(room).emit()
+|
+All room users receive it
+```
+
+# Real-Time Chat Message
+
+When Alice types:
+
+```text
+Hello Bob!
+```
+
+and sends it:
+
+```text
+Alice
+|
+| message event
+v
+Server
+|
+| io.to(room).emit()
+v
+general room
+|
++-- Alice
++-- Bob
+```
+
+Both browser tabs immediately display:
+
+```text
+Alice: Hello Bob!
+```
+
+No browser refresh is required.
+
+This demonstrates real-time communication.
+
+# Typing Indicator
+
+My POC also implements a typing indicator.
+
+When Bob starts typing, the client detects an input event.
+
+Conceptually:
+
+```text
+Bob types
+|
+v
+input event
+|
+v
+socket.emit("typing")
+|
+v
+Server
+|
+v
+socket.to(room).emit("typing")
+|
+v
+Alice sees:
+"Bob is typing..."
+```
+
+The important point is that the typing state is also communicated as a real-time event.
+
+## Why Not Send Every Character to the Server?
+
+If the user types:
+
+```text
+Hello
+```
+
+there are multiple input events:
+
+```text
+H
+He
+Hel
+Hell
+Hello
+```
+
+Sending too much unnecessary traffic can be inefficient.
+
+The client can control how long the typing indicator remains visible.
+
+My POC uses a timer.
+
+```js
+clearTimeout(typingTimer);
+
+typingTimer = setTimeout(() => {
+  // stop typing indicator
+}, 1500);
+```
+
+The idea is:
+
+```text
+User types
+|
+v
+Show typing indicator
+|
+v
+Timer starts
+|
++-- User types again
+|     |
+|     v
+|   Reset timer
+|
++-- No more typing
+      |
+      v
+   1.5 seconds
+      |
+      v
+Hide indicator
+```
+
+This is a simple example of controlling client-side event frequency and state.
+
+# Connection Lifecycle
+
+A WebSocket connection is not guaranteed to remain available forever.
+
+The network can fail.
+
+The browser can close.
+
+The server can restart.
+
+The user can lose internet connectivity.
+
+Therefore, real-time applications need to handle connection lifecycle events.
+
+My POC handles events such as:
+
+```text
+connect
+disconnect
+reconnection
+```
+
+## connect
+
+When the client successfully connects:
+
+```text
+Browser
+|
+v
+Socket.IO connection
+|
+v
+connect
+|
+v
+UI shows:
+Connected
+```
+
+This helps the user understand whether the real-time connection is currently active.
+
+## disconnect
+
+Suppose Bob closes his browser tab.
+
+The server detects the disconnect.
+
+```text
+Bob's browser
+|
+X
+|
+Connection lost
+|
+v
+Server
+|
+v
+disconnect event
+```
+
+The server can then:
+
+```text
+1. Find Bob using socket.id.
+2. Find Bob's room.
+3. Remove Bob from users Map.
+4. Notify other room members.
+```
+
+In my POC:
+
+```text
+Bob closes tab
+|
+v
+disconnect
+|
+v
+users.delete(socket.id)
+|
+v
+socket.to(room).emit(...)
+|
+v
+Alice sees:
+"Bob left"
+```
+
+This is important because otherwise stale users could remain in server-side state.
+
+# Automatic Reconnection
+
+Network connections can temporarily fail.
+
+Socket.IO provides reconnection support.
+
+For example:
+
+```text
+Browser
+|
+| Connected
+v
+Server
+
+Internet connection lost
+|
+v
+Socket disconnected
+|
+v
+Socket.IO attempts reconnection
+|
+v
+Connection restored
+|
+v
+Connected again
+```
+
+My POC listens to connection state changes so the UI can reflect whether the socket is connected.
+
+This is better than assuming:
+
+```text
+"If the page loaded, the connection will always remain available."
+```
+
+Real networks do not work that way.
+
+# Authentication and Authorization
+
+A production WebSocket application should not blindly trust every connected client.
+
+A connection may need authentication.
+
+For example:
+
+```text
+User
+|
+| Authentication credentials
+v
+Server
+|
+v
+Verify identity
+|
+v
+Create socket connection
+```
+
+Then authorization determines what the user is allowed to do.
+
+For example:
+
+```text
+User A
+|
++-- Can join general
++-- Can join team-a
+X-- Cannot join admin-only room
+```
+
+Authentication answers:
+
+```text
+"Who are you?"
+```
+
+Authorization answers:
+
+```text
+"What are you allowed to do?"
+```
+
+My current POC is intentionally simpler and uses a name/room model for learning.
+
+In a production application, I would integrate authentication rather than trusting a client-provided username as proof of identity.
+
+# Message Validation
+
+Clients cannot be trusted.
+
+For example, a malicious client could emit:
+
+```js
+socket.emit("message", {
+  message: "<malicious input>"
+});
+```
+
+The server should validate incoming data.
+
+For example:
+
+```text
+message
+|
+v
+Validate
+|
++-- Is it an object?
++-- Is message present?
++-- Is it a string?
++-- Is it within length limits?
+|
+v
+Process
+```
+
+This is important because WebSocket messages are still user-controlled input.
+
+The fact that they arrive through a WebSocket connection does not make them trusted.
+
+# Server Resource Usage
+
+WebSockets keep connections open.
+
+This is different from a short request/response interaction.
+
+For example:
+
+```text
+100 users
+|
+v
+100 persistent connections
+```
+
+If the application grows:
+
+```text
+100,000 users
+|
+v
+100,000 connections
+```
+
+the server needs to manage those connections efficiently.
+
+Important considerations include:
+
+* Memory usage.
+* Connection limits.
+* CPU usage.
+* Network bandwidth.
+* Heartbeats/ping-pong.
+* Cleanup.
+* Reconnection storms.
+* Horizontal scaling.
+
+This is one reason real-time architecture becomes more complicated at large scale.
+
+# Connection Cleanup
+
+When a socket disconnects, the server should remove associated state.
+
+My POC uses:
+
+```js
+users.delete(socket.id);
+```
+
+Conceptually:
+
+```text
+Before disconnect
+
+users
+|
++-- abc123 -> Alice
++-- xyz789 -> Bob
+
+
+Bob disconnects
+
+users.delete("xyz789")
+
+
+After disconnect
+
+users
+|
++-- abc123 -> Alice
+```
+
+This prevents stale user information from remaining in memory.
+
+# Socket.IO
+
+Socket.IO is a real-time communication library for Node.js and browsers.
+
+It provides an event-based programming model.
+
+For example:
+
+```js
+socket.emit("message", data);
+```
+
+and:
+
+```js
+socket.on("message", handler);
+```
+
+It also provides features such as:
+
+* Rooms.
+* Event-based communication.
+* Reconnection handling.
+* Connection lifecycle events.
+* Broadcasting.
+* Acknowledgements.
+* Multiple transport mechanisms.
+
+Socket.IO should not be described as simply:
+
+```text
+Socket.IO = WebSocket
+```
+
+A better explanation is:
+
+```text
+WebSocket
+|
+|-- Standard protocol/API for persistent two-way communication
+
+Socket.IO
+|
+|-- Higher-level real-time library
+|-- Provides event-based APIs and additional features
+|-- Can use WebSocket as a transport
+```
+
+# My Socket.IO POC Architecture
+
+My application can be represented as:
+
+```text
+                    Node.js Server
+                         |
+              +----------+----------+
+              |                     |
+           Express               Socket.IO
+              |                     |
+        HTTP requests         Persistent connections
+                                    |
+                         +----------+----------+
+                         |          |          |
+                       Alice       Bob       Charlie
+                         |          |          |
+                         +----------+----------+
+                                    |
+                              general room
+```
+
+The server maintains:
+
+```js
+const users = new Map();
+```
+
+Each socket is associated with:
+
+```text
+socket.id
+|
++-- name
++-- room
+```
+
+Rooms determine who should receive events.
+
+# Complete Real-Time Flow in My POC
+
+## User 1 Joins
+
+Alice enters her name and joins `general`.
+
+```text
+Alice
+|
+| join
+v
+Server
+|
++-- users.set(socket.id, Alice)
+|
++-- socket.join("general")
+|
++-- Send join confirmation to Alice
+|
++-- Notify existing room members
+```
+
+Result:
+
+```text
+Alice:
+"You joined general"
+
+Existing users:
+"Alice joined"
+```
+
+## User 2 Joins
+
+Bob joins the same room.
+
+```text
+Bob
+|
+| join
+v
+Server
+|
++-- users.set(socket.id, Bob)
+|
++-- socket.join("general")
+|
++-- Bob receives confirmation
+|
++-- Existing users receive "Bob joined"
+```
+
+Now:
+
+```text
+general
+|
++-- Alice
++-- Bob
+```
+
+## Alice Sends a Message
+
+Alice sends:
+
+```text
+Hello Bob!
+```
+
+Flow:
+
+```text
+Alice
+|
+| message
+v
+Server
+|
+| io.to("general").emit()
+v
+general
+|
++-- Alice receives message
++-- Bob receives message
+```
+
+Both tabs immediately display:
+
+```text
+Alice: Hello Bob!
+```
+
+## Bob Starts Typing
+
+```text
+Bob
+|
+| typing
+v
+Server
+|
+| socket.to("general").emit()
+v
+Alice
+|
+v
+"Bob is typing..."
+```
+
+Bob does not need to receive his own typing indicator.
+
+## Bob Stops Typing
+
+The client-side timer waits for 1.5 seconds.
+
+```text
+Bob stops typing
+|
+v
+Timer expires
+|
+v
+Typing indicator cleared
+|
+v
+Alice no longer sees:
+"Bob is typing..."
+```
+
+## Bob Disconnects
+
+```text
+Bob closes tab
+|
+v
+disconnect
+|
+v
+Server finds socket.id
+|
+v
+users.delete(socket.id)
+|
+v
+socket.to(room).emit()
+|
+v
+Alice sees:
+"Bob left"
+```
+
+# Full POC Flow
+
+```text
+Browser
+|
+| Connect
+v
+Socket.IO Server
+|
+v
+connect
+|
+| Join room
+v
+users Map + socket.join()
+|
+v
+general room
+|
++-----------------------+
+|                       |
+v                       v
+Alice                   Bob
+|                       |
+| message               |
++-----------> Server <--+
+               |
+               v
+        io.to(room).emit()
+               |
+        +------+------+
+        |             |
+        v             v
+      Alice          Bob
+
+
+Typing:
+
+Bob
+|
+| typing
+v
+Server
+|
+| socket.to(room).emit()
+v
+Alice
+
+
+Disconnect:
+
+Bob
+|
+X
+|
+v
+disconnect
+|
+v
+users.delete(socket.id)
+|
+v
+socket.to(room).emit()
+|
+v
+Alice sees "Bob left"
+```
+
+
 
 # 43. Service Workers & PWA
 
